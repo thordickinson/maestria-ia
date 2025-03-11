@@ -38,7 +38,7 @@ export default function EstimationPage() {
     const fetchEstimationResult = async () => {
       const response = await fetch(`/api/estimate?${searchParams.toString()}`);
       const data = await response.json();
-      console.log(data);
+      setEstimationResult(data);
     };
     fetchEstimationResult();
   }, [searchParams]);
@@ -49,16 +49,13 @@ export default function EstimationPage() {
         <CardHeader>Hola Tarjeta</CardHeader>
         <CardContent>Contenido</CardContent>
       </Card>
-      <Card>
+      
+      {estimationResult && (<>
+        <Card>
         <CardContent>
-          <Map zoom={15} position={{ lat: 4.71, lng: -74.13 }} />
+          <Map zoom={16} position={estimationResult.location} layers={estimationResult.mapLayers} />
         </CardContent>
       </Card>
-      <Card>
-        <Chart type='line' data={data} />
-        <Button>Volver</Button>
-      </Card>
-      {estimationResult && (
         <Card>
           <CardHeader>Estimation Result</CardHeader>
           <CardContent>
@@ -66,6 +63,7 @@ export default function EstimationPage() {
             <p>Max Price: {estimationResult.maxValue}</p>
           </CardContent>
         </Card>
+        </>
       )}
     </div>
   );
