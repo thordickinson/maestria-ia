@@ -1,0 +1,24 @@
+{
+    "geohash": "absc",
+    "center": [-74.00, 4.23],
+    "barrio": "",
+    "localidad": "",
+    "places": [
+        {
+            "distance": 100,
+            "places": {
+                "mall" : [{ "id": "123", "name": "Iglesia", "location": { "lat": 123, "lng": 1234 } }],
+                "type2": []
+            }
+        }
+    ],
+    "counters": [
+        {
+            "distance": 100,
+            "places": {
+                "mall": 1,
+                "type2": 0
+            }
+        }
+    ]
+}

@@ -1,0 +1,5 @@
+{
+    "geohashLevel": 6,
+    "geohashes": ["d2g6d"],
+    "radius": [100, 200, 500, 1000]
+}
