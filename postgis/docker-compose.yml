@@ -1,0 +1,18 @@
+version: '3.8'
+services:
+  postgis:
+    build: .
+    container_name: postgis
+    restart: always
+    environment:
+      POSTGRES_DB: gisdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./data:/shapefiles
+
+volumes:
+  postgres_data:

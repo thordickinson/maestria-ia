@@ -6,8 +6,6 @@ import "leaflet-defaulticon-compatibility";
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
 import { useEffect, useMemo, useRef } from "react";
 import { LatLng, MapLayer } from "@/lib/types";
-import { Button } from "./ui/button";
-import CheckboxButton from "./checkbox-button";
 
 interface MapProps {
   position: LatLng;
