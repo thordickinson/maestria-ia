@@ -4,10 +4,17 @@ import 'chart.js/auto';
 import { Chart } from 'react-chartjs-2';
 import Map from '@/components/map'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { EstimationResult } from '@/lib/types';
+import { IconTrendingUp } from '@tabler/icons-react';
+import { Badge } from '@/components/ui/badge';
+import { SectionCards } from '@/components/section-cards';
+import { ChartAreaInteractive } from '@/components/chart-area-interactive';
+import { DataTable } from '@/components/data-table';
+
+import data from "../dashboard/data.json"
 
 
 const rawData = [
@@ -20,7 +27,7 @@ const rawData = [
   { year: 2016, count: 28 },
 ];
 
-const data: any = {
+const data1: any = {
   labels: rawData.map(row => row.year),
   datasets: [
     {
@@ -42,29 +49,26 @@ export default function EstimationPage() {
     };
     fetchEstimationResult();
   }, [searchParams]);
+  
+  if(!estimationResult){
+    return <div></div>
+  }
 
   return (
-    <div>
-      <Card>
-        <CardHeader>Hola Tarjeta</CardHeader>
-        <CardContent>Contenido</CardContent>
-      </Card>
-      
-      {estimationResult && (<>
-        <Card>
-        <CardContent>
+
+    <div className="flex flex-1 flex-col">
+    <div className="@container/main flex flex-1 flex-col gap-2">
+      <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+        <SectionCards />
+        <div className="px-4 lg:px-6">
+          <ChartAreaInteractive />
           <Map zoom={16} position={estimationResult.location} layers={estimationResult.mapLayers} />
-        </CardContent>
-      </Card>
-        <Card>
-          <CardHeader>Estimation Result</CardHeader>
-          <CardContent>
-            <p>Min Price: {estimationResult.minValue}</p>
-            <p>Max Price: {estimationResult.maxValue}</p>
-          </CardContent>
-        </Card>
-        </>
-      )}
+        </div>
+        <DataTable data={data} />
+      </div>
     </div>
+  </div>
+
+   
   );
 }
