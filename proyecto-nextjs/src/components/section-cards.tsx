@@ -3,6 +3,7 @@ import BarsChartCard from "./cards/BarsChartCard"
 import VariationCard from "./cards/VariationCard"
 import { LineChart } from "lucide-react"
 import LineChartCard from "./cards/LineChartCard"
+import VegaChartCard from "./cards/VegaChartCard"
 
 const PieChartData = [
   {
@@ -39,6 +40,7 @@ export function SectionCards() {
       <BarsChartCard data={PieChartData} title="Bars Chart" subtitle="A small chart displaying something"/>
       <LineChartCard data={PieChartData} title="Line Chart" subtitle="A small chart displaying something"/>
       <VariationCard />
+      <VegaChartCard />
     </div>
   )
 }

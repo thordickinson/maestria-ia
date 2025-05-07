@@ -40,11 +40,15 @@
     "react-chartjs-2": "^5.3.0",
     "react-dom": "^19.0.0",
     "react-leaflet": "^5.0.0",
+    "react-vega": "^7.6.0",
     "recharts": "^2.15.2",
     "sonner": "^2.0.3",
     "tailwind-merge": "^3.0.2",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^1.1.2",
+    "vega": "^6.1.2",
+    "vega-embed": "^7.0.2",
+    "vega-lite": "^6.1.0",
     "zod": "^3.24.3"
   },
   "devDependencies": {

@@ -16,7 +16,7 @@ export type MapLayer = {
 }
 
 export type Stat = {
-
+    
 }
 
 export type EstimationResult = {
