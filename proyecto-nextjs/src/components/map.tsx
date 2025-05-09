@@ -11,10 +11,10 @@ interface MapProps {
   position: LatLng;
   zoom: number;
   onMarkerLocationChanged?: (position: LatLng) => void;
-  layers?: MapLayer[];
+  layers: Record<string, MapLayer>;
 }
 
-export default function Map({ position, zoom, layers = [], onMarkerLocationChanged }: MapProps) {
+export default function Map({ position, zoom, layers = {}, onMarkerLocationChanged }: MapProps) {
   const markerRef = useRef<any>(null);
 
   const eventHandlers = useMemo(
@@ -37,11 +37,11 @@ export default function Map({ position, zoom, layers = [], onMarkerLocationChang
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <LayersControl position="bottomright">
-          {layers.map((layer) => (
-            <LayersControl.Overlay key={layer.key} name={layer.label} checked>
+          {Object.entries(layers).map(([layerKey, layer]) => (
+            <LayersControl.Overlay key={layerKey} name={layer.label} checked>
               <LayerGroup>
-              {layer.markers.map((marker) => (
-                <Marker key={marker.key} position={marker.location}>
+              {Object.entries(layer.markers).map(([markerKey, marker]) => (
+                <Marker key={markerKey} position={marker.location}>
                   <Popup>{marker.label}</Popup>
                 </Marker>
               ))}

@@ -40,7 +40,6 @@ export function SectionCards() {
       <BarsChartCard data={PieChartData} title="Bars Chart" subtitle="A small chart displaying something"/>
       <LineChartCard data={PieChartData} title="Line Chart" subtitle="A small chart displaying something"/>
       <VariationCard />
-      <VegaChartCard />
     </div>
   )
 }
