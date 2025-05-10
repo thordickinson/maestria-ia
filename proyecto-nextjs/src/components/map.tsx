@@ -6,6 +6,7 @@ import "leaflet-defaulticon-compatibility";
 import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
 import { useEffect, useMemo, useRef } from "react";
 import { LatLng, MapLayer } from "@/lib/types";
+import { createMarkerIcon } from "./map-markers";
 
 const DEFAULT_CENTER = {lat: 4.6482784, lng: -74.2726152}
 
@@ -54,7 +55,7 @@ export default function Map({ position, center, zoom, layers = {}, onMarkerLocat
             <LayersControl.Overlay key={layerKey} name={layer.label} checked>
               <LayerGroup>
               {Object.entries(layer.markers).map(([markerKey, marker]) => (
-                <Marker key={markerKey} position={marker.location}>
+                <Marker key={markerKey} position={marker.location} icon={createMarkerIcon(marker.icon)}>
                   <Popup>{marker.label}</Popup>
                 </Marker>
               ))}
@@ -64,7 +65,7 @@ export default function Map({ position, center, zoom, layers = {}, onMarkerLocat
         </LayersControl>
         }
         {position && 
-          <Marker ref={markerRef} position={position} draggable={positionDraggable} eventHandlers={eventHandlers}>
+          <Marker ref={markerRef} position={position} draggable={positionDraggable} eventHandlers={eventHandlers} icon={createMarkerIcon("home")}>
             <Popup>Mueve el marcador para seleccionar la posición de tu inmueble</Popup>
           </Marker>
         }

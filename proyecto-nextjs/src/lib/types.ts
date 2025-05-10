@@ -6,6 +6,7 @@ export type LatLng = {
 export type MapMarker = {
     label: string
     location: LatLng
+    icon: string
 }
 
 export type MapLayer = {
