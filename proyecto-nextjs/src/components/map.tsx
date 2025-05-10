@@ -7,15 +7,26 @@ import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility
 import { useEffect, useMemo, useRef } from "react";
 import { LatLng, MapLayer } from "@/lib/types";
 
+const DEFAULT_CENTER = {lat: 4.6482784, lng: -74.2726152}
+
 interface MapProps {
-  position: LatLng;
+  center?: LatLng,
+  position?: LatLng;
   zoom: number;
   onMarkerLocationChanged?: (position: LatLng) => void;
-  layers: Record<string, MapLayer>;
+  layers?: Record<string, MapLayer>;
+  positionDraggable?: boolean
+  className?: string
 }
 
-export default function Map({ position, zoom, layers = {}, onMarkerLocationChanged }: MapProps) {
+export default function Map({ position, center, zoom, layers = {}, onMarkerLocationChanged, positionDraggable = false, className }: MapProps) {
   const markerRef = useRef<any>(null);
+  const mapRef = useRef<any>(null)
+
+  useEffect(() => {
+    if(center || !position || !mapRef.current) return;
+    mapRef.current.flyTo([position.lat, position.lng])
+  }, [position])
 
   const eventHandlers = useMemo(
     () => ({
@@ -28,14 +39,16 @@ export default function Map({ position, zoom, layers = {}, onMarkerLocationChang
     }),
     []
   );
+  
+  const resolvedCenter = center?? position ?? DEFAULT_CENTER
 
   return (
-    <div>
-      <MapContainer center={position} zoom={zoom} scrollWheelZoom={false} style={{ height: "400px", width: "100%" }} attributionControl={false}>
+      <MapContainer ref={mapRef} center={resolvedCenter} zoom={zoom} className={className} scrollWheelZoom={false} attributionControl={false}>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        {Object.entries(layers).length > 0 &&
         <LayersControl position="bottomright">
           {Object.entries(layers).map(([layerKey, layer]) => (
             <LayersControl.Overlay key={layerKey} name={layer.label} checked>
@@ -49,10 +62,12 @@ export default function Map({ position, zoom, layers = {}, onMarkerLocationChang
             </LayersControl.Overlay>
           ))}
         </LayersControl>
-        <Marker ref={markerRef} position={position} draggable={true} eventHandlers={eventHandlers}>
-          <Popup>Mueve el marcador para seleccionar la posición de tu inmueble</Popup>
-        </Marker>
+        }
+        {position && 
+          <Marker ref={markerRef} position={position} draggable={positionDraggable} eventHandlers={eventHandlers}>
+            <Popup>Mueve el marcador para seleccionar la posición de tu inmueble</Popup>
+          </Marker>
+        }
       </MapContainer>
-    </div>
   );
 }

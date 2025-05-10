@@ -124,3 +124,8 @@
     @apply bg-background text-foreground;
   }
 }
+
+
+button[role=combobox] {
+  width: 100%;
+}
