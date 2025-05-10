@@ -129,3 +129,13 @@
 button[role=combobox] {
   width: 100%;
 }
+
+#form-background {
+  background: linear-gradient(
+          rgba(0, 0, 0, 0.6), 
+          rgba(0, 0, 0, 0.6)
+        ), url(/images/apartamentos.jpg);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
