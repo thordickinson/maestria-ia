@@ -35,16 +35,6 @@ function PriceCard({label, price, size = "normal"}: {label: string, price: numbe
   </div>
 }
 
-const data1: any = {
-  labels: rawData.map((row) => row.year),
-  datasets: [
-    {
-      label: "Acquisitions by year",
-      data: rawData.map((row) => row.count),
-    },
-  ],
-};
-
 export default function EstimationPage() {
   const searchParams = useSearchParams();
   const [estimationResult, setEstimationResult] = useState<EstimationResult | null>(null);
