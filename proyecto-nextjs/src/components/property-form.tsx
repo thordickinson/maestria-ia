@@ -14,7 +14,7 @@ import useNominatim from "@/lib/use-nominatim";
 import Map from "./map";
 import { LatLng } from "@/lib/types";
 
-export default function PropertyForm() {
+export default function PropertyForm({className}: {className?: string}) {
   const router = useRouter();
   const [markerLocation, setMarkerLocation] = useState<LatLng | undefined>(undefined);
   const [formData, setFormData] = useState({
@@ -67,7 +67,7 @@ export default function PropertyForm() {
   };
 
   return (
-      <Card>
+      <Card className={className}>
         <CardHeader>
           <CardTitle className="text-2xl">Detalles del Apartamento</CardTitle>
           <CardDescription>Ingresa los detalles del apartamento a estimar</CardDescription>
@@ -78,19 +78,19 @@ export default function PropertyForm() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="area">Área (m²)</Label>
-                  <Input id="area" name="area" type="number" placeholder="60" value={formData.area} onChange={handleChange} required />
+                  <Input id="area" name="area" type="number" placeholder="" value={formData.area} onChange={handleChange} required />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="age">Antigüedad (años)</Label>
-                  <Input id="age" name="age" type="number" placeholder="5" value={formData.age} onChange={handleChange} required />
+                  <Input id="age" name="age" type="number" placeholder="" value={formData.age} onChange={handleChange} required />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="bedrooms">Habitaciones</Label>
                   <Select value={formData.bedrooms} onValueChange={(value) => handleSelectChange("bedrooms", value)}>
                     <SelectTrigger id="bedrooms">
-                      <SelectValue placeholder="Select" />
+                      <SelectValue placeholder="Seleccionar" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="1">1</SelectItem>
@@ -107,7 +107,7 @@ export default function PropertyForm() {
                   <Label htmlFor="bathrooms">Baños</Label>
                   <Select value={formData.bathrooms} onValueChange={(value) => handleSelectChange("bathrooms", value)}>
                     <SelectTrigger id="bathrooms">
-                      <SelectValue placeholder="Select" />
+                      <SelectValue placeholder="Seleccionar" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="1">1</SelectItem>

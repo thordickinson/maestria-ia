@@ -11,6 +11,9 @@ import { DataTable } from "@/components/data-table";
 
 import data from "../dashboard/data.json";
 import SimpleCard from "@/components/cards/SimpleCard";
+import ButtonPanel from "@/components/ui/button-panel";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/router";
 
 const rawData = [
   { year: 2010, count: 10 },
@@ -55,10 +58,12 @@ export default function EstimationPage() {
   return (
     <div className="flex flex-1 flex-col">
       <div className="@container/main flex flex-1 flex-col gap-2">
-        <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-          <div className="px-4 lg:px-6">
-            <Map zoom={16} position={estimationResult.location} layers={estimationResult.mapLayers} />
-          </div>
+        <div className="flex flex-col">
+          <Map zoom={16} position={estimationResult.location} className="h-[500px] w-full" layers={estimationResult.mapLayers} />
+          {/*<div className="px-6 text-sm">
+              El mapa muestra los sitios cercanos al apartamento, usa el menú de capas para mostrar u ocultar los sitios de interés
+              cercanos.
+            </div>*/}
           <div className="p-5 flex flex-col gap-3">
             <SimpleCard title="Precio estimado" subtitle="El precio estimado de tu inmueble es">
               <div className="w-full flex flex-row flex-wrap justify-between">
@@ -70,6 +75,9 @@ export default function EstimationPage() {
             <ChartAreaInteractive />
             <SectionCards />
             <DataTable data={data} />
+            <ButtonPanel>
+              <Button>Volver</Button>
+            </ButtonPanel>
           </div>
         </div>
       </div>
