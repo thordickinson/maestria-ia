@@ -13,8 +13,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import useNominatim from "@/lib/use-nominatim";
 import Map from "./map";
 import { LatLng } from "@/lib/types";
+import FormField from "./ui/form-field";
 
-export default function PropertyForm({className}: {className?: string}) {
+export default function PropertyForm({ className }: { className?: string }) {
+  const [stepIndex, setStepIndex] = useState(0);
   const router = useRouter();
   const [markerLocation, setMarkerLocation] = useState<LatLng | undefined>(undefined);
   const [formData, setFormData] = useState({
@@ -25,7 +27,7 @@ export default function PropertyForm({className}: {className?: string}) {
     address: "",
   });
 
-  const { results, setQuery } = useNominatim();
+  const { results, setQuery, loading: loadingLocation } = useNominatim();
   useEffect(() => {
     if (!results || results.length == 0) {
       setMarkerLocation(undefined);
@@ -36,8 +38,8 @@ export default function PropertyForm({className}: {className?: string}) {
   }, [results]);
 
   const onLocateInMapClicked = () => {
-    setQuery(formData.address)
-  }
+    setQuery(formData.address);
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -48,8 +50,9 @@ export default function PropertyForm({className}: {className?: string}) {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const locateButtonDisabled = !formData?.address || formData.address.length < 3
-  const estimationButtonDisabled = !formData.age || !formData.area || !formData.bathrooms || !formData.bedrooms || !markerLocation
+  const locateButtonDisabled = !formData?.address || formData.address.length < 3;
+  const nextDisabled = !formData.age || !formData.area || !formData.bathrooms || !formData.bedrooms;
+  const estimateDisabled = nextDisabled || !markerLocation
 
   const onMarkerLocationChanged = (location: LatLng) => {
     setMarkerLocation(location);
@@ -67,84 +70,94 @@ export default function PropertyForm({className}: {className?: string}) {
   };
 
   return (
-      <Card className={className}>
-        <CardHeader>
-          <CardTitle className="text-2xl">Detalles del Apartamento</CardTitle>
-          <CardDescription>Ingresa los detalles del apartamento a estimar</CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-6 flex md:gap-6 flex-col md:flex-row">
-            <div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="area">Área (m²)</Label>
-                  <Input id="area" name="area" type="number" placeholder="" value={formData.area} onChange={handleChange} required />
-                </div>
+    <Card className={className}>
+      <CardHeader>
+        <CardTitle className="text-2xl">Detalles del Apartamento</CardTitle>
+        <CardDescription>Ingresa los detalles del apartamento a estimar</CardDescription>
+      </CardHeader>
+      <form onSubmit={handleSubmit} className="flex flex-col h-full">
+        <CardContent className="flex flex-col w-full flex-1">
+          <div className={`${stepIndex == 0 ? "visible" : "hidden"} w-full`}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField label="Área (m²)" editorId="area">
+                <Input id="area" name="area" type="number" placeholder="" value={formData.area} onChange={handleChange} required />
+              </FormField>
 
-                <div className="space-y-2">
-                  <Label htmlFor="age">Antigüedad (años)</Label>
-                  <Input id="age" name="age" type="number" placeholder="" value={formData.age} onChange={handleChange} required />
-                </div>
+              <FormField label="Antigüedad (años)" editorId="age">
+                <Input id="age" name="age" type="number" placeholder="" value={formData.age} onChange={handleChange} required />
+              </FormField>
 
-                <div className="space-y-2">
-                  <Label htmlFor="bedrooms">Habitaciones</Label>
-                  <Select value={formData.bedrooms} onValueChange={(value) => handleSelectChange("bedrooms", value)}>
-                    <SelectTrigger id="bedrooms">
-                      <SelectValue placeholder="Seleccionar" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">1</SelectItem>
-                      <SelectItem value="2">2</SelectItem>
-                      <SelectItem value="3">3</SelectItem>
-                      <SelectItem value="4">4</SelectItem>
-                      <SelectItem value="5">5</SelectItem>
-                      <SelectItem value="6+">6+</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              <FormField label="Habitaciones" editorId="bedrooms">
+                <Select value={formData.bedrooms} onValueChange={(value) => handleSelectChange("bedrooms", value)}>
+                  <SelectTrigger id="bedrooms">
+                    <SelectValue placeholder="Seleccionar" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">1</SelectItem>
+                    <SelectItem value="2">2</SelectItem>
+                    <SelectItem value="3">3</SelectItem>
+                    <SelectItem value="4">4</SelectItem>
+                    <SelectItem value="5">5</SelectItem>
+                    <SelectItem value="6+">6+</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormField>
 
-                <div className="space-y-2">
-                  <Label htmlFor="bathrooms">Baños</Label>
-                  <Select value={formData.bathrooms} onValueChange={(value) => handleSelectChange("bathrooms", value)}>
-                    <SelectTrigger id="bathrooms">
-                      <SelectValue placeholder="Seleccionar" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">1</SelectItem>
-                      <SelectItem value="2">2</SelectItem>
-                      <SelectItem value="3">3</SelectItem>
-                      <SelectItem value="4+">4+</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="address">Dirección</Label>
-                <Textarea
+              <FormField label="Baños" editorId="bathrooms">
+                <Select value={formData.bathrooms} onValueChange={(value) => handleSelectChange("bathrooms", value)}>
+                  <SelectTrigger id="bathrooms">
+                    <SelectValue placeholder="Seleccionar" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">1</SelectItem>
+                    <SelectItem value="2">2</SelectItem>
+                    <SelectItem value="3">3</SelectItem>
+                    <SelectItem value="4+">4+</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormField>
+            </div>
+          </div>
+          <div className={`${stepIndex == 1 ? "visible" : "hidden"} flex flex-col h-full`}>
+            <FormField label="Dirección" editorId="address">
+              <div className="flex flex-row gap-2">
+                <Input
                   id="address"
                   name="address"
                   placeholder="Ingresa la dirección completa del inmueble"
                   value={formData.address}
                   onChange={handleChange}
-                  className="min-h-[100px]"
                   required
                 />
+                <Button type="button" disabled={!formData.address || locateButtonDisabled} onClick={onLocateInMapClicked}>Ubicar en Mapa</Button>
               </div>
-            </div>
-            <Map zoom={15} position={markerLocation} positionDraggable={true} className="md:w-[300px] md:h-[270px]" onMarkerLocationChanged={onMarkerLocationChanged} />
-          </CardContent>
-          <CardFooter>
-            <div className="w-full flex gap-2 align-stretch">
-            <Button type="button" variant="secondary" className="flex-1" disabled={locateButtonDisabled} onClick={onLocateInMapClicked}>
-              Ubicar en Mapa
+            </FormField>
+            <FormField label="Ubicación en mapa">
+            <Map
+              zoom={15}
+              position={markerLocation}
+              positionDraggable={true}
+              className="flex-1 h-[200px] w-[520px]"
+              onMarkerLocationChanged={onMarkerLocationChanged}
+            />
+            </FormField>
+          </div>
+        </CardContent>
+        <CardFooter>
+          <div className="w-full flex place-content-between gap-2">
+            <div className={`self-end ${stepIndex == 0 ? "" : "hidden"}`}></div>
+            <Button type="button" className={`self-end ${stepIndex == 0 ? "" : "hidden"}`} disabled={nextDisabled} onClick={() => setStepIndex(stepIndex + 1)}>
+              Siguiente
             </Button>
-            <Button type="submit" className="flex-1" disabled={estimationButtonDisabled}>
+            <Button type="button" variant="outline" className={stepIndex == 1 ? "" : "hidden"} onClick={() => setStepIndex(stepIndex - 1)}>
+              Volver
+            </Button>
+            <Button type="submit" className={stepIndex == 1 ? "" : "hidden"} disabled={estimateDisabled}>
               Obtener Estimación
             </Button>
-            </div>
-          </CardFooter>
-        </form>
-      </Card>
+          </div>
+        </CardFooter>
+      </form>
+    </Card>
   );
 }
