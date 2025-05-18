@@ -2,6 +2,7 @@ version: '3.8'
 services:
   postgis:
     build: .
+    platform: linux/amd64
     container_name: postgis
     restart: always
     environment:
