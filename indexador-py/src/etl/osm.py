@@ -1,8 +1,7 @@
-from pydantic import BaseModel
-from typing import Optional
-import itertools
+from src.etl.data_types import Place
 
 from src.etl.connection import execute_select
+from src.etl.util import parse_point
 
 __place_type_names = {
     "education": [
@@ -49,14 +48,6 @@ __place_type_names = {
 }
 
 
-
-class Place(BaseModel):
-    name: str
-    type: str
-    lat: float
-    lng: float
-
-
 def __reverse_place_type(place_type: str) -> str:
     global __place_type_names
     place_type = place_type.lower()
@@ -73,7 +64,7 @@ def __build_query(lat: float, lng: float, radius: int, place_types: list[str]) -
     query = f"""
     SELECT *
     FROM (
-    SELECT code, name, fclass as place_type, ST_AsText(ST_Transform(geom, 4326)) AS location
+    SELECT osm_id as id, name, fclass as place_type, ST_AsText(ST_Transform(geom, 4326)) AS location
     FROM gis_osm_pois_free_1
     WHERE fclass IN ({names_str})
       AND ST_DWithin(
@@ -82,7 +73,7 @@ def __build_query(lat: float, lng: float, radius: int, place_types: list[str]) -
           {radius}
       )
     UNION ALL
-    SELECT code, name, fclass as place_type, ST_AsText(ST_Transform(ST_Centroid(geom), 4326)) AS location
+    SELECT osm_id as id, name, fclass as place_type, ST_AsText(ST_Transform(ST_Centroid(geom), 4326)) AS location
     FROM gis_osm_pois_a_free_1
     WHERE fclass IN ({names_str})
       AND ST_DWithin(
@@ -93,19 +84,11 @@ def __build_query(lat: float, lng: float, radius: int, place_types: list[str]) -
     return query
 
 
-def __parse_point(point: str) -> tuple[float, float]:
-    # Parse this kind of text to lat, lng POINT(-74.0575685 4.6573304)
-    point = point.strip()
-    if point.startswith("POINT(") and point.endswith(")"):
-        coords = point[6:-1].split()
-        lng, lat = map(float, coords)
-        return lat, lng
-    raise ValueError(f"Invalid point format: {point}")
-
-def get_nearby_places(lat: float, lng: float, radius_meters: int, place_types: list[str]) -> list[Place]:
+def get_osm_nearby_places(lat: float, lng: float, radius_meters: int, place_types: list[str]) -> list[Place]:
     sql = __build_query(lat, lng, radius_meters, place_types)
     result = execute_select("POSTGIS", sql)
     def parse_result(row: dict):
-        lat, lng = __parse_point(row['location'])
-        return Place(name=row['name'], lat=lat, lng=lng, type=__reverse_place_type(row['place_type']))
+        lat, lng = parse_point(row['location'])
+        return Place(id=str(row["id"]), name=row['name'], 
+                     lat=lat, lng=lng, type=__reverse_place_type(row['place_type']))
     return [parse_result(row) for row in result]
