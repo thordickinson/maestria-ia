@@ -1,15 +1,20 @@
 import geohash
+import time
 import logging
-from src.etl.region_service import get_region_info
+import itertools
+from src.etl.data_types import Place
+from src.etl.open_data import get_region_info, get_transport_places, get_cadastral_and_commercial_values_by_geohash
+from src.etl.osm import get_osm_nearby_places
 
 logger = logging.getLogger(__name__)
 
 # Geohash base32 character set (defines possible children)
 GEOHASH_CHARS = "0123456789bcdefghjkmnpqrstuvwxyz"
-SERVICE_TYPES: list[str] = ["education", "healthcare", "retail_access", 
+OSM_PLACE_TYPES: list[str] = ["education", "healthcare", "retail_access", 
                             "dining_and_entertainment", "accommodation", 
                             "parks_and_recreation", "infrastructure_services", 
                             "cultural_amenities"]
+PLACE_SEARCH_RADIUS_METERS = [100, 300, 500, 1000, 2000]
 
 
 def __geohash_center(geo_hash: str) -> tuple[float, float]:
@@ -38,11 +43,27 @@ def __iterate_geohashes(base_geohashes, target_level, process_callback):
         recurse(g)
 
 
-def __process_geohash(geohash: str):
-    logger.info(f"Processing geohash {geohash}")
-    lat, lng = __geohash_center(geohash)
+def __process_geohash(geo_hash: str):
+    logger.info(f"Processing geohash {geo_hash}")
+    start = time.perf_counter()
+    lat, lng = __geohash_center(geo_hash)
     region_info = get_region_info(lat, lng)
-    pass
+    valuation = get_cadastral_and_commercial_values_by_geohash(geo_hash)
+    nearby_places = {}
+    for radius in PLACE_SEARCH_RADIUS_METERS:
+        transport = get_transport_places(lat, lng, radius)
+        places = get_osm_nearby_places(lat, lng, radius, OSM_PLACE_TYPES)
+        all_places = itertools.chain(transport, places)
+        grouped_places: dict[str, list[Place]] = {}
+        for place in all_places:
+            place_type = place.type
+            if place_type not in grouped_places:
+                grouped_places[place_type] = []
+            grouped_places[place_type].append(place)
+        nearby_places[f"radius"] = grouped_places
+    end = time.perf_counter()
+    logger.info(f"Tiempo de ejecución: {end - start:.4f} segundos")
+    return {"geohash": geo_hash, "region_info": region_info, "valuation": valuation, "nearby_places": nearby_places }
 
 def process_geohashes(geohashes: list[str], level: int):
     __iterate_geohashes(geohashes, level, __process_geohash)
