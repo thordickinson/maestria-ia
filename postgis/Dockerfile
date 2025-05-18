@@ -1,4 +1,4 @@
-FROM postgis/postgis:latest
+FROM postgis/postgis:17-3.5
 
 # Instala herramientas necesarias
 RUN apt-get update && apt-get install -y postgis postgresql-client
