@@ -49,7 +49,16 @@ def test_property_loader():
         "barrio": pl.String,
         "precio_venta": pl.Float64,
         "precio_arriendo": pl.Float64,
-        "administracion": pl.Float64
+        "administracion": pl.Float64,
+
+        "closets": pl.Int8,
+        "gimnasio": pl.Int8,
+        "ascensor": pl.Int8,
+        "piscina": pl.Int8,
+        "conjunto_cerrado": pl.Int8,
+        "salon_comunal": pl.Int8,
+        "terraza": pl.Int8,
+        "vigilancia": pl.Int8,
     }
 
     df = load_mongo_json_to_polars(
