@@ -1,12 +1,14 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 import polars as pl
 from src.etl.property_loader import load_mongo_json_to_polars
 from src.etl.open_data import get_cadastral_and_commercial_values_by_geohash
 from src.etl.osm import get_osm_nearby_places
+from src.etl.pipeline import enrich_properties
 from pathlib import Path
-from typing import Dict
 import logging
-from dotenv import load_dotenv
-load_dotenv()
+
 
 
 Path("data/logs").mkdir(parents=True, exist_ok=True)
@@ -70,5 +72,14 @@ def test_property_loader():
     print(df.head())
 
 
-test_property_loader()
+def test_enrich_properties():
+    # Test the function with a specific geohash
+    geohash_filter = "d2g6dud"
+    enrich_properties(geohash_filter=geohash_filter)
+
+
+test_enrich_properties()
+
+# test_property_loader()
 # get_cadastral_and_commercial_values_by_geohash("d2g6dud")
+# test_geohash_processing()
