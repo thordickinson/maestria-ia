@@ -10,7 +10,7 @@ import polars as pl
 
 def load_mongo_json_to_polars(
     file_path: str,
-    column_types: Dict[str, pl.DataType]
+    column_types: Dict[str, type[pl.DataType]]
 ) -> pl.DataFrame:
     """
     Loads a MongoDB-exported JSON file into a Polars DataFrame using a strict schema.
@@ -41,12 +41,12 @@ def load_mongo_json_to_polars(
                     return float('nan')
         return val
 
-    def get_missing_value(dtype: pl.DataType):
+    def get_missing_value(dtype: type[pl.DataType]):
         if dtype in (pl.Float32, pl.Float64):
             return float('nan')
         return None
 
-    def coerce_to_type(value, expected_type: pl.DataType):
+    def coerce_to_type(value, expected_type: type[pl.DataType]):
         """Casts value to the type specified in the schema."""
         if value is None:
             return get_missing_value(expected_type)

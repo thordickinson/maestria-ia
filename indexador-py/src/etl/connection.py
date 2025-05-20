@@ -55,6 +55,9 @@ def execute_select_model(connection_name: str, query: str, model_cls):
     return [model_cls(**row) for row in rows]
 
 
+def execute_update(connection_name: str, query: str, values=None):
+    execute_insert(connection_name, query, values)
+
 def execute_insert(connection_name: str, query: str, values=None):
     """
     Executes an INSERT (or other data-modifying) query and commits the transaction.
