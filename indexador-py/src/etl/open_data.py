@@ -3,6 +3,7 @@ import geohash
 from src.etl.connection import execute_select_one, execute_select
 from src.etl.data_types import Place
 from itertools import chain
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -57,9 +58,18 @@ def __get_barrio_localidad(lat: float, lng: float) -> dict:
         }
     }
 
+def __get_upz(lat: float, lng: float) -> dict:
+    sql = f"SELECT codigo_upz, nombre FROM upz_bogota WHERE ST_Contains(geom, ST_SetSRID(ST_Point({lng}, {lat}), 4326))"
+    result = execute_select_one("POSTGIS", sql)
+    if result is None:
+        return {}
+    return { "codigo": result["codigo_upz"], "nombre": result["nombre"] }
+
 def get_region_info(lat: float, lng: float) -> dict:
     logger.debug(f"Getting region info for ({lat}, {lng})")
     barrio_localidad = __get_barrio_localidad(lat, lng)
+    upz = __get_upz(lat, lng)
+    barrio_localidad["upz"] = upz
     return barrio_localidad
 
 def get_cadastral_and_commercial_values_by_geohash(geo_hash: str) -> dict:
@@ -75,5 +85,7 @@ def get_cadastral_and_commercial_values_by_geohash(geo_hash: str) -> dict:
     result = execute_select_one("POSTGIS", sql)
     if result is None:
         raise Exception("Unable to get an estimated value?")
-    return result
+    cadastral = result["catastral"] if result["catastral"] is not None else np.nan
+    comercial = result["catastral"] if result["catastral"] is not None else np.nan
+    return { "catastral": cadastral, "comercial": comercial }
 
