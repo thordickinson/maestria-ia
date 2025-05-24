@@ -57,9 +57,18 @@ def __get_barrio_localidad(lat: float, lng: float) -> dict:
         }
     }
 
+def __get_upz(lat: float, lng: float) -> dict:
+    sql = f"SELECT codigo_upz, nombre FROM upz_bogota WHERE ST_Contains(geom, ST_SetSRID(ST_Point({lng}, {lat}), 4326))"
+    result = execute_select_one("POSTGIS", sql)
+    if result is None:
+        return {}
+    return { "codigo": result["codigo_upz"], "nombre": result["nombre"] }
+
 def get_region_info(lat: float, lng: float) -> dict:
     logger.debug(f"Getting region info for ({lat}, {lng})")
     barrio_localidad = __get_barrio_localidad(lat, lng)
+    upz = __get_upz(lat, lng)
+    barrio_localidad["upz"] = upz
     return barrio_localidad
 
 def get_cadastral_and_commercial_values_by_geohash(geo_hash: str) -> dict:

@@ -127,7 +127,7 @@ def _save_to_db(geo_hash: str, stats: GeohashStats):
     ))
 
 def get_stats(lat: float, lng: float) -> GeohashStats:
-    geo_hash = geohash.encode(lat, lng)
+    geo_hash = geohash.encode(lat, lng, precision=7)
     return __get_geohash_stats(geo_hash)
 
 def __get_geohash_stats(geo_hash: str) -> GeohashStats:
@@ -168,7 +168,7 @@ def __process_geohash(geo_hash: str) -> GeohashStats:
             if place_type not in grouped_places:
                 grouped_places[place_type] = []
             grouped_places[place_type].append(place)
-        nearby_places[f"radius"] = grouped_places
+        nearby_places[f"{radius}m"] = grouped_places
     end = time.perf_counter()
     calculation_time = end - start
     logger.info(f"Tiempo de ejecución: {calculation_time:.4f} segundos")
@@ -184,5 +184,5 @@ def __process_geohash(geo_hash: str) -> GeohashStats:
 
 
 def process_geohashes(geohashes: list[str], level: int):
-    __iterate_geohashes(geohashes, level, get_geohash_stats)
+    __iterate_geohashes(geohashes, level, __get_geohash_stats)
     pass
