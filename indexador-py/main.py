@@ -6,6 +6,8 @@ from src.etl.property_loader import load_mongo_json_to_polars
 from src.etl.open_data import get_cadastral_and_commercial_values_by_geohash
 from src.etl.osm import get_osm_nearby_places
 from src.etl.pipeline import enrich_properties
+import numpy as np
+import math
 from pathlib import Path
 import logging
 
@@ -74,8 +76,8 @@ def test_property_loader():
 
 def test_enrich_properties():
     # Test the function with a specific geohash
-    geohash_filter = "d2g6dud"
-    enrich_properties(geohash_filter=geohash_filter)
+    geohash_filter = "d2g6d"
+    enrich_properties()
 
 
 test_enrich_properties()

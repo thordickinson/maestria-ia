@@ -15,7 +15,9 @@ En este proceso se busca calcular los puntos cercanos a un geohash en espécific
 
 ## Enriquecimiento de inmuebles
 
-A partir de los datos precalculados por geohash, se toma cada uno de los inmuebles y se 
+A partir de los datos precalculados por geohash, se toma cada uno de los inmuebles y se enriquece con la información calculada para el geohash donde la propiedad se encuentra.
+
+### Estadísticas de localidad/barrio/upz
 
 
 
