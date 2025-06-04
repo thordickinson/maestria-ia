@@ -1,5 +1,6 @@
 import { EstimationResult, MapLayer } from '@/lib/types';
 import { NextRequest, NextResponse } from 'next/server';
+import { estimate } from '../../services/estimation.service'
 
 function buildLayers(): Record<string, MapLayer> {
   return {
@@ -41,5 +42,8 @@ const MockEstimationResult: EstimationResult = {
 
 export async function GET(request: NextRequest) {
   console.log(request.nextUrl.searchParams)
+  const lat = request.nextUrl.searchParams.get('lat');
+  const lng = request.nextUrl.searchParams.get('lng');
+  await estimate(lat, lng);
   return NextResponse.json(MockEstimationResult);
 }
