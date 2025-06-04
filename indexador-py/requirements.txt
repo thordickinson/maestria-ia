@@ -1,4 +1,6 @@
+sqlalchemy
 psycopg2-binary
+
 python-geohash
 polars
 seaborn

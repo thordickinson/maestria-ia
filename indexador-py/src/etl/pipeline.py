@@ -48,6 +48,7 @@ def __extract_additional_columns(stats: GeohashStats) -> list:
                 row.append(0)
                 continue
             row.append(len(places[place_type]))
+    row.append(stats.region_info.get("upz", {}).get("nombre", None))
     row.append(stats.valuation.get("catastral", None))
     row.append(stats.valuation.get("comercial", None))
     return row
@@ -57,8 +58,9 @@ def __additional_columns_headers() -> list[str]:
     for distance in PLACE_SEARCH_RADIUS_METERS:
         for place_type in OSM_PLACE_TYPES:
             headers.append(f"{distance}_{place_type}")
-    headers.append("cadastral")
-    headers.append("commercial")
+    headers.append("upz")
+    headers.append("catastral")
+    headers.append("comercial")
     return headers
 
 
