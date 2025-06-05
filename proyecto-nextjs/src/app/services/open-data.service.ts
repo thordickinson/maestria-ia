@@ -96,7 +96,7 @@ export async function getCadastralAndCommercialValuesByGeohash(geoHash: string):
   const query = sql`
         SELECT AVG(avaluo_com) as comercial, AVG(avaluo_cat) as catastral
         FROM avaluo_catastral_manzana
-        WHERE ST_Intersects(geom, ST_SetSRID(ST_GeomFromText('${polygonWkt}'), 4326))
+        WHERE ST_Intersects(geom, ST_SetSRID(ST_GeomFromText(${polygonWkt}), 4326))
     `;
   const result = await doQueryOne(query);
   if (!result) throw new Error("Unable to get an estimated value?");
