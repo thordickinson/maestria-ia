@@ -1,6 +1,6 @@
 import {encode, decode} from 'ngeohash'
 import { sql, doQuery, doQueryOne, doUpdate } from './database.service';
-import { getRegionInfo, getTransportPlaces } from './open-data.service';
+import { getCadastralAndCommercialValuesByGeohash, getRegionInfo, getTransportPlaces } from './open-data.service';
 import { getOsmNearbyPlaces } from './osm.service';
 import { groupBy } from 'lodash';
 
@@ -36,23 +36,55 @@ export type GeohashStats = {
 }
 
 async function saveStats(stats: GeohashStats): Promise<void> {
-    const { geohash, lat, lng, region_info, nearby_places, valuation, calculation_time_seconds } = stats;
-    await doUpdate(sql`
-        INSERT INTO geohash_stats (geohash, lat, lng, region_info, nearby_places, valuation, calculation_time_seconds)
-        VALUES (${geohash}, ${lat}, ${lng}, ${JSON.stringify(region_info)}, ${JSON.stringify(nearby_places)}, ${JSON.stringify(valuation)}, ${calculation_time_seconds})
-        ON CONFLICT (geohash) DO UPDATE SET
-        lat = EXCLUDED.lat,
-        lng = EXCLUDED.lng,
-        region_info = EXCLUDED.region_info,
-        nearby_places = EXCLUDED.nearby_places,
-        valuation = EXCLUDED.valuation,
-        calculation_time_seconds = EXCLUDED.calculation_time_seconds
-    `);
+  const {
+    geohash,
+    lat,
+    lng,
+    region_info,
+    nearby_places,
+    valuation,
+    calculation_time_seconds
+  } = stats;
+
+  // Limpieza para evitar NaN, Infinity, -Infinity
+  const sanitizeJson = (obj: any): any =>
+    JSON.parse(JSON.stringify(obj, (_, value) =>
+      typeof value === 'number' && !isFinite(value) ? null : value
+    ));
+
+  const cleanRegionInfo = sanitizeJson(region_info);
+  const cleanNearbyPlaces = sanitizeJson(nearby_places);
+  const cleanValuation = sanitizeJson(valuation);
+
+  await doUpdate(sql`
+    INSERT INTO geohash_stats (
+      geohash,
+      lat,
+      lng,
+      region_info,
+      nearby_places,
+      valuation,
+      calculation_time_seconds
+    )
+    VALUES (
+      ${geohash},
+      ${lat},
+      ${lng},
+      ${cleanRegionInfo},
+      ${cleanNearbyPlaces},
+      ${cleanValuation},
+      ${calculation_time_seconds}
+    )
+    ON CONFLICT (geohash) DO UPDATE SET
+      lat = EXCLUDED.lat,
+      lng = EXCLUDED.lng,
+      region_info = EXCLUDED.region_info,
+      nearby_places = EXCLUDED.nearby_places,
+      valuation = EXCLUDED.valuation,
+      calculation_time_seconds = EXCLUDED.calculation_time_seconds
+  `);
 }
 
-async function getValuation(lat: number, lng: number): Promise<Record<string, number>> {
-    return {}; // Placeholder for actual implementation
-}
 
 async function getNearbyPlaces(lat: number, lng: number): Promise<Record<string, Record<string, NearbyPlace[]>>> {
     const nearby_places: Record<string, Record<string, NearbyPlace[]>> = {};
@@ -68,11 +100,11 @@ async function getNearbyPlaces(lat: number, lng: number): Promise<Record<string,
 
 async function calculateGeohashStats(geohash: string): Promise<GeohashStats | undefined> {
     const start = Date.now();
-    const calculation_time_seconds = (Date.now() - start) / 1000;
     const {latitude: lat, longitude: lng} = decode(geohash);
     const region_info = await getRegionInfo(lat, lng);
     const nearby_places = await getNearbyPlaces(lat, lng);
-    const valuation = await getValuation(lat, lng);
+    const valuation = await getCadastralAndCommercialValuesByGeohash(geohash);
+    const calculation_time_seconds = (Date.now() - start) / 1000;
     const stats: GeohashStats = {geohash, lat, lng, region_info, nearby_places, valuation, calculation_time_seconds} as any;
     return stats;
 }
@@ -87,7 +119,11 @@ export async function getGeohashStats(lat: number, lng: number): Promise<Record<
     }
     console.error('No geohash stats found for coordinates:', lat, lng);
     const calculated = await calculateGeohashStats(geohash);
-    // await saveStats(stats);
+    if (!calculated) {
+        console.error('Failed to calculate geohash stats for:', geohash);
+        return undefined;
+    }
+    await saveStats(calculated);
     return calculated;
     
 }
