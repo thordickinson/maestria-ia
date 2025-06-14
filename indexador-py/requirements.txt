@@ -18,3 +18,4 @@ pandas
 jupyterlab
 # For visualization
 plotly
+fastapi
