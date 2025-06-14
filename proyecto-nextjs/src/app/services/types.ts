@@ -20,3 +20,9 @@ export interface RegionInfo {
         nombre: string;
     };
 }
+
+
+export interface PricePrediction {
+    min: number;
+    max: number;
+}

@@ -1,5 +1,6 @@
 import { Dictionary, groupBy } from 'lodash';
 import { doQuery, doQueryOne, sql } from './database.service';
+import  { getGeohashStats } from './geohash.service';
 
 interface RegionInfo {
     upz: string;
@@ -63,6 +64,11 @@ async function getRegionStats(regionInfo: RegionInfo): Promise<Record<string, Gr
     return groupedStats;
 }
 
+async function predictPrice(): Promise<number> {
+    // Placeholder for price prediction logic
+    return 100000000; // Example price in COP
+}
+
 
 export async function estimate(lat: number, lng: number) {
     const info = await getRegionInfo(lat, lng);
@@ -70,5 +76,7 @@ export async function estimate(lat: number, lng: number) {
         throw new Error('Region information could not be retrieved');
     }
     const regionStats = await getRegionStats(info);
-    console.log('Region Info (2):', regionStats);
+    const geohashInfo = await getGeohashStats(lat, lng);
+    console.log('Region Info (2):', [regionStats, geohashInfo]);
+    return {}
 }
