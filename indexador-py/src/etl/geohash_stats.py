@@ -189,9 +189,6 @@ def __process_geohash(geo_hash: str) -> GeohashStats:
                         calculation_time_seconds=calculation_time
                         )
 
-
-
-
 def process_geohashes(geohashes: list[str], level: int):
     __iterate_geohashes(geohashes, level, __get_geohash_stats)
     pass

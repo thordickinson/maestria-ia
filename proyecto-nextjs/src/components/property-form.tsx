@@ -51,7 +51,7 @@ export default function PropertyForm({ className }: { className?: string }) {
   };
 
   const locateButtonDisabled = !formData?.address || formData.address.length < 3;
-  const nextDisabled = !formData.age || !formData.area || !formData.bathrooms || !formData.bedrooms;
+  const nextDisabled = stepIndex > 0 && (!formData.age || !formData.area || !formData.bathrooms || !formData.bedrooms);
   const estimateDisabled = nextDisabled || !markerLocation
 
   const onMarkerLocationChanged = (location: LatLng) => {
@@ -69,15 +69,37 @@ export default function PropertyForm({ className }: { className?: string }) {
     }
   };
 
+  const title = stepIndex == 0? "Bienvenido" : "Detalles del Apartamento"
+  const subtitle = stepIndex == 0? "Estimación de precios de apartamentos en Bogotá" : "Ingresa los detalles del apartamento a estimar"
+
   return (
     <Card className={className}>
       <CardHeader>
-        <CardTitle className="text-2xl">Detalles del Apartamento</CardTitle>
-        <CardDescription>Ingresa los detalles del apartamento a estimar</CardDescription>
+        <CardTitle className="text-2xl">{title}</CardTitle>
+        <CardDescription>{subtitle}</CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit} className="flex flex-col h-full">
         <CardContent className="flex flex-col w-full flex-1">
-          <div className={`${stepIndex == 0 ? "visible" : "hidden"} w-full`}>
+          <div className={`${stepIndex == 0 ? "visible" : "hidden"} w-full flex flex-col h-full py-5 gap-3 text-sm`}>
+            <div>
+            Este es el sistema de estimación de precios de apartamentos en Bogotá, 
+            desarrollado como parte de un trabajo de grado de la 
+            <b> Maestría en Inteligencia Artificial</b> de la <b>Universidad Sergio Arboleda</b>.
+            </div>
+            <div>
+            En los siguientes pasos, se te solicitará ingresar información básica del apartamento 
+            (como el número de habitaciones, área y baños) y posteriormente seleccionar su ubicación en el mapa.
+            </div>
+            <div>
+            Con estos datos, el sistema calculará una estimación aproximada del valor del inmueble, 
+            basada en modelos desarrollados a partir de información del mercado inmobiliario local.
+            </div>
+            <div className="flex-1"></div>
+            <div className="text-xs text-right">
+            Este proceso toma solo unos segundos. Haz clic en Siguiente para comenzar.
+            </div>
+          </div>
+          <div className={`${stepIndex == 1 ? "visible" : "hidden"} w-full`}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField label="Área (m²)" editorId="area">
                 <Input id="area" name="area" type="number" placeholder="" value={formData.area} onChange={handleChange} required />
@@ -118,7 +140,7 @@ export default function PropertyForm({ className }: { className?: string }) {
               </FormField>
             </div>
           </div>
-          <div className={`${stepIndex == 1 ? "visible" : "hidden"} flex flex-col h-full`}>
+          <div className={`${stepIndex == 2 ? "visible" : "hidden"} flex flex-col h-full`}>
             <FormField label="Dirección" editorId="address">
               <div className="flex flex-row gap-2">
                 <Input
@@ -146,13 +168,13 @@ export default function PropertyForm({ className }: { className?: string }) {
         <CardFooter>
           <div className="w-full flex place-content-between gap-2">
             <div className={`self-end ${stepIndex == 0 ? "" : "hidden"}`}></div>
-            <Button type="button" className={`self-end ${stepIndex == 0 ? "" : "hidden"}`} disabled={nextDisabled} onClick={() => setStepIndex(stepIndex + 1)}>
-              Siguiente
-            </Button>
-            <Button type="button" variant="outline" className={stepIndex == 1 ? "" : "hidden"} onClick={() => setStepIndex(stepIndex - 1)}>
+            <Button type="button" variant="outline" className={stepIndex > 0 ? "" : "hidden"} onClick={() => setStepIndex(stepIndex - 1)}>
               Volver
             </Button>
-            <Button type="submit" className={stepIndex == 1 ? "" : "hidden"} disabled={estimateDisabled}>
+            <Button type="button" className={`self-end ${stepIndex != 2 ? "" : "hidden"}`} disabled={nextDisabled} onClick={() => setStepIndex(stepIndex + 1)}>
+              Siguiente
+            </Button>
+            <Button type="submit" className={stepIndex == 2 ? "" : "hidden"} disabled={estimateDisabled}>
               Obtener Estimación
             </Button>
           </div>

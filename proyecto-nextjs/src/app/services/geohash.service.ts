@@ -125,7 +125,4 @@ export async function getGeohashStats(lat: number, lng: number): Promise<Record<
     }
     await saveStats(calculated);
     return calculated;
-    
 }
-
-// d2g6dfu
