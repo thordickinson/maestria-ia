@@ -1,6 +1,10 @@
+import json
 from pydantic import BaseModel
 from src.etl.data_types import Place
 import geohash
+from typing import Any
+import math
+import numpy as np
 
 def parse_point(point: str) -> tuple[float, float]:
     # Parse this kind of text to lat, lng POINT(-74.0575685 4.6573304)
@@ -30,3 +34,16 @@ def serialize_pydantic(obj):
         return [serialize_pydantic(item) for item in obj]
     else:
         return obj
+
+
+
+def ensure_dict(val: Any) -> dict:
+    if isinstance(val, str):
+        return json.loads(val)
+    return val
+
+def drop_nans(target: dict) -> dict:
+    return {
+        k: v for k, v in target.items()
+        if v is not None and v != {} and not math.isnan(v) and not np.isnan(v)
+    }
