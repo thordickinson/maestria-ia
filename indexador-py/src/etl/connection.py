@@ -40,7 +40,7 @@ class DatabaseClient:
         async with pool.acquire() as conn:
             try:
                 rows = await conn.fetch(query)
-                return [dict(row) for row in rows]
+                return [{k: row[k] for k in row.keys()} for row in rows]
             except Exception as e:
                 logger.exception(f"Async SELECT failed: {query}")
                 raise e
