@@ -1,10 +1,10 @@
 import json
-from typing import Any, Awaitable
+from typing import Any
 import geohash
 import time
 import logging
 import itertools
-from src.etl.util import serialize_pydantic
+from src.etl.util import drop_nans, ensure_dict, serialize_pydantic
 from src.etl.data_types import Place
 from src.etl.open_data import get_region_info, get_transport_places, get_cadastral_and_commercial_values_by_geohash
 from src.etl.osm import get_osm_nearby_places
@@ -48,6 +48,7 @@ def __geohash_center(geo_hash: str) -> tuple[float, float]:
     [lat, lng] = geohash.decode(geo_hash)
     return lat, lng
 
+
 async def __iterate_geohashes(base_geohashes, target_level, process_callback):
     async def recurse(current_hash):
         if len(current_hash) == target_level:
@@ -64,11 +65,6 @@ async def __iterate_geohashes(base_geohashes, target_level, process_callback):
 @lru_cache(maxsize=1024)
 def _memory_cache(geo_hash: str) -> GeohashStats | None:
     return None
-
-def ensure_dict(val: Any) -> dict:
-    if isinstance(val, str):
-        return json.loads(val)
-    return val
 
 async def _fetch_from_db(geo_hash: str) -> GeohashStats | None:
     sql = f"SELECT * FROM geohash_stats WHERE geohash = '{geo_hash}'"
@@ -105,12 +101,6 @@ async def __initialize_schema():
         return
     await __create_table()
     __schema_initialized = True
-
-def drop_nans(target: dict) -> dict:
-    return {
-        k: v for k, v in target.items()
-        if v is not None and v != {} and not math.isnan(v) and not np.isnan(v)
-    }
 
 async def _save_to_db(geo_hash: str, stats: GeohashStats):
     insert_sql = """
