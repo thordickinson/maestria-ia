@@ -1,13 +1,14 @@
 import logging
 import geohash
-from src.etl.connection import execute_select_one, execute_select
-from src.etl.data_types import Place
-from itertools import chain
 import numpy as np
+from itertools import chain
+from src.etl.data_types import Place
+from src.etl.connection import DatabaseClient
 
 logger = logging.getLogger(__name__)
+db = DatabaseClient.instance()
 
-def __get_estaciones_transmilenio(lat: float, lng: float, radius: int) -> list[Place]:
+async def __get_estaciones_transmilenio(lat: float, lng: float, radius: int) -> list[Place]:
     sql = f"""SELECT numero_est as id, nombre_est as name, latitud_es as lat, longitud_e as lng
     FROM estaciones_transmilenio
     WHERE ST_DWithin(
@@ -15,10 +16,10 @@ def __get_estaciones_transmilenio(lat: float, lng: float, radius: int) -> list[P
         ST_Transform(ST_SetSRID(ST_MakePoint({lng}, {lat}), 4326), 3857),
         {radius}
     )"""
-    rows = execute_select("POSTGIS", sql)
+    rows = await db.execute_async_select("POSTGIS", sql)
     return [Place(id=r["id"], name=r["name"], type="estacion_transmilenio", lat=r["lat"], lng=r["lng"]) for r in rows]
 
-def __get_estaciones_sitp(lat: float, lng: float, radius: int) -> list[Place]:
+async def __get_estaciones_sitp(lat: float, lng: float, radius: int) -> list[Place]:
     sql = f"""SELECT cenefa as id, nombre_par as name, latitud as lat, longitud as lng
     FROM paraderos_sitp
     WHERE ST_DWithin(
@@ -26,17 +27,15 @@ def __get_estaciones_sitp(lat: float, lng: float, radius: int) -> list[Place]:
         ST_Transform(ST_SetSRID(ST_MakePoint({lng}, {lat}), 4326), 3857),
         {radius}
     )"""
-    rows = execute_select("POSTGIS", sql)
+    rows = await db.execute_async_select("POSTGIS", sql)
     return [Place(id=r["id"], name=r["name"], type="estacion_sitp", lat=r["lat"], lng=r["lng"]) for r in rows]
 
-
-def get_transport_places(lat: float, lng: float, radius: int) -> list[Place]:
-    transmilenio = __get_estaciones_transmilenio(lat, lng, radius)
-    sitp = __get_estaciones_sitp(lat, lng, radius)
+async def get_transport_places(lat: float, lng: float, radius: int) -> list[Place]:
+    transmilenio = await __get_estaciones_transmilenio(lat, lng, radius)
+    sitp = await __get_estaciones_sitp(lat, lng, radius)
     return list(chain(transmilenio, sitp))
 
-
-def __get_barrio_localidad(lat: float, lng: float) -> dict:
+async def __get_barrio_localidad(lat: float, lng: float) -> dict:
     sql = f"""SELECT cod_loc, localidad, barriocomu, estado, cod_polbar
         FROM barrios
         WHERE ST_Contains(
@@ -44,7 +43,7 @@ def __get_barrio_localidad(lat: float, lng: float) -> dict:
             ST_SetSRID(ST_Point({lng}, {lat}), 4326)
         )
         """
-    result = execute_select_one("POSTGIS", sql)
+    result = await db.execute_async_select_one("POSTGIS", sql)
     if result is None:
         return {}
     return {
@@ -58,21 +57,21 @@ def __get_barrio_localidad(lat: float, lng: float) -> dict:
         }
     }
 
-def __get_upz(lat: float, lng: float) -> dict:
+async def __get_upz(lat: float, lng: float) -> dict:
     sql = f"SELECT codigo_upz, nombre FROM upz_bogota WHERE ST_Contains(geom, ST_SetSRID(ST_Point({lng}, {lat}), 4326))"
-    result = execute_select_one("POSTGIS", sql)
+    result = await db.execute_async_select_one("POSTGIS", sql)
     if result is None:
         return {}
     return { "codigo": result["codigo_upz"], "nombre": result["nombre"] }
 
-def get_region_info(lat: float, lng: float) -> dict:
+async def get_region_info(lat: float, lng: float) -> dict:
     logger.debug(f"Getting region info for ({lat}, {lng})")
-    barrio_localidad = __get_barrio_localidad(lat, lng)
-    upz = __get_upz(lat, lng)
+    barrio_localidad = await __get_barrio_localidad(lat, lng)
+    upz = await __get_upz(lat, lng)
     barrio_localidad["upz"] = upz
     return barrio_localidad
 
-def get_cadastral_and_commercial_values_by_geohash(geo_hash: str) -> dict:
+async def get_cadastral_and_commercial_values_by_geohash(geo_hash: str) -> dict:
     bbox = geohash.bbox(geo_hash)
     lat_min = bbox['s']
     lat_max = bbox['n']
@@ -82,10 +81,9 @@ def get_cadastral_and_commercial_values_by_geohash(geo_hash: str) -> dict:
     sql = f"""SELECT AVG(avaluo_com) as comercial, AVG(avaluo_cat) as catastral FROM avaluo_catastral_manzana
             WHERE ST_Intersects(geom, ST_SetSRID(ST_GeomFromText('{polygon_wkt}'), 4326))
         """
-    result = execute_select_one("POSTGIS", sql)
+    result = await db.execute_async_select_one("POSTGIS", sql)
     if result is None:
         raise Exception("Unable to get an estimated value?")
     cadastral = result["catastral"] if result["catastral"] is not None else np.nan
-    comercial = result["catastral"] if result["catastral"] is not None else np.nan
+    comercial = result["comercial"] if result["comercial"] is not None else np.nan
     return { "catastral": cadastral, "comercial": comercial }
-

@@ -1,7 +1,7 @@
 import polars as pl
 from src.etl.util import bounding_box
 from src.etl.property_loader import load_mongo_json_to_polars
-from src.etl.geohash_stats import GeohashStats, get_stats, OSM_PLACE_TYPES, PLACE_SEARCH_RADIUS_METERS
+from src.etl.geohash_stats import GeohashStats, get_point_stats, OSM_PLACE_TYPES, PLACE_SEARCH_RADIUS_METERS
 from datetime import datetime
 
 column_types = {
@@ -91,7 +91,7 @@ def enrich_properties(geohash_filter: str | None = None) -> None:
     for property in properties.iter_rows():
         lat = property[lat_idx]
         lng = property[lng_idx]
-        stats = get_stats(lat, lng)
+        stats = get_point_stats(lat, lng)
         additional_cols = __extract_additional_columns(stats)
         additional_data.append(additional_cols)
     additional_df = pl.DataFrame(additional_data, schema=additional_headers)

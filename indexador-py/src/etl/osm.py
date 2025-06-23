@@ -1,6 +1,5 @@
 from src.etl.data_types import Place
-
-from src.etl.connection import execute_select
+from src.etl.connection import DatabaseClient
 from src.etl.util import parse_point
 
 __place_type_names = {
@@ -10,7 +9,7 @@ __place_type_names = {
     "healthcare": [
         "hospital", "clinic", "doctors", "dentist", "pharmacy", "chemist", "veterinary", "nursing_home"
     ],
-    "retail_access": [  # incluye esenciales y no esenciales
+    "retail_access": [
         "supermarket", "convenience", "bakery", "butcher", "greengrocer", "department_store",
         "clothes", "shoe_shop", "beauty_shop", "florist", "hairdresser", "bookshop", "optician",
         "general", "kiosk", "newsagent", "pharmacy", "mall", "market_place",
@@ -34,7 +33,7 @@ __place_type_names = {
         "bicycle_rental", "travel_agent", "tourist_info", "laundry", "toilet", 
         "telephone", "drinking_water", "fountain", "bench"
     ],
-    "cultural_amenities": [  # opcional, según contexto
+    "cultural_amenities": [
         "museum", "arts_centre", "zoo", "attraction", "theme_park", "castle", "fort", 
         "archaeological", "memorial", "monument", "viewpoint"
     ],
@@ -47,48 +46,54 @@ __place_type_names = {
     ]
 }
 
+db = DatabaseClient.instance()
 
 def __reverse_place_type(place_type: str) -> str:
-    global __place_type_names
     place_type = place_type.lower()
-    for key in __place_type_names:
-        if place_type in __place_type_names[key]:
+    for key, values in __place_type_names.items():
+        if place_type in values:
             return key
     raise Exception(f"Place type not found {place_type}")
 
 def __build_query(lat: float, lng: float, radius: int, place_types: list[str]) -> str:
-    global __place_type_names
-    place_types_list = [__place_type_names[place_type] for place_type in place_types]
+    place_types_list = [__place_type_names[pt] for pt in place_types]
     names = [item for sublist in place_types_list for item in sublist]
-    names_str = ", ".join(list(map(lambda n: f"'{n}'", names)))
-    query = f"""
+    names_str = ", ".join([f"'{n}'" for n in names])
+    return f"""
     SELECT *
     FROM (
-    SELECT osm_id as id, name, fclass as place_type, ST_AsText(ST_Transform(geom, 4326)) AS location
-    FROM gis_osm_pois_free_1
-    WHERE fclass IN ({names_str})
-      AND ST_DWithin(
-          geography(geom),
-          geography(ST_SetSRID(ST_Point({lng}, {lat}), 4326)),
-          {radius}
-      )
-    UNION ALL
-    SELECT osm_id as id, name, fclass as place_type, ST_AsText(ST_Transform(ST_Centroid(geom), 4326)) AS location
-    FROM gis_osm_pois_a_free_1
-    WHERE fclass IN ({names_str})
-      AND ST_DWithin(
-          geography(ST_Centroid(geom)),
-          geography(ST_SetSRID(ST_Point({lng}, {lat}), 4326)),
-          {radius}
-      )) AS combined WHERE name IS NOT NULL;"""
-    return query
+        SELECT osm_id as id, name, fclass as place_type, ST_AsText(ST_Transform(geom, 4326)) AS location
+        FROM gis_osm_pois_free_1
+        WHERE fclass IN ({names_str})
+        AND ST_DWithin(
+            geography(geom),
+            geography(ST_SetSRID(ST_Point({lng}, {lat}), 4326)),
+            {radius}
+        )
+        UNION ALL
+        SELECT osm_id as id, name, fclass as place_type, ST_AsText(ST_Transform(ST_Centroid(geom), 4326)) AS location
+        FROM gis_osm_pois_a_free_1
+        WHERE fclass IN ({names_str})
+        AND ST_DWithin(
+            geography(ST_Centroid(geom)),
+            geography(ST_SetSRID(ST_Point({lng}, {lat}), 4326)),
+            {radius}
+        )
+    ) AS combined WHERE name IS NOT NULL;
+    """
 
-
-def get_osm_nearby_places(lat: float, lng: float, radius_meters: int, place_types: list[str]) -> list[Place]:
+async def get_osm_nearby_places(lat: float, lng: float, radius_meters: int, place_types: list[str]) -> list[Place]:
     sql = __build_query(lat, lng, radius_meters, place_types)
-    result = execute_select("POSTGIS", sql)
-    def parse_result(row: dict):
+    result = await db.execute_async_select("POSTGIS", sql)
+
+    def parse_result(row: dict) -> Place:
         lat, lng = parse_point(row['location'])
-        return Place(id=str(row["id"]), name=row['name'], 
-                     lat=lat, lng=lng, type=__reverse_place_type(row['place_type']))
+        return Place(
+            id=str(row["id"]),
+            name=row['name'],
+            lat=lat,
+            lng=lng,
+            type=__reverse_place_type(row['place_type'])
+        )
+
     return [parse_result(row) for row in result]

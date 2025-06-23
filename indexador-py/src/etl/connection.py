@@ -1,85 +1,71 @@
 import os
+import logging
 from typing import Optional, Any
-from psycopg2 import pool
+import asyncpg
 
-def __get_config(prefix: str) -> dict:
-    config = {
-        "host": os.getenv(f"{prefix}_DB_HOST"),
-        "port": os.getenv(f"{prefix}_DB_PORT"),
-        "user": os.getenv(f"{prefix}_DB_USER"),
-        "password": os.getenv(f"{prefix}_DB_PASSWORD"),
-        "dbname": os.getenv(f"{prefix}_DB_NAME"),
-    }
-    return config
+logger = logging.getLogger(__name__)
 
-__pool_cache: dict[str, pool.SimpleConnectionPool] = {}
+class DatabaseClient:
+    _instance: Optional["DatabaseClient"] = None
 
-def get_pool(name: str) -> pool.SimpleConnectionPool:
-    global __pool_cache
-    name = name.upper()
-    if name not in __pool_cache:
-        config = __get_config(name)
-        minconn = int(os.getenv(f"{name}_DB_POOL_MIN", 1))
-        maxconn = int(os.getenv(f"{name}_DB_POOL_MAX", 5))
-        __pool_cache[name] = pool.SimpleConnectionPool(minconn, maxconn, **config)
-    return __pool_cache[name]
+    def __init__(self):
+        self._async_pools: dict[str, asyncpg.Pool] = {}
 
-def execute_select_one(connection_name: str, query: str) -> Optional[dict[str, Any]]:
-    result = execute_select(connection_name, query)
-    return None if len(result) == 0 else result[0]
+    @classmethod
+    def instance(cls) -> "DatabaseClient":
+        if cls._instance is None:
+            cls._instance = cls()
+        return cls._instance
 
-def execute_select(connection_name: str, query: str) -> list[dict[str, Any]]:
-    """
-    Executes a SELECT query and returns a list of model_cls instances.
-    model_cls should be a subclass of pydantic.BaseModel.
-    """
-    conn_pool = get_pool(connection_name)
-    conn = None
-    try:
-        conn = conn_pool.getconn()
-        with conn.cursor() as cur:
-            cur.execute(query)
-            if not cur.description:
-                return []
-            columns = [desc[0] for desc in cur.description]
-            rows = cur.fetchall()
-            return [dict(zip(columns, row)) for row in rows]
-    except Exception as e:
-        raise e
-    finally:
-        if conn:
-            conn_pool.putconn(conn)
+    def _get_config(self, name: str) -> dict:
+        prefix = name.upper()
+        return {
+            "host": os.getenv(f"{prefix}_DB_HOST"),
+            "port": os.getenv(f"{prefix}_DB_PORT"),
+            "user": os.getenv(f"{prefix}_DB_USER"),
+            "password": os.getenv(f"{prefix}_DB_PASSWORD"),
+            "database": os.getenv(f"{prefix}_DB_NAME"),
+        }
 
-def execute_select_model(connection_name: str, query: str, model_cls):
-    rows = execute_select(connection_name, query)
-    return [model_cls(**row) for row in rows]
+    async def _get_async_pool(self, name: str) -> asyncpg.Pool:
+        if name not in self._async_pools:
+            config = self._get_config(name)
+            min_size = int(os.getenv(f"{name}_DB_POOL_MIN", 1))
+            max_size = int(os.getenv(f"{name}_DB_POOL_MAX", 5))
+            self._async_pools[name] = await asyncpg.create_pool(min_size=min_size, max_size=max_size, **config)
+        return self._async_pools[name]
 
+    async def execute_async_select(self, name: str, query: str) -> list[dict[str, Any]]:
+        pool = await self._get_async_pool(name)
+        async with pool.acquire() as conn:
+            try:
+                rows = await conn.fetch(query)
+                return [dict(row) for row in rows]
+            except Exception as e:
+                logger.exception(f"Async SELECT failed: {query}")
+                raise e
 
-def execute_update(connection_name: str, query: str, values=None):
-    execute_insert(connection_name, query, values)
+    async def execute_async_select_one(self, name: str, query: str) -> Optional[dict[str, Any]]:
+        rows = await self.execute_async_select(name, query)
+        return rows[0] if rows else None
 
-def execute_insert(connection_name: str, query: str, values=None):
-    """
-    Executes an INSERT (or other data-modifying) query and commits the transaction.
-    Optionally accepts values for parameterized queries.
-    Returns the number of affected rows.
-    """
-    conn_pool = get_pool(connection_name)
-    conn = None
-    try:
-        conn = conn_pool.getconn()
-        with conn.cursor() as cur:
-            if values:
-                cur.execute(query, values)
-            else:
-                cur.execute(query)
-            affected = cur.rowcount
-            conn.commit()
-            return affected
-    except Exception as e:
-        if conn:
-            conn.rollback()
-        raise e
-    finally:
-        if conn:
-            conn_pool.putconn(conn)
+    async def execute_async_insert(self, name: str, query: str, values=None) -> str:
+        pool = await self._get_async_pool(name)
+        async with pool.acquire() as conn:
+            try:
+                if values:
+                    result = await conn.execute(query, *values)
+                else:
+                    result = await conn.execute(query)
+                return result
+            except Exception as e:
+                logger.exception(f"Async INSERT failed: {query}")
+                raise e
+
+    async def execute_async_update(self, name: str, query: str, values=None) -> str:
+        return await self.execute_async_insert(name, query, values)
+
+    async def close_all_pools(self):
+        for name, pool in self._async_pools.items():
+            await pool.close()
+        self._async_pools.clear()

@@ -1,7 +1,7 @@
 import Map from "../components/map";
 import { useEffect, useState } from "react";
-import { EstimationResult } from "../lib/types";
-import { useSearchParams } from "react-router-dom";
+import type { EstimationResult } from "../lib/types";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button, Card } from "antd";
 import ButtonPanel from "../components/button-panel";
 
@@ -20,7 +20,8 @@ function PriceCard({label, price, size = "normal"}: {label: string, price: numbe
 }
 
 export default function EstimationPage() {
-  const searchParams = useSearchParams();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [estimationResult, setEstimationResult] = useState<EstimationResult | null>(null);
 
   useEffect(() => {
@@ -54,7 +55,7 @@ export default function EstimationPage() {
               </div>
             </Card>
             <ButtonPanel>
-              <Button>Volver</Button>
+              <Button onClick={() => navigate("/")}>Volver</Button>
             </ButtonPanel>
           </div>
         </div>
