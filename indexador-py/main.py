@@ -80,7 +80,7 @@ def test_enrich_properties():
     enrich_properties()
 
 
-test_enrich_properties()
+# test_enrich_properties()
 
 # test_property_loader()
 # get_cadastral_and_commercial_values_by_geohash("d2g6dud")

@@ -1,5 +1,6 @@
 sqlalchemy
 psycopg2-binary
+asyncpg
 
 python-geohash
 polars
@@ -18,4 +19,6 @@ pandas
 jupyterlab
 # For visualization
 plotly
+
 fastapi
+uvicorn
