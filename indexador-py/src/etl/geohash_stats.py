@@ -1,15 +1,16 @@
-from typing import Awaitable
+import json
+from typing import Any, Awaitable
 import geohash
 import time
 import logging
 import itertools
+from src.etl.util import serialize_pydantic
 from src.etl.data_types import Place
 from src.etl.open_data import get_region_info, get_transport_places, get_cadastral_and_commercial_values_by_geohash
 from src.etl.osm import get_osm_nearby_places
 from src.etl.connection import DatabaseClient
 from pydantic import BaseModel
 from functools import lru_cache
-from json import dumps, loads
 import math
 import numpy as np
 
@@ -34,7 +35,7 @@ class GeohashStats(BaseModel):
     geohash: str
     center: Point
     region_info: dict
-    nearby_places: dict[str, dict[str, list[Place]]]
+    nearby_places: dict
     valuation: dict[str, float]
     calculation_time_seconds: float
 
@@ -64,6 +65,11 @@ async def __iterate_geohashes(base_geohashes, target_level, process_callback):
 def _memory_cache(geo_hash: str) -> GeohashStats | None:
     return None
 
+def ensure_dict(val: Any) -> dict:
+    if isinstance(val, str):
+        return json.loads(val)
+    return val
+
 async def _fetch_from_db(geo_hash: str) -> GeohashStats | None:
     sql = f"SELECT * FROM geohash_stats WHERE geohash = '{geo_hash}'"
     result = await db.execute_async_select_one("POSTGIS", sql)
@@ -73,9 +79,9 @@ async def _fetch_from_db(geo_hash: str) -> GeohashStats | None:
     return GeohashStats(
         geohash=result["geohash"],
         center=center,
-        region_info=loads(result["region_info"]),
-        nearby_places=loads(result["nearby_places"]),
-        valuation=loads(result["valuation"]),
+        region_info=ensure_dict(result["region_info"]),
+        nearby_places=ensure_dict(result["nearby_places"]),
+        valuation=ensure_dict(result["valuation"]),
         calculation_time_seconds=result["calculation_time_seconds"]
     )
 
@@ -110,7 +116,7 @@ async def _save_to_db(geo_hash: str, stats: GeohashStats):
     insert_sql = """
     INSERT INTO geohash_stats (
         geohash, lat, lng, region_info, nearby_places, valuation, calculation_time_seconds
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+    ) VALUES ($1, $2, $3, $4::jsonb, $5::jsonb, $6::jsonb, $7)
     ON CONFLICT (geohash) DO UPDATE SET
         lat = EXCLUDED.lat,
         lng = EXCLUDED.lng,
@@ -123,9 +129,9 @@ async def _save_to_db(geo_hash: str, stats: GeohashStats):
         geo_hash,
         stats.center.lat,
         stats.center.lng,
-        dumps(stats.region_info, default=pydantic_encoder, allow_nan=True),
-        dumps(stats.nearby_places, default=pydantic_encoder, allow_nan=True),
-        dumps(drop_nans(stats.valuation), default=pydantic_encoder, allow_nan=True),
+        json.dumps(serialize_pydantic(stats.region_info), ensure_ascii=False),
+        json.dumps(serialize_pydantic(stats.nearby_places), ensure_ascii=False),
+        json.dumps(serialize_pydantic(drop_nans(stats.valuation)), ensure_ascii=False),
         stats.calculation_time_seconds
     ))
 

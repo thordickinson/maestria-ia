@@ -1,3 +1,4 @@
+from pydantic import BaseModel
 from src.etl.data_types import Place
 import geohash
 
@@ -19,3 +20,13 @@ def bounding_box(geo_hash: str) -> tuple[float, float, float, float]:
     lon_max = bbox['e']
     return lat_min, lat_max, lon_min, lon_max
 
+
+def serialize_pydantic(obj):
+    if isinstance(obj, BaseModel):
+        return obj.model_dump()
+    elif isinstance(obj, dict):
+        return {k: serialize_pydantic(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [serialize_pydantic(item) for item in obj]
+    else:
+        return obj

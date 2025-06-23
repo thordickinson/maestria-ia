@@ -1,6 +1,5 @@
 from fastapi import FastAPI, Query
-from typing import Annotated, Literal
-from fastapi.responses import JSONResponse
+from typing import Annotated
 import uvicorn
 from pydantic import BaseModel
 
