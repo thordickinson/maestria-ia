@@ -65,7 +65,7 @@ def __additional_columns_headers() -> list[str]:
 
 
 
-def enrich_properties(geohash_filter: str | None = None) -> None:
+async def enrich_properties(geohash_filter: str | None = None) -> None:
     global column_types
     properties = load_mongo_json_to_polars(
         file_path="data/processed_v2.0.0_august_2_2024.json",
@@ -91,7 +91,7 @@ def enrich_properties(geohash_filter: str | None = None) -> None:
     for property in properties.iter_rows():
         lat = property[lat_idx]
         lng = property[lng_idx]
-        stats = get_point_stats(lat, lng)
+        stats = await get_point_stats(lat, lng)
         additional_cols = __extract_additional_columns(stats)
         additional_data.append(additional_cols)
     additional_df = pl.DataFrame(additional_data, schema=additional_headers)

@@ -10,7 +10,7 @@ import numpy as np
 import math
 from pathlib import Path
 import logging
-
+import asyncio
 
 
 Path("data/logs").mkdir(parents=True, exist_ok=True)
@@ -31,10 +31,10 @@ def __test_nearby_places():
     print(places)
 
 
-def test_geohash_processing():
+async def test_geohash_processing():
     # Use Geohash Explorer https://geohash.softeng.co/
     from src.etl.geohash_stats import process_geohashes
-    process_geohashes(["d2g6dud"], 7)
+    await process_geohashes(["d2g6dud"], 7)
 
 
 def test_property_loader():
@@ -74,13 +74,13 @@ def test_property_loader():
     print(df.head())
 
 
-def test_enrich_properties():
+async def test_enrich_properties():
     # Test the function with a specific geohash
     geohash_filter = "d2g6d"
-    enrich_properties()
+    await enrich_properties()
 
 
-# test_enrich_properties()
+# asyncio.run(test_enrich_properties())
 
 # test_property_loader()
 # get_cadastral_and_commercial_values_by_geohash("d2g6dud")
