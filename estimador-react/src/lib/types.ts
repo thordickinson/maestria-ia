@@ -19,7 +19,7 @@ export type Stat = {
 }
 
 export type EstimationResult = {
-    // geohash: string
+    geohash: string
     estimation: {
         minValue: number
         average: number
@@ -27,7 +27,6 @@ export type EstimationResult = {
     },
     location: LatLng
     mapLayers: Record<string, MapLayer>
-    charts: any //TODO: 
 }
 
 export const DEFAULT_POSITION: LatLng = { lat: -74.43, lng: 4.19}
