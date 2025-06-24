@@ -21,6 +21,7 @@ app = FastAPI()
 
 @app.get("/api/estimate")
 async def estimate(params: Annotated[EstimationRequest, Query()]):
+    print(f"Received estimation request: {params.model_dump()}")
     stats = await get_point_stats(params.lat, params.lng)
     result = stats.model_dump()
     result["estimation"] = {
