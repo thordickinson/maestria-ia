@@ -2,19 +2,7 @@ import { useSearchParams } from "react-router";
 import type { EstimationResult, MapLayer } from "../lib/types";
 import { useCallback, useEffect, useState } from "react";
 import { groupBy } from "lodash";
-
-const LAYER_LABELS: Record<string, string> = {
-  education: "Educación",
-  healthcare: "Salud",
-  retail_access: "Acceso a comercio",
-  dining_and_entertainment: "Restaurantes y entretenimiento",
-  accommodation: "Alojamiento",
-  parks_and_recreation: "Parques y recreación",
-  infrastructure_services: "Servicios de infraestructura",
-  cultural_amenities: "Servicios culturales",
-  estacion_transmilenio: "Estaciones TransMilenio",
-  estacion_sitp: "Estaciones SITP",
-};
+import { getSiteTypeLabel } from "../lib/utils";
 
 type LabeledValue = {
   nombre: string;
@@ -93,7 +81,7 @@ export default function useEstimation() {
 function buildEstimation(response: EstimationResponse | null): EstimationResult | null {
   if (!response) return null;
 
-  const { geohash, center, valuation, estimation, nearby_places } = response;
+  const { geohash, center, valuation, estimation, nearby_places, region_info } = response;
   const location = { lat: center.lat, lng: center.lng };
 
   const mapLayers: Record<string, MapLayer> = {};
@@ -109,13 +97,14 @@ function buildEstimation(response: EstimationResponse | null): EstimationResult 
       return acc;
     }, {} as Record<string, { label: string; location: { lat: number; lng: number }; icon: string }>);
     mapLayers[type] = {
-      label: LAYER_LABELS[type] || type,
+      label: getSiteTypeLabel(type),
       markers,
     };
   }
 
   
   return {
+    regionInfo: region_info,
     geohash,
     estimation,
     location,

@@ -4,33 +4,22 @@ type WithClassName = {
     className?: string
 }
 
-export default function Card({children, className}: PropsWithChildren<WithClassName>){
-    return <div className={`flex flex-col bg-white rounded-lg shadow-lg ${className}`}>
-        {children}
-    </div>
-}
+type CardProps = {
+    title: string;
+    subtitle?: string;
+    footer?: React.ReactNode;
+} & WithClassName;
 
-export function CardHeader({children, className}: PropsWithChildren<WithClassName>){
-    return <div className={`px-5 py-7 border-b-1 ${className}`}>
+export default function Card({children, className, title, subtitle, footer}: PropsWithChildren<CardProps>){
+    return <div className={`flex flex-col bg-white py-6 rounded-lg shadow-lg ${className}`}>
+        <div className="flex flex-col px-5 pb-5 border-b-1">
+            <div className="text-md font-bold">{title}</div>
+            {subtitle && <div className="text-sm text-gray-500">{subtitle}</div>}
+        </div>
+        <div className="flex-1 px-5 pt-6">
         {children}
-    </div>
-}
-
-export function CardTitle({children, className}: PropsWithChildren<WithClassName>){
-    return <div className={`text-xl font-bold ${className}`}>
-        {children}
-    </div>
-}
-
-export function CardDescription({children, className}: PropsWithChildren<WithClassName>){
-    return <div className={`text-sm ${className}`}>
-        {children}
-    </div>
-}
-
-export function CardContent({children, className}: PropsWithChildren<WithClassName>){
-    return <div className={`px-6 flex-1 ${className}`}>
-        {children}
+        </div>
+        {footer && <div className="px-5 py-6 border-t-1"> {footer} </div>}
     </div>
 }
 

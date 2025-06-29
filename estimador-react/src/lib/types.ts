@@ -25,6 +25,7 @@ export type EstimationResult = {
         average: number
         maxValue: number
     },
+    regionInfo: Record<string, { nombre: string; codigo: string }>
     location: LatLng
     mapLayers: Record<string, MapLayer>
 }

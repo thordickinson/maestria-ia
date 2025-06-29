@@ -4,6 +4,8 @@ import { Button, Card } from "antd";
 import ButtonPanel from "../components/button-panel";
 import useEstimation from "../hooks/useEstimation";
 import {  useEffect } from "react";
+import RegionInfoCard from "../components/region-info.card";
+import SitesTable from "../components/sites-table";
 
 
 const usdFormat = new Intl.NumberFormat('es-CO', {
@@ -21,7 +23,7 @@ function PriceCard({label, price, size = "normal"}: {label: string, price: numbe
 
 export default function EstimationPage() {
   const navigate = useNavigate();
-  const {estimation, loading, error, estimate } = useEstimation();
+  const {estimation, loading, error, estimate, response } = useEstimation();
 
   useEffect(() => {
     console.log(estimation);
@@ -57,6 +59,8 @@ export default function EstimationPage() {
                 <PriceCard label="Máximo" price={estimation.estimation.maxValue}></PriceCard>
               </div>
             </Card>
+            <RegionInfoCard regionInfo={estimation.regionInfo} />
+            {response && <SitesTable response={response} />}
             <ButtonPanel>
               <Button onClick={() => navigate("/")}>Volver</Button>
             </ButtonPanel>
