@@ -5,7 +5,7 @@ import type { LatLng } from "../lib/types";
 import FormField from "./form-field";
 import { useNavigate } from "react-router-dom";
 import { Button, Input, Select } from "antd";
-import Card, { CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./card";
+import Card, { CardFooter } from "./card";
 
 function createNumberOptions(count: number){
   return Array.from({ length: count }, (_, i) => ({ value: i, label: `${i}` }));
@@ -72,13 +72,9 @@ export default function PropertyForm({ className }: { className?: string }) {
   const subtitle = stepIndex == 0? "Estimación de precios de apartamentos en Bogotá" : "Ingresa los detalles del apartamento a estimar"
 
   return (
-    <Card className={className}>
-      <CardHeader>
-        <CardTitle className="text-2xl">{title}</CardTitle>
-        <CardDescription>{subtitle}</CardDescription>
-      </CardHeader>
+    <Card className={className} title={title} subtitle={subtitle}>
       <form onSubmit={handleSubmit} className="flex flex-col h-full">
-        <CardContent className="flex flex-col w-full flex-1">
+        <div className="flex flex-col w-full flex-1">
           <div className={`${stepIndex == 0 ? "visible" : "hidden"} w-full flex flex-col h-full py-5 gap-3 text-sm`}>
             <div>
             Este es el sistema de estimación de precios de apartamentos en Bogotá, 
@@ -141,8 +137,8 @@ export default function PropertyForm({ className }: { className?: string }) {
             />
             </FormField>
           </div>
-        </CardContent>
-        <CardFooter>
+        </div>
+        <div>
           <div className="w-full flex place-content-between gap-2">
             <div className={`self-end ${stepIndex == 0 ? "" : "hidden"}`}></div>
             <Button htmlType="button" variant="outlined" className={stepIndex > 0 ? "" : "hidden"} onClick={() => setStepIndex(stepIndex - 1)}>
@@ -155,7 +151,7 @@ export default function PropertyForm({ className }: { className?: string }) {
               Obtener Estimación
             </Button>
           </div>
-        </CardFooter>
+        </div>
       </form>
     </Card>
   );
