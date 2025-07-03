@@ -11,8 +11,6 @@ from src.etl.osm import get_osm_nearby_places
 from src.etl.connection import DatabaseClient
 from pydantic import BaseModel
 from functools import lru_cache
-import math
-import numpy as np
 
 logger = logging.getLogger(__name__)
 db = DatabaseClient.instance()
@@ -129,6 +127,47 @@ async def get_point_stats(lat: float, lng: float) -> GeohashStats:
     geo_hash = geohash.encode(lat, lng, precision=7)
     result = await __get_geohash_stats(geo_hash)
     return  result
+
+async def get_region_stats(lat: float, lng: float):
+    sql = f"""
+        WITH punto AS (
+            SELECT ST_SetSRID(ST_MakePoint({lng}, {lat}), 4326) AS geom
+            ), regiones AS (
+            SELECT * FROM (
+                SELECT 'barrio' AS tipo_region, b.gid::text AS codigo
+                FROM barrios b, punto p
+                WHERE ST_Contains(b.geom, p.geom)
+                LIMIT 1
+            ) AS barrio
+
+            UNION ALL
+
+            SELECT * FROM (
+                SELECT 'upz' AS tipo_region, u.gid::text AS codigo
+                FROM upz_bogota u, punto p
+                WHERE ST_Contains(u.geom, p.geom)
+                LIMIT 1
+            ) AS upz
+
+            UNION ALL
+
+            SELECT * FROM (
+                SELECT 'localidad' AS tipo_region, b.localidad AS codigo
+                FROM barrios b, punto p
+                WHERE ST_Contains(b.geom, p.geom)
+                LIMIT 1
+            ) AS localidad
+            )
+            SELECT r.tipo_region, r.codigo, r.nombre, r.estadisticas_propiedades
+            FROM region_stats r
+            JOIN regiones reg
+            ON r.tipo_region = reg.tipo_region AND r.codigo = reg.codigo
+    """
+    result = await db.execute_async_select(name="POSTGIS", query=sql)
+    for row in result:
+        row["estadisticas_propiedades"] = ensure_dict(row["estadisticas_propiedades"])
+    return result
+
 
 async def __get_geohash_stats(geo_hash: str) -> GeohashStats:
     await __initialize_schema()
