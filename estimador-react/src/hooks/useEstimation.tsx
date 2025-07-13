@@ -1,38 +1,10 @@
-import { useSearchParams } from "react-router";
-import type { EstimationResult, MapLayer } from "../lib/types";
+import { useSearchParams } from "react-router-dom";
+import type { EstimationResponse, EstimationResult, MapLayer } from "../lib/types";
 import { useCallback, useEffect, useState } from "react";
 import { groupBy } from "lodash";
 import { getSiteTypeLabel } from "../lib/utils";
 
-type LabeledValue = {
-  nombre: string;
-  codigo: string;
-};
 
-type Place = {
-  id: string;
-  name: string;
-  lat: number;
-  lng: number;
-  type: string;
-};
-
-export type EstimationResponse = {
-  geohash: string;
-  center: {
-    lat: number;
-    lng: number;
-  };
-  region_info: Record<string, LabeledValue>;
-  nearby_places: Record<string, Record<string, Place[]>>;
-  valuation: Record<string, number>;
-  calculation_time_seconds: number;
-  estimation: {
-    minValue: number;
-    average: number;
-    maxValue: number;
-  };
-};
 
 const requiredParams = ["bedrooms", "age", "bathrooms", "area", "lat", "lng"];
 
@@ -109,5 +81,6 @@ function buildEstimation(response: EstimationResponse | null): EstimationResult 
     estimation,
     location,
     mapLayers,
+    response
   };
 }

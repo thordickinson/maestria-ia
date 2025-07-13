@@ -31,6 +31,7 @@ async def estimate(params: Annotated[EstimationRequest, Query()]):
         "maxValue": 310_000_000
     }
     result["region_stats"] = region_stats
+    result["property_data"] = params.model_dump()
     return result
 
 if __name__ == "__main__":

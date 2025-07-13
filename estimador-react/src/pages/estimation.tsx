@@ -6,6 +6,7 @@ import useEstimation from "../hooks/useEstimation";
 import {  useEffect } from "react";
 import RegionInfoCard from "../components/region-info.card";
 import SitesTable from "../components/sites-table";
+import EstadisticasPropiedad from "../components/statistics";
 
 
 const usdFormat = new Intl.NumberFormat('es-CO', {
@@ -61,6 +62,7 @@ export default function EstimationPage() {
             </Card>
             <RegionInfoCard regionInfo={estimation.regionInfo} />
             {response && <SitesTable response={response} />}
+            <EstadisticasPropiedad result={estimation}/>
             <ButtonPanel>
               <Button onClick={() => navigate("/")}>Volver</Button>
             </ButtonPanel>
