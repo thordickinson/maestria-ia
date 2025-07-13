@@ -46,7 +46,7 @@ export default function EstimationPage() {
     <div className="flex flex-1 flex-col">
       <div className="@container/main flex flex-1 flex-col gap-2">
         <div className="flex flex-col">
-          <Map zoom={18} position={estimation.location} className="h-[500px] w-full" layers={estimation.mapLayers} />
+          <Map zoom={18} position={estimation.location} width="100%" height="400px" className="h-[500px] w-full" layers={estimation.mapLayers} />
           {/*<div className="px-6 text-sm">
               El mapa muestra los sitios cercanos al apartamento, usa el menú de capas para mostrar u ocultar los sitios de interés
               cercanos.

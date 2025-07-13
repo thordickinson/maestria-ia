@@ -18,17 +18,25 @@ interface MapProps {
   layers?: Record<string, MapLayer>;
   positionDraggable?: boolean
   className?: string
+  hidden?: boolean
+  width: string
+  height: string
 }
 
-export default function Map({ position, center, zoom, layers = {}, onMarkerLocationChanged, positionDraggable = false, className }: MapProps) {
+export default function Map({ position, center, zoom, layers = {}, onMarkerLocationChanged, positionDraggable = false, className, width, height, hidden }: MapProps) {
   const markerRef = useRef<any>(null);
   const mapRef = useRef<any>(null)
 
   useEffect(() => {
-    if(center || !position || !mapRef.current) return;
+    if(!position || !mapRef.current) return;
     mapRef.current.flyTo([position.lat, position.lng])
   }, [position])
 
+  useEffect(() => {
+    if(hidden || !mapRef.current) return;
+    setTimeout(() => mapRef.current.invalidateSize(true) ,100)
+  }, [hidden, markerRef])
+  
   const eventHandlers = useMemo(
     () => ({
       dragend() {
@@ -44,7 +52,8 @@ export default function Map({ position, center, zoom, layers = {}, onMarkerLocat
   const resolvedCenter = center?? position ?? DEFAULT_CENTER
 
   return (
-      <MapContainer ref={mapRef} center={resolvedCenter} zoom={zoom} className={className} scrollWheelZoom={false} attributionControl={false}>
+      <MapContainer ref={mapRef} center={resolvedCenter} zoom={zoom} className={className} scrollWheelZoom={false} attributionControl={false} 
+      style={{height, width}}>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -52,7 +61,7 @@ export default function Map({ position, center, zoom, layers = {}, onMarkerLocat
         {Object.entries(layers).length > 0 &&
         <LayersControl position="bottomright">
           {Object.entries(layers).map(([layerKey, layer]) => (
-            <LayersControl.Overlay key={layerKey} name={layer.label} checked>
+            <LayersControl.Overlay key={layerKey} name={layer.label} checked={false}>
               <LayerGroup>
               {Object.entries(layer.markers).map(([markerKey, marker]) => (
                 <Marker key={markerKey} position={marker.location} icon={createMarkerIcon(marker.icon)}>
