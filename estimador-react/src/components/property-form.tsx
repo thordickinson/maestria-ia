@@ -129,10 +129,13 @@ export default function PropertyForm({ className }: { className?: string }) {
             </FormField>
             <FormField label="Ubicación en mapa">
             <Map
+              hidden={stepIndex != 2}
               zoom={15}
+              width="200px"
+              height="540px"
               position={markerLocation}
               positionDraggable={true}
-              className="flex-1 h-[200px] w-[520px]"
+              className="flex-1"
               onMarkerLocationChanged={onMarkerLocationChanged}
             />
             </FormField>
