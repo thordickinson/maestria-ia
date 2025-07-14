@@ -131,8 +131,8 @@ export default function PropertyForm({ className }: { className?: string }) {
             <Map
               hidden={stepIndex != 2}
               zoom={15}
-              width="200px"
-              height="540px"
+              width="540px"
+              height="200px"
               position={markerLocation}
               positionDraggable={true}
               className="flex-1"
