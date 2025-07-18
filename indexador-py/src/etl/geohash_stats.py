@@ -6,7 +6,7 @@ import logging
 import itertools
 from src.etl.util import drop_nans, ensure_dict, serialize_pydantic
 from src.etl.data_types import Place
-from src.etl.open_data import get_region_info, get_transport_places, get_cadastral_and_commercial_values_by_geohash
+from src.etl.open_data import get_region_info, get_transport_places, get_cadastral_and_commercial_values_by_geohash, get_median_estrato_by_geohash
 from src.etl.osm import get_osm_nearby_places
 from src.etl.connection import DatabaseClient
 from pydantic import BaseModel
@@ -128,6 +128,7 @@ async def get_point_stats(lat: float, lng: float) -> GeohashStats:
     result = await __get_geohash_stats(geo_hash)
     return  result
 
+
 async def get_region_stats(lat: float, lng: float):
     sql = f"""
         WITH punto AS (
@@ -194,6 +195,7 @@ async def __process_geohash(geo_hash: str) -> GeohashStats:
     lat, lng = __geohash_center(geo_hash)
     region_info = await get_region_info(lat, lng)
     valuation = await get_cadastral_and_commercial_values_by_geohash(geo_hash)
+    estrato = await get_median_estrato_by_geohash(geo_hash)
     nearby_places: dict[str, dict[str, list[Place]]] = {}
 
     for radius in PLACE_SEARCH_RADIUS_METERS:

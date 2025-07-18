@@ -78,6 +78,7 @@ export type EstimationResponse = {
   };
   region_stats: RegionStats[];
   property_data: PropertyData;
+  estrato: number;
 };
 
 export type EstimationResult = {

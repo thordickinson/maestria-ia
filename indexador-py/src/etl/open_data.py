@@ -87,3 +87,30 @@ async def get_cadastral_and_commercial_values_by_geohash(geo_hash: str) -> dict:
     cadastral = result["catastral"] if result["catastral"] is not None else np.nan
     comercial = result["comercial"] if result["comercial"] is not None else np.nan
     return { "catastral": cadastral, "comercial": comercial }
+
+
+async def get_median_estrato_by_geohash(geo_hash: str) -> int:
+    bbox = geohash.bbox(geo_hash)
+    lat_min = bbox['s']
+    lat_max = bbox['n']
+    lon_min = bbox['w']
+    lon_max = bbox['e']
+    polygon_wkt = (
+        f"POLYGON(({lon_min} {lat_min}, {lon_max} {lat_min}, "
+        f"{lon_max} {lat_max}, {lon_min} {lat_max}, {lon_min} {lat_min}))"
+    )
+
+    sql = f"""
+    WITH geohash_geom AS (
+        SELECT ST_SetSRID(
+            ST_GeomFromText('{polygon_wkt}'), 4326) AS geom
+    )
+    SELECT percentile_cont(0.5) WITHIN GROUP (ORDER BY estrato) AS mediana
+    FROM avaluo_catastral_manzana, geohash_geom
+    WHERE ST_Intersects(geom, geohash_geom.geom);
+    """
+
+    result = await db.execute_async_select_one("POSTGIS", sql)
+    if result is None or result.get("mediana") is None:
+        raise Exception("Unable to determine median estrato in geohash")
+    return int(result["mediana"])

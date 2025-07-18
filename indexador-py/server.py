@@ -3,7 +3,7 @@ from typing import Annotated
 import uvicorn
 from pydantic import BaseModel
 
-from src.etl.geohash_stats import get_point_stats, get_region_stats
+from src.etl.geohash_stats import get_point_stats, get_region_stats, get_estrato
 
 class EstimationRequest(BaseModel):
     lat: float
@@ -24,6 +24,7 @@ async def estimate(params: Annotated[EstimationRequest, Query()]):
     print(f"Received estimation request: {params.model_dump()}")
     stats = await get_point_stats(params.lat, params.lng)
     region_stats = await get_region_stats(params.lat, params.lng)
+    estrato = await get_estrato(params.lat, params.lng)
     result = stats.model_dump()
     result["estimation"] = {
         "minValue": 295_000_000,
@@ -32,6 +33,7 @@ async def estimate(params: Annotated[EstimationRequest, Query()]):
     }
     result["region_stats"] = region_stats
     result["property_data"] = params.model_dump()
+    result["estrato"] = estrato
     return result
 
 if __name__ == "__main__":

@@ -6,7 +6,7 @@ const RegionLabels: Record<string, string> = {
   localidad: "Localidad",
 };
 
-export default function RegionInfoCard({ regionInfo }: { regionInfo: Record<string, { nombre: string; codigo: string }> }) {
+export default function RegionInfoCard({ regionInfo, estrato }: { regionInfo: Record<string, { nombre: string; codigo: string }>, estrato: number }) {
   return (
     <Card title="Información de la Región" subtitle="Datos geográficos de la región donde se encuentra el apartamento">
         <ul className="list-disc pl-5">
@@ -15,6 +15,7 @@ export default function RegionInfoCard({ regionInfo }: { regionInfo: Record<stri
               <span className="font-medium">{RegionLabels[key] ?? key}:</span> {value.nombre}
             </li>
           ))}
+          <li><span className="font-medium">Estrato:</span>{estrato}</li>
         </ul>
     </Card>
   );

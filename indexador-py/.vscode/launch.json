@@ -5,10 +5,10 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Main",
+      "name": "Enriquecer Propiedades",
       "type": "debugpy",
       "request": "launch",
-      "program": "main.py",
+      "program": "enrich_properties.py",
       "console": "integratedTerminal"
     },
     {
