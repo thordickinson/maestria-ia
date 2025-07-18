@@ -5,7 +5,7 @@ import polars as pl
 from src.etl.property_loader import load_mongo_json_to_polars
 from src.etl.open_data import get_cadastral_and_commercial_values_by_geohash
 from src.etl.osm import get_osm_nearby_places
-from src.etl.pipeline import enrich_properties
+from enrich_properties import enrich_properties
 import numpy as np
 import math
 from pathlib import Path

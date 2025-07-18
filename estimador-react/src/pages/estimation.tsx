@@ -39,7 +39,7 @@ export default function EstimationPage() {
 
 
 
-  if (!estimation) {
+  if (!estimation || !response) {
     return <div></div>;
   }
 
@@ -60,7 +60,7 @@ export default function EstimationPage() {
                 <PriceCard label="Máximo" price={estimation.estimation.maxValue}></PriceCard>
               </div>
             </Card>
-            <RegionInfoCard regionInfo={estimation.regionInfo} />
+            <RegionInfoCard regionInfo={estimation.regionInfo} estrato={response.estrato}/>
             {response && <SitesTable response={response} />}
             <EstadisticasPropiedad result={estimation}/>
             <ButtonPanel>

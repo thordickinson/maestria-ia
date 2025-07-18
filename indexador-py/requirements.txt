@@ -1,20 +1,25 @@
+python-dotenv
+
 sqlalchemy
 psycopg2-binary
 asyncpg
+tqdm
 
 python-geohash
-polars
-seaborn
-python-dotenv
-
-ipykernel
-pydantic
-
 
 scikit-learn
 scipy
 numpy
 pandas
+polars
+seaborn
+xgboost
+shap
+
+ipykernel
+pydantic
+
+
 # For Jupyter Notebook support
 jupyterlab
 # For visualization
