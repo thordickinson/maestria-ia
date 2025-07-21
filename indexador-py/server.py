@@ -22,7 +22,7 @@ async def handle_estimate(params: Annotated[EstimationRequest, Query()]):
     region_stats = await get_region_stats(params.lat, params.lng)
     result = stats.model_dump()
 
-    estimation = estimate(params)
+    estimation = await estimate(params)
    
     result["estimation"] = estimation.model_dump()
     result["region_stats"] = region_stats

@@ -1,11 +1,12 @@
 from src.etl.open_data import get_estrato, get_region_info
-from src.estimator.common import Estimator, EstimationResult, EstimationInput
+from src.estimator.common import AugmentedEstimator, EstimationResult, EstimationInput
+from src.etl.geohash_stats import GeohashStats
 import pandas as pd
 import numpy as np
 import joblib
 
 
-class XGBoostEstimator(Estimator):
+class XGBoostEstimator(AugmentedEstimator):
 
     def __init__(self, model_path: str):
         self.model_path = model_path
@@ -16,7 +17,7 @@ class XGBoostEstimator(Estimator):
             self.__model = joblib.load(self.model_path)
         return self.__model
 
-    async def estimate(self, input: EstimationInput) -> EstimationResult:
+    async def estimate_with_augmented_data(self, input: EstimationInput, augmented_data: GeohashStats) -> EstimationResult:
 
         lat, lng = input.lat, input.lng
         region_info = await get_region_info(lat, lng)

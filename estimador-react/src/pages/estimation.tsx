@@ -1,12 +1,13 @@
 import Map from "../components/map";
 import { useNavigate } from "react-router-dom";
-import { Button, Card } from "antd";
+import { Button } from "antd";
 import ButtonPanel from "../components/button-panel";
 import useEstimation from "../hooks/useEstimation";
 import {  useEffect } from "react";
 import RegionInfoCard from "../components/region-info.card";
 import SitesTable from "../components/sites-table";
 import EstadisticasPropiedad from "../components/statistics";
+import Card from "../components/card";
 
 
 const usdFormat = new Intl.NumberFormat('es-CO', {
