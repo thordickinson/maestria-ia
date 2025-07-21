@@ -11,7 +11,9 @@ type CardProps = {
 } & WithClassName;
 
 export default function Card({children, className, title, subtitle, footer}: PropsWithChildren<CardProps>){
-    return <div className={`flex flex-col bg-white py-6 rounded-lg shadow-lg ${className}`}>
+    return <div className={`flex flex-col bg-white py-6 rounded-lg shadow-sm 
+        transition-shadow duration-300 ease-out hover:shadow-xl
+        ${className}`}>
         <div className="flex flex-col px-5 pb-5 border-b-1">
             <div className="text-md font-bold">{title}</div>
             {subtitle && <div className="text-sm text-gray-500">{subtitle}</div>}
