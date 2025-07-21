@@ -114,3 +114,24 @@ async def get_median_estrato_by_geohash(geo_hash: str) -> int:
     if result is None or result.get("mediana") is None:
         raise Exception("Unable to determine median estrato in geohash")
     return int(result["mediana"])
+
+async def get_estrato(lat: float, lng: float) -> int:
+    """
+    Obtiene el estrato socioeconómico de una ubicación dada por latitud y longitud.
+    """
+    sql = f"""
+    WITH punto AS (SELECT ST_SetSRID(ST_MakePoint(:lon, :lat), 4326) AS geom)
+        SELECT t.estrato
+        FROM estratos_manzana t, punto p
+        ORDER BY
+            CASE
+                WHEN ST_Contains(t.geom, p.geom) THEN 0
+                ELSE 1
+            END,
+            ST_Distance(t.geom, p.geom)          
+        LIMIT 1;
+    """
+    result = await db.execute_async_select_one("POSTGIS", sql)
+    if result is None or result.get("estrato") is None:
+        raise Exception("Unable to determine estrato for the given coordinates")
+    return int(result["estrato"])

@@ -55,12 +55,10 @@ export default function EstimationPage() {
           <div className="p-5 flex flex-col gap-3">
             <Card title="Precio estimado">
               <div className="w-full flex flex-row flex-wrap justify-between">
-                <PriceCard label="Mínimo" price={estimation.estimation.minValue}></PriceCard>
-                <PriceCard label="Promedio" size="bold" price={estimation.estimation.average}></PriceCard>
-                <PriceCard label="Máximo" price={estimation.estimation.maxValue}></PriceCard>
+                <PriceCard label="Precio" size="bold" price={estimation.estimation.price}></PriceCard>
               </div>
             </Card>
-            <RegionInfoCard regionInfo={estimation.regionInfo} estrato={response.estrato}/>
+            <RegionInfoCard regionInfo={estimation.regionInfo} estrato={response.valuation["estrato"]}/>
             {response && <SitesTable response={response} />}
             <EstadisticasPropiedad result={estimation}/>
             <ButtonPanel>

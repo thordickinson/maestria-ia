@@ -1,7 +1,7 @@
 import pandas as pd
 from datetime import datetime
 import asyncio
-from src.etl.geohash_stats import get_point_stats, get_estrato, OSM_PLACE_TYPES, PLACE_SEARCH_RADIUS_METERS
+from src.etl.geohash_stats import get_point_stats, OSM_PLACE_TYPES, PLACE_SEARCH_RADIUS_METERS
 from tqdm import tqdm
 import dotenv
 
@@ -9,7 +9,10 @@ dotenv.load_dotenv()
 
 async def get_property_enrichment(lat: float, lng: float) -> dict:
     stats = await get_point_stats(lat, lng)
-    columns: dict[str, int] = {}
+    columns: dict[str, int|float] = {}
+    valuation = stats.valuation
+    region = stats.region_info
+    valuation["estrato_calculado"] = int(valuation.pop("estrato"))
 
     def count_places(radius: int, place_type: str) -> int:
         places = stats.nearby_places[f"{radius}m"]
@@ -21,8 +24,16 @@ async def get_property_enrichment(lat: float, lng: float) -> dict:
         for place_type in OSM_PLACE_TYPES:
             key = f"{place_type}_{radius}"
             columns[key] = count_places(radius, place_type)
-    estrato = await get_estrato(lat, lng)
-    columns["estrato_calculado"] = estrato
+    columns.update(valuation)
+    upz = region.get("upz", {}).get("nombre", "")
+    barrio = region.get("barrio", {}).get("nombre", "")
+    localidad = region.get("localidad", {}).get("nombre", "")
+    columns.update({
+        "upz_calculada": upz.upper(),
+        "barrio_calculado": barrio.upper(),
+        "localidad_calculada": localidad.upper()
+    })
+    # Convertir las coordenadas a geohash
     return columns
 
 
