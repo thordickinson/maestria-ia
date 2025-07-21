@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import useNominatim from "../hooks/use-nominatim";
 import Map from "../components/map";
 import type { LatLng } from "../lib/types";
@@ -6,7 +6,6 @@ import FormField from "./form-field";
 import { useNavigate } from "react-router-dom";
 import { Button, Input, Select } from "antd";
 import Card from "./card";
-import { IconLabel } from "@tabler/icons-react";
 
 function createNumberOptions(count: number) {
   return Array.from({ length: count }, (_, i) => ({ value: i, label: `${i}` }));
@@ -75,8 +74,23 @@ export default function PropertyForm({ className }: { className?: string }) {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const nextDisabled = useMemo(() => {
+    if (stepIndex === 0) {
+      return false; // No fields to validate in the welcome step
+    }
+    if (stepIndex === 1) {
+      return !formData.area || !formData.bedrooms || !formData.bathrooms || !formData.age;
+    }
+    if (stepIndex === 2) {
+      return !formData.admon_price || formData.pool === "" || formData.gym === "" || formData.elevator === "";
+    }
+    if (stepIndex === 3) {
+      return !formData.address;
+    }
+    return false;
+  }, [formData, stepIndex]);
+
   const locateButtonDisabled = !formData?.address || formData.address.length < 3;
-  const nextDisabled = stepIndex > 0 && (!formData.age || !formData.area || !formData.bathrooms || !formData.bedrooms);
   const estimateDisabled = nextDisabled || !markerLocation;
 
   const onMarkerLocationChanged = (location: LatLng) => {
