@@ -196,6 +196,7 @@ async def __process_geohash(geo_hash: str) -> GeohashStats:
     region_info = await get_region_info(lat, lng)
     valuation = await get_cadastral_and_commercial_values_by_geohash(geo_hash)
     estrato = await get_median_estrato_by_geohash(geo_hash)
+    valuation["estrato"] = estrato
     nearby_places: dict[str, dict[str, list[Place]]] = {}
 
     for radius in PLACE_SEARCH_RADIUS_METERS:

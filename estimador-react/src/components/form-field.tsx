@@ -8,8 +8,8 @@ interface FormFieldProps {
 
 export default function FormField({children, label, editorId, hint}: PropsWithChildren<FormFieldProps>){
     return <div className="flex flex-col">
-        <label htmlFor={editorId}>{label}</label>
-        <div className="pt-2">
+        <label htmlFor={editorId} className="text-xs">{label}</label>
+        <div className="pt-1">
             {children}
         </div>
         <div className="text-xs h-[1em] mb-1">

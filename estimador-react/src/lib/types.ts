@@ -72,21 +72,16 @@ export type EstimationResponse = {
   valuation: Record<string, number>;
   calculation_time_seconds: number;
   estimation: {
-    minValue: number;
-    average: number;
-    maxValue: number;
+    price: number;
   };
   region_stats: RegionStats[];
   property_data: PropertyData;
-  estrato: number;
 };
 
 export type EstimationResult = {
   geohash: string;
   estimation: {
-    minValue: number;
-    average: number;
-    maxValue: number;
+    price: number;
   };
   regionInfo: Record<string, { nombre: string; codigo: string }>;
   location: LatLng;

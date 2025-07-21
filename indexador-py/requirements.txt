@@ -15,6 +15,7 @@ polars
 seaborn
 xgboost
 shap
+joblib
 
 ipykernel
 pydantic
