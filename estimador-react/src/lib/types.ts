@@ -73,6 +73,11 @@ export type EstimationResponse = {
   calculation_time_seconds: number;
   estimation: {
     price: number;
+    r2: number;
+    rmse: number;
+    mae: number;
+    interval: number[]
+    error_80_percentil: number;
   };
   region_stats: RegionStats[];
   property_data: PropertyData;
@@ -82,6 +87,11 @@ export type EstimationResult = {
   geohash: string;
   estimation: {
     price: number;
+    r2: number;
+    rmse: number;
+    mae: number;
+    interval: number[]
+    error_80_percentil: number;
   };
   regionInfo: Record<string, { nombre: string; codigo: string }>;
   location: LatLng;
