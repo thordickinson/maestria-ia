@@ -106,7 +106,7 @@ async def get_median_estrato_by_geohash(geo_hash: str) -> int:
             ST_GeomFromText('{polygon_wkt}'), 4326) AS geom
     )
     SELECT percentile_cont(0.5) WITHIN GROUP (ORDER BY estrato) AS mediana
-    FROM avaluo_catastral_manzana, geohash_geom
+    FROM estratos_manzana, geohash_geom
     WHERE ST_Intersects(geom, geohash_geom.geom);
     """
 

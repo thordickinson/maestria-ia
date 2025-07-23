@@ -1,7 +1,8 @@
 from src.estimator.common import EstimationResult, Estimator, EstimationInput, MockEstimator
-from src.estimator.base_model_estimator import XGBoostEstimator
+from src.estimator.common import XGBoostEstimator
+from src.estimator.base_estimator import EstimatorV1
 
-__implementation_type = "mock"
+__implementation_type = "version_1"
 __estimator_impl: Estimator | None = None
 
 
@@ -12,8 +13,8 @@ def __get_estimator() -> Estimator:
         return __estimator_impl
     if __implementation_type == "mock":
         __estimator_impl = MockEstimator(400_000_000)
-    elif __implementation_type == "baseline":
-        __estimator_impl = XGBoostEstimator("data/xgboost_model_1.pkl")
+    elif __implementation_type == "version_1":
+        __estimator_impl = EstimatorV1()
     if __estimator_impl is None:
         raise ValueError(f"Unknown estimator implementation type: {__implementation_type}")
     return __estimator_impl
