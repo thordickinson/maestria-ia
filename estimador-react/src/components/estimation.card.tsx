@@ -1,40 +1,93 @@
 import type { EstimationResponse } from "../lib/types";
+import Plot from "react-plotly.js";
 import Card from "./card";
+import { Tooltip } from "antd";
 
-const usdFormat = new Intl.NumberFormat('es-CO', {
-  style: 'currency',
-  currency: 'COP',
-  maximumFractionDigits: 0
+const usdFormat = new Intl.NumberFormat("es-CO", {
+  style: "currency",
+  currency: "COP",
+  maximumFractionDigits: 0,
 });
 
+export default function EstimationCard({ estimation }: { estimation: EstimationResponse }) {
+  const { price, interval, r2, rmse } = estimation.estimation;
+  const gaugeValue = r2 ? Math.round(r2 * 100) : 0;
 
-export default function EstimationCard({estimation}: {estimation: EstimationResponse}) {
-    return <Card title="Precio estimado">
-  <div className="w-full flex flex-col gap-2">
+  return (
+    <Card title="Precio estimado">
+      <div className="w-full flex flex-col gap-6">
 
-    <div className="flex flex-row justify-between">
-      Precio estimado: <b>{estimation.estimation.price}</b>
-    </div>
+        {/* Intervalo de confianza */}
+        {interval && (
+          <Tooltip
+            title="Este es el rango en el cual se estima que puede encontrarse el precio real del inmueble, con base en el comportamiento histórico del modelo."
+            placement="top"
+          >
+            <div className="grid grid-cols-3 text-center text-sm text-gray-700 cursor-help">
+              <div>
+                <div className="text-xs text-gray-500">Mínimo</div>
+                <div className="font-semibold">{usdFormat.format(interval[0])}</div>
+              </div>
+              <div>
+                <div className="text-xs text-gray-500">Estimado</div>
+                <div className="text-xl font-bold text-blue-600">{usdFormat.format(price)}</div>
+              </div>
+              <div>
+                <div className="text-xs text-gray-500">Máximo</div>
+                <div className="font-semibold">{usdFormat.format(interval[1])}</div>
+              </div>
+            </div>
+          </Tooltip>
+        )}
 
-    {estimation.estimation.interval && (
-      <div className="text-sm text-gray-600">
-        Rango estimado: entre <b>${estimation.estimation.interval[0].toLocaleString()}</b> y <b>${estimation.estimation.interval[1].toLocaleString()}</b>
+        {/* Gauge de confiabilidad */}
+        {r2 && (
+          <Tooltip
+            title="Indica qué tan bien el modelo predice los precios con base en los datos históricos. Un valor de 100% significa una predicción perfecta."
+            placement="top"
+          >
+            <div className="w-full flex justify-center cursor-help">
+              <Plot
+                data={[
+                  {
+                    type: "indicator",
+                    mode: "gauge+number",
+                    value: gaugeValue,
+                    title: { text: "Confiabilidad del modelo", font: { size: 14 } },
+                    gauge: {
+                      axis: { range: [0, 100], tickwidth: 1, tickcolor: "gray" },
+                      bar: { color: "#bbc7f7c6" },
+                      steps: [
+                        { range: [0, 60], color: "#f87171" },
+                        { range: [60, 80], color: "#facc15" },
+                        { range: [80, 100], color: "#4ade80" },
+                      ],
+                    },
+                  },
+                ]}
+                layout={{
+                  width: 220,
+                  height: 180,
+                  margin: { t: 20, b: 0, l: 0, r: 0 },
+                }}
+                config={{ displayModeBar: false }}
+              />
+            </div>
+          </Tooltip>
+        )}
+
+        {/* RMSE */}
+        {rmse && (
+          <Tooltip
+            title="El RMSE indica el error promedio entre los precios reales y los estimados durante el entrenamiento. Un menor valor indica mayor precisión."
+            placement="top"
+          >
+            <div className="text-xs text-center text-gray-500 cursor-help">
+              Error promedio histórico (RMSE): <span className="font-medium">{usdFormat.format(Math.round(rmse))}</span>
+            </div>
+          </Tooltip>
+        )}
       </div>
-    )}
-
-    {estimation.estimation.r2 && (
-      <div className="text-sm text-gray-600">
-        Confiabilidad del modelo: <b>{(estimation.estimation.r2 * 100).toFixed(1)}%</b> de varianza explicada
-      </div>
-    )}
-
-    {estimation.estimation.rmse && (
-      <div className="text-sm text-gray-500">
-        Error promedio (RMSE): ${Math.round(estimation.estimation.rmse).toLocaleString()}
-      </div>
-    )}
-
-  </div>
-</Card>
-
+    </Card>
+  );
 }
