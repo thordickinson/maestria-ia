@@ -7,7 +7,6 @@ import {  useEffect } from "react";
 import RegionInfoCard from "../components/region-info.card";
 import SitesTable from "../components/sites-table";
 import EstadisticasPropiedad from "../components/statistics";
-import Card from "../components/card";
 import EstimationCard from "../components/estimation.card";
 
 
