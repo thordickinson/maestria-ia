@@ -56,11 +56,11 @@ export default function EstimationCard({ estimation }: { estimation: EstimationR
                     title: { text: "Confiabilidad del modelo", font: { size: 14 } },
                     gauge: {
                       axis: { range: [0, 100], tickwidth: 1, tickcolor: "gray" },
-                      bar: { color: "#bbc7f7c6" },
+                      bar: { color: "#484848af" },
                       steps: [
-                        { range: [0, 60], color: "#f87171" },
-                        { range: [60, 80], color: "#facc15" },
-                        { range: [80, 100], color: "#4ade80" },
+                        { range: [0, 60], color: "#f5a4a4ff" },
+                        { range: [60, 80], color: "#f9e8a1ff" },
+                        { range: [80, 100], color: "#a1f7c1ff" },
                       ],
                     },
                   },
