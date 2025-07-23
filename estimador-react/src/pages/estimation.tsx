@@ -8,20 +8,10 @@ import RegionInfoCard from "../components/region-info.card";
 import SitesTable from "../components/sites-table";
 import EstadisticasPropiedad from "../components/statistics";
 import Card from "../components/card";
+import EstimationCard from "../components/estimation.card";
 
 
-const usdFormat = new Intl.NumberFormat('es-CO', {
-  style: 'currency',
-  currency: 'COP',
-  maximumFractionDigits: 0
-});
 
-function PriceCard({label, price, size = "normal"}: {label: string, price: number, size?: string}){
-  return <div className="flex flex-col">
-    <label className="text-xs">{label}</label>
-    <div className={`text-lg font-${size}`}>{usdFormat.format(price)}</div>
-  </div>
-}
 
 export default function EstimationPage() {
   const navigate = useNavigate();
@@ -54,11 +44,7 @@ export default function EstimationPage() {
               cercanos.
             </div>*/}
           <div className="p-5 flex flex-col gap-3">
-            <Card title="Precio estimado">
-              <div className="w-full flex flex-row flex-wrap justify-between">
-                <PriceCard label="Precio" size="bold" price={estimation.estimation.price}></PriceCard>
-              </div>
-            </Card>
+            <EstimationCard estimation={estimation.response}/>
             <RegionInfoCard regionInfo={estimation.regionInfo} estrato={response.valuation["estrato"]}/>
             {response && <SitesTable response={response} />}
             <EstadisticasPropiedad result={estimation}/>
