@@ -8,6 +8,7 @@ from src.etl.geohash_stats import get_point_stats, get_region_stats
 
 class EstimationRequest(EstimationInput):
     address: str
+    model_version: str = "2.1"
     
 
 class EstimationResponse(BaseModel):
