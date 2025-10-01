@@ -36,10 +36,10 @@ async def get_transport_places(lat: float, lng: float, radius: int) -> list[Plac
     return list(chain(transmilenio, sitp))
 
 async def __get_barrio_localidad(lat: float, lng: float) -> dict:
-    sql = f"""SELECT cod_loc, localidad, barriocomu, estado, cod_polbar
-        FROM barrios
+    sql = f"""SELECT lb.loccodigo as cod_loc, bb.localidad as localidad, bb.barrio as barriocomu, bb.cod as cod_polbar
+        FROM barrios_bogota bb join localidades_bogota lb on (bb.localidad = lb.locnombre)
         WHERE ST_Contains(
-            geom,
+            bb.geom,
             ST_SetSRID(ST_Point({lng}, {lat}), 4326)
         )
         """
