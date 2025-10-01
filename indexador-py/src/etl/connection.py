@@ -20,11 +20,11 @@ class DatabaseClient:
     def _get_config(self, name: str) -> dict:
         prefix = name.upper()
         return {
-            "host": os.getenv(f"{prefix}_DB_HOST"),
-            "port": os.getenv(f"{prefix}_DB_PORT"),
-            "user": os.getenv(f"{prefix}_DB_USER"),
-            "password": os.getenv(f"{prefix}_DB_PASSWORD"),
-            "database": os.getenv(f"{prefix}_DB_NAME"),
+            "host": os.getenv(f"{prefix}_DB_HOST", "localhost"),
+            "port": os.getenv(f"{prefix}_DB_PORT",  "5432"),
+            "user": os.getenv(f"{prefix}_DB_USER", "postgres"),
+            "password": os.getenv(f"{prefix}_DB_PASSWORD", "postgres"),
+            "database": os.getenv(f"{prefix}_DB_NAME", "gisdb"),
         }
 
     async def _get_async_pool(self, name: str) -> asyncpg.Pool:

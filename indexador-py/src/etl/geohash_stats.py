@@ -136,7 +136,7 @@ async def get_region_stats(lat: float, lng: float):
             ), regiones AS (
             SELECT * FROM (
                 SELECT 'barrio' AS tipo_region, b.gid::text AS codigo
-                FROM barrios b, punto p
+                FROM barrios_bogota b, punto p
                 WHERE ST_Contains(b.geom, p.geom)
                 LIMIT 1
             ) AS barrio
@@ -153,8 +153,8 @@ async def get_region_stats(lat: float, lng: float):
             UNION ALL
 
             SELECT * FROM (
-                SELECT 'localidad' AS tipo_region, b.localidad AS codigo
-                FROM barrios b, punto p
+                SELECT 'localidad' AS tipo_region, b.loccodigo AS codigo
+                FROM localidades_bogota b, punto p
                 WHERE ST_Contains(b.geom, p.geom)
                 LIMIT 1
             ) AS localidad
