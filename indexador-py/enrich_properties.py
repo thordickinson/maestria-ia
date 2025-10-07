@@ -79,9 +79,12 @@ async def save_to_database(df_enriched: pd.DataFrame) -> None:
         pg_type = get_postgres_type(df_enriched[col].dtype, col)
         columns_def.append(f"{col} {pg_type}")
     
+    # Unir columnas con saltos de línea
+    columns_str = ',\n        '.join(columns_def)
+    
     create_table_sql = f"""
     CREATE TABLE property_data (
-        {',\n        '.join(columns_def)}
+        {columns_str}
     );
     """
     
