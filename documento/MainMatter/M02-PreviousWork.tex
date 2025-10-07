@@ -1,0 +1,77 @@
+% desarrollar el marco referencial el cual incluye, marco teórico, conceptual, histórico, referencial, científico, tecnológico entre otros.
+% tratar de abordar la presentación de los marcos, a excepción del marco histórico, de lo general a lo específico
+
+% Hay que contar como si fuera un cuento, en orden cronológico.
+
+% Buscar cosas actuales de problemas similares
+% Qué es lo más reciente y hacia a dónde se están dirigiendo las soluciones.
+
+
+% Hay que contar la historia de lo que existe
+% Desarrollar el estado del arte el cual debe incluir al menos uno de los siguientes marcos, teórico, conceptual, histórico, referencial, científico, tecnológico entre otros. Adem\'as se debe tratar de abordar la presentación de los marcos de lo general a lo específico, a excepción del marco histórico en donde se debe guardar un orden cronol\'ogico ascendente. 
+
+\section*{Machine Learning en la Predicción de Precios Inmobiliarios}
+El \textit{machine learning} (ML) es una rama de la inteligencia artificial que permite a las máquinas aprender de los datos y realizar predicciones sin necesidad de ser programadas explícitamente para cada tarea. En el contexto inmobiliario, los modelos de ML han demostrado ser particularmente útiles para predecir precios de propiedades, capturando patrones complejos en los datos que los métodos tradicionales no pueden detectar. Su aplicabilidad en el mercado inmobiliario surge de la capacidad de manejar grandes volúmenes de datos con múltiples variables, lo que mejora la precisión de las predicciones y facilita la toma de decisiones tanto para compradores como para inversionistas \cite{kim2018machinelearning}.
+
+En Colombia, el mercado inmobiliario está influenciado por diversas características, como la ubicación geográfica, la seguridad y convivencia de las zonas, así como la cercanía a sitios de interés como centros comerciales y colegios. Con la disponibilidad de datos abiertos y técnicas de \textit{web scraping}, es posible recopilar información de diversas fuentes para enriquecer los modelos predictivos. Esta integración de características adicionales, como indicadores de seguridad, mapas de sitios cercanos, y boletines económicos, permite que los modelos de ML capturen mejor las relaciones no lineales y complejas entre los atributos de las viviendas y sus precios, como se observó en estudios previos \cite{zhang2018realestate}.
+
+\subsection{Metodologías Tradicionales y su Limitación}
+Los métodos hedónicos (tradicionales), ampliamente utilizados en estudios inmobiliarios, han sido la base para estimar precios a partir de características como el área, el número de habitaciones y la ubicación \cite{kim2018machinelearning}. Sin embargo, estos modelos lineales tienden a fallar cuando las relaciones entre las variables son no lineales o cuando intervienen factores externos complejos. Además, su desempeño depende en gran medida de la calidad y la disponibilidad de los datos.
+
+
+\subsection*{Regresión Lineal}
+La regresión lineal es uno de los métodos más simples y utilizados para la predicción de precios inmobiliarios. Este modelo asume una relación lineal entre las características de las propiedades (como área habitable, número de habitaciones, ubicación) y los precios. Aunque es un buen punto de partida, es limitado cuando las relaciones entre las variables no son lineales. En estudios como el de Kim et al. \cite{kim2018machinelearning}, se evidenció que la regresión lineal tiende a ser superada por modelos más complejos en mercados con dinámicas no lineales.
+
+\textbf{Ventajas:} Simple de implementar y explicar.\\
+\textbf{Desventajas:} No captura relaciones no lineales y es sensible a los \textit{outliers}.\\
+\textbf{Casos de uso:} Predicción en mercados con relaciones lineales bien definidas.
+
+\subsection*{Árboles de Decisión}
+Los árboles de decisión son modelos no paramétricos que dividen los datos en subconjuntos más pequeños en función de las características más importantes. Este enfoque es especialmente útil cuando se desea interpretar los resultados, ya que los árboles permiten una visualización clara de cómo las características afectan el precio. Sin embargo, tienden a sobreajustarse a los datos de entrenamiento si no se controlan adecuadamente \cite{kim2018machinelearning}.
+
+\textbf{Ventajas:} Fácil de interpretar y manejar datos con interacciones no lineales.\\
+\textbf{Desventajas:} Propenso al sobreajuste, a menos que se utilicen técnicas de poda.\\
+\textbf{Casos de uso:} Situaciones donde la interpretabilidad es importante y se requiere manejar relaciones no lineales.
+
+\subsection*{Random Forest}
+Random Forest es un algoritmo de aprendizaje conjunto que utiliza múltiples árboles de decisión para mejorar la precisión y reducir el riesgo de sobreajuste. Cada árbol se entrena en un subconjunto diferente de los datos, lo que reduce la variabilidad y mejora la generalización. En estudios como el de Zhang et al. \cite{zhang2018realestate}, Random Forest fue uno de los modelos más efectivos, debido a su capacidad para manejar un gran número de variables y sus interacciones.
+
+\textbf{Ventajas:} Robusto frente al sobreajuste, puede manejar grandes conjuntos de datos y múltiples variables.\\
+\textbf{Desventajas:} Menos interpretativo que un único árbol de decisión y requiere más recursos computacionales.\\
+\textbf{Casos de uso:} Mercados inmobiliarios complejos con muchas características y donde las relaciones no son lineales.
+
+\subsection*{XGBoost}
+XGBoost es un algoritmo de \textit{boosting} que mejora iterativamente los errores de predicción de modelos más simples. En cada iteración, se construyen nuevos árboles que corrigen los errores de los árboles anteriores. Este modelo ha demostrado ser extremadamente eficaz en competiciones de predicción de precios debido a su alta precisión y velocidad. En estudios como el de Smith et al. \cite{bigdata2019realestate}, XGBoost mostró un rendimiento superior al de otros modelos de \textit{machine learning}, debido a su capacidad para manejar datos ruidosos y \textit{outliers}.
+
+\textbf{Ventajas:} Alta precisión, robustez frente a datos ruidosos y capacidad para ajustar hiperparámetros de manera efectiva.\\
+\textbf{Desventajas:} Requiere más tiempo de entrenamiento y ajuste de hiperparámetros.\\
+\textbf{Casos de uso:} Situaciones donde se necesita maximizar la precisión de las predicciones en mercados inmobiliarios dinámicos y no lineales.
+
+\subsection*{Redes Neuronales}
+Las redes neuronales son modelos de \textit{machine learning} que se inspiran en la estructura del cerebro humano, lo que les permite aprender patrones complejos en los datos. Las redes neuronales profundas (\textit{deep learning}) son especialmente útiles cuando se manejan grandes volúmenes de datos con muchas variables. En estudios como el de Kim et al. \cite{kim2018machinelearning}, las redes neuronales demostraron ser efectivas en la captura de relaciones no lineales complejas, aunque requieren una gran cantidad de datos y recursos computacionales.
+
+\textbf{Ventajas:} Captura relaciones no lineales complejas y se adapta bien a grandes volúmenes de datos.\\
+\textbf{Desventajas:} Difícil de interpretar, requiere muchos datos y potencia computacional.\\
+\textbf{Casos de uso:} Situaciones donde se dispone de grandes volúmenes de datos y la relación entre las características es altamente no lineal.
+
+\subsection*{Comparación de Modelos}
+Cada modelo tiene sus ventajas y limitaciones, por lo que la elección depende de las características del mercado inmobiliario en estudio. En el contexto colombiano, con la incorporación de variables adicionales como mapas de sitios de interés, proximidad a comercios y estaciones de transporte público, es probable que modelos como Random Forest y XGBoost, que pueden manejar relaciones complejas, resulten ser los más efectivos. Por otro lado, la regresión lineal puede ser útil en casos donde las relaciones entre variables son más simples.
+
+La comparación de modelos en términos de precisión y eficiencia es esencial para seleccionar el enfoque más adecuado. Estudios previos han demostrado que los modelos de ensamble, como \textit{Random Forest} y \textit{Gradient Boosting}, ofrecen mejores resultados en la mayoría de los casos \cite{dabreo2021realestate, wang2019svr}. Adicionalmente, las redes neuronales profundas (\textit{Deep Learning}) han sido exploradas en escenarios donde se dispone de grandes volúmenes de datos \cite{mostofi2022realestate}.
+
+
+\subsection{Aplicación de Machine Learning en la Predicción de Precios}
+El uso de machine learning ha demostrado ser una alternativa efectiva a los métodos tradicionales. Modelos como \textit{Random Forest}, \textit{Gradient Boosting Machines (GBM)}, y \textit{Support Vector Machines (SVM)} han mostrado mejores resultados en la predicción de precios debido a su capacidad para manejar relaciones no lineales y variables complejas \cite{park2015housing, zhang2018realestate}. En particular, el modelo \textit{Gradient Boosting} se destacó por su precisión en varios estudios \cite{bigdata2019realestate}.
+
+\subsection{Uso de Variables Externas en la Predicción de Precios}
+Los factores externos, como la proximidad a centros comerciales, colegios y hospitales, y los índices de seguridad, son determinantes clave en los precios inmobiliarios. Estudios recientes han integrado estos factores en los modelos predictivos, mejorando significativamente su rendimiento \cite{li2017realestate, mostofi2022realestate}. Sin embargo, la mayoría de los trabajos se enfocan en mercados específicos, dejando un vacío en la generalización de estos enfoques a mercados emergentes como Bogotá.
+
+\subsection{Desafíos y Oportunidades en la Predicción de Precios}
+Entre los principales desafíos se encuentran la falta de datos completos y la dependencia de los modelos de machine learning en datos de alta calidad \cite{yu2016realestate}. Sin embargo, la integración de técnicas híbridas, como SVM optimizado por PSO (Particle Swarm Optimization), ofrece oportunidades para superar estas limitaciones \cite{zhang2018realestate}.
+
+\subsection{Identificación de Brechas en la Literatura}
+A pesar de los avances en la integración de variables externas, la mayoría de los estudios se han enfocado en mercados desarrollados, dejando un vacío en mercados emergentes como Bogotá. Este proyecto busca llenar esta brecha aplicando enfoques modernos a un contexto local y utilizando datos enriquecidos para mejorar la precisión de las predicciones.
+
+\subsection{Conclusión}
+El estado del arte demuestra que las técnicas de machine learning y el enriquecimiento de datos ofrecen una mejora significativa en la predicción de precios de bienes raíces. Sin embargo, existe una necesidad clara de explorar estos enfoques en mercados emergentes y evaluar el impacto de factores externos en los precios. Este proyecto se posiciona como una contribución relevante al abordar estas brechas y expandir las aplicaciones de machine learning en el sector inmobiliario.
+
