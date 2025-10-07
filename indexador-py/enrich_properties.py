@@ -173,6 +173,163 @@ async def save_to_database(df_enriched: pd.DataFrame) -> None:
     print("✓ Datos guardados exitosamente en property_data")
 
 
+async def calculate_region_statistics() -> None:
+    """Calcula estadísticas agregadas por región (barrio, UPZ, localidad)"""
+    db = DatabaseClient.instance()
+    
+    print("\n" + "="*60)
+    print("CALCULANDO ESTADÍSTICAS POR REGIÓN")
+    print("="*60)
+    
+    # 1. Crear tabla de estadísticas si no existe
+    create_table_sql = """
+    CREATE TABLE IF NOT EXISTS region_stats (
+        tipo_region VARCHAR(20) NOT NULL,
+        codigo VARCHAR(50) NOT NULL,
+        nombre VARCHAR(255) NOT NULL,
+        estadisticas_propiedades JSONB NOT NULL,
+        PRIMARY KEY (tipo_region, codigo)
+    );
+    """
+    await db.execute_async_update("POSTGIS", create_table_sql)
+    print("✓ Tabla region_stats creada/verificada")
+    
+    # 2. Limpiar tabla antes de recalcular
+    truncate_sql = "TRUNCATE region_stats;"
+    await db.execute_async_update("POSTGIS", truncate_sql)
+    print("✓ Tabla region_stats limpiada")
+    
+    # 3. Calcular estadísticas por BARRIO
+    print("\n📊 Calculando estadísticas por barrio...")
+    barrio_stats_sql = """
+    INSERT INTO region_stats (tipo_region, codigo, nombre, estadisticas_propiedades)
+    SELECT
+      'barrio',
+      b.gid::text,
+      b.localidad,
+      jsonb_build_object(
+        'n', COUNT(p.*),
+        'habitaciones_promedio', AVG(p.habitaciones),
+        'habitaciones_stddev', STDDEV_POP(p.habitaciones),
+        'area_promedio', AVG(p.area),
+        'area_q1', PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY p.area),
+        'area_q3', PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY p.area),
+        'banos_promedio', AVG(p.banos),
+        'avaluo_cat_promedio', AVG(m.avaluo_cat),
+        'avaluo_cat_q1', PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY m.avaluo_cat),
+        'avaluo_cat_q3', PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY m.avaluo_cat),
+        'avaluo_com_promedio', AVG(m.avaluo_com),
+        'avaluo_com_q1', PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY m.avaluo_com),
+        'avaluo_com_q3', PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY m.avaluo_com)
+      )
+    FROM barrios_bogota b
+    LEFT JOIN property_data p
+      ON ST_Contains(b.geom, ST_SetSRID(ST_MakePoint(p.longitud, p.latitud), 4326))
+    LEFT JOIN avaluo_catastral_manzana m
+      ON ST_Contains(b.geom, m.geom)
+    WHERE b.gid IS NOT NULL AND b.nombre IS NOT NULL
+    GROUP BY b.gid, b.nombre
+    ON CONFLICT (tipo_region, codigo)
+    DO UPDATE SET
+      nombre = EXCLUDED.nombre,
+      estadisticas_propiedades = EXCLUDED.estadisticas_propiedades;
+    """
+    await db.execute_async_update("POSTGIS", barrio_stats_sql)
+    
+    # Contar barrios procesados
+    count_sql = "SELECT COUNT(*) as count FROM region_stats WHERE tipo_region = 'barrio';"
+    result = await db.execute_async_select_one("POSTGIS", count_sql)
+    print(f"   ✓ {result['count']} barrios procesados")
+    
+    # 4. Calcular estadísticas por UPZ
+    print("\n📊 Calculando estadísticas por UPZ...")
+    upz_stats_sql = """
+    INSERT INTO region_stats (tipo_region, codigo, nombre, estadisticas_propiedades)
+    SELECT
+      'upz',
+      u.gid::text,
+      u.nombre,
+      jsonb_build_object(
+        'n', COUNT(p.*),
+        'habitaciones_promedio', AVG(p.habitaciones),
+        'habitaciones_stddev', STDDEV_POP(p.habitaciones),
+        'area_promedio', AVG(p.area),
+        'area_q1', PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY p.area),
+        'area_q3', PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY p.area),
+        'banos_promedio', AVG(p.banos),
+        'avaluo_cat_promedio', AVG(m.avaluo_cat),
+        'avaluo_cat_q1', PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY m.avaluo_cat),
+        'avaluo_cat_q3', PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY m.avaluo_cat),
+        'avaluo_com_promedio', AVG(m.avaluo_com),
+        'avaluo_com_q1', PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY m.avaluo_com),
+        'avaluo_com_q3', PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY m.avaluo_com)
+      )
+    FROM upz_bogota u
+    LEFT JOIN property_data p
+      ON ST_Contains(u.geom, ST_SetSRID(ST_MakePoint(p.longitud, p.latitud), 4326))
+    LEFT JOIN avaluo_catastral_manzana m
+      ON ST_Contains(u.geom, m.geom)
+    WHERE u.gid IS NOT NULL AND u.nombre IS NOT NULL
+    GROUP BY u.gid, u.nombre
+    ON CONFLICT (tipo_region, codigo)
+    DO UPDATE SET
+      nombre = EXCLUDED.nombre,
+      estadisticas_propiedades = EXCLUDED.estadisticas_propiedades;
+    """
+    await db.execute_async_update("POSTGIS", upz_stats_sql)
+    
+    count_sql = "SELECT COUNT(*) as count FROM region_stats WHERE tipo_region = 'upz';"
+    result = await db.execute_async_select_one("POSTGIS", count_sql)
+    print(f"   ✓ {result['count']} UPZs procesadas")
+    
+    # 5. Calcular estadísticas por LOCALIDAD
+    print("\n📊 Calculando estadísticas por localidad...")
+    localidad_stats_sql = """
+    INSERT INTO region_stats (tipo_region, codigo, nombre, estadisticas_propiedades)
+    SELECT
+      'localidad',
+      b.loccodigo,
+      b.locnombre,
+      jsonb_build_object(
+        'n', COUNT(p.*),
+        'habitaciones_promedio', AVG(p.habitaciones),
+        'habitaciones_stddev', STDDEV_POP(p.habitaciones),
+        'area_promedio', AVG(p.area),
+        'area_q1', PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY p.area),
+        'area_q3', PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY p.area),
+        'banos_promedio', AVG(p.banos),
+        'avaluo_cat_promedio', AVG(m.avaluo_cat),
+        'avaluo_cat_q1', PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY m.avaluo_cat),
+        'avaluo_cat_q3', PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY m.avaluo_cat),
+        'avaluo_com_promedio', AVG(m.avaluo_com),
+        'avaluo_com_q1', PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY m.avaluo_com),
+        'avaluo_com_q3', PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY m.avaluo_com)
+      )
+    FROM localidades_bogota b
+    LEFT JOIN property_data p
+      ON ST_Contains(b.geom, ST_SetSRID(ST_MakePoint(p.longitud, p.latitud), 4326))
+    LEFT JOIN avaluo_catastral_manzana m
+      ON ST_Contains(b.geom, m.geom)
+    WHERE b.loccodigo IS NOT NULL
+    GROUP BY b.loccodigo, b.locnombre
+    ON CONFLICT (tipo_region, codigo)
+    DO UPDATE SET
+      nombre = EXCLUDED.nombre,
+      estadisticas_propiedades = EXCLUDED.estadisticas_propiedades;
+    """
+    await db.execute_async_update("POSTGIS", localidad_stats_sql)
+    
+    count_sql = "SELECT COUNT(*) as count FROM region_stats WHERE tipo_region = 'localidad';"
+    result = await db.execute_async_select_one("POSTGIS", count_sql)
+    print(f"   ✓ {result['count']} localidades procesadas")
+    
+    # 6. Resumen final
+    total_sql = "SELECT COUNT(*) as count FROM region_stats;"
+    result = await db.execute_async_select_one("POSTGIS", total_sql)
+    print(f"\n✓ Total de regiones con estadísticas: {result['count']}")
+    print("✓ Estadísticas regionales calculadas exitosamente")
+
+
 async def enrich_properties(max_concurrent=10) -> None:
     data_dir = "data/"
     df = pd.read_csv(f"{data_dir}/aptos_bogota_cleaned.csv")
@@ -216,6 +373,9 @@ async def enrich_properties(max_concurrent=10) -> None:
     # Guardar en base de datos PostgreSQL
     await save_to_database(df_enriched)
     
+    # Calcular estadísticas por región
+    await calculate_region_statistics()
+    
     print("\n" + "="*60)
     print("RESUMEN DEL ENRIQUECIMIENTO")
     print("="*60)
@@ -223,6 +383,7 @@ async def enrich_properties(max_concurrent=10) -> None:
     print(f"Columnas totales: {len(df_enriched.columns)}")
     print(f"\nPrimeras filas:")
     print(df_enriched.head())
+    print("\n✅ Proceso completado exitosamente")
 
 
 if __name__ == "__main__":
