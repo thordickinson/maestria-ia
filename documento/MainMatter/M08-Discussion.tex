@@ -1,0 +1,26 @@
+% Incluir el presupuesto necesario para el desarrollo del proyecto, estime los recursos necesarios y el costo de cada uno de ellos así como el de cada una de las horas del trabajo de los involucrados en el desarrollo del proyecto
+
+% Incluir el presupuesto necesario para el desarrollo del proyecto, estime los recursos necesarios y el costo de cada uno de ellos así como el de cada una de las horas del trabajo de los involucrados en el desarrollo del proyecto, a continuaci\'on se provee un ejemplo del presupuesto
+
+Se ha realizado una estimación de costos para el procesamiento de datos de Global Fishing Watch utilizando Amazon SageMaker, considerando un tamaño de dataset de 10 GB, el uso de instancias de tipo \texttt{ml.m5.large} para procesamiento y entrenamiento, y almacenamiento en Amazon S3. El procesamiento se estima en 8 horas diarias durante 20 días al mes, con 5 modelos entrenados al mes, cada uno tomando 10 horas. Los costos mensuales incluyen \$18.56 para procesamiento, \$5.80 para entrenamiento y \$0.23 para almacenamiento, resultando en un costo total mensual de \$24.59. Para un periodo de 15 meses (abril 2024 - junio 2025), el costo total estimado es de aproximadamente \$368.85.
+
+\section{Tabla de Estimación de Costos}
+
+\begin{table}[h!]
+\centering
+\caption{Estimación de costos para el procesamiento de datos de Global Fishing Watch usando Amazon SageMaker}
+\begin{tabular}{|m{6cm}|m{4cm}|m{4cm}|}
+\hline
+\textbf{Concepto} & \textbf{Costo Mensual (\$)} & \textbf{Total para 15 meses (\$)} \\
+\hline
+Procesamiento (SageMaker) & 18.56 & 278.40 \\
+\hline
+Entrenamiento de Modelos & 5.80 & 87.00 \\
+\hline
+Almacenamiento (S3) & 0.23 & 3.45 \\
+\hline
+\textbf{Costo Total} & \textbf{24.59} & \textbf{368.85} \\
+\hline
+\end{tabular}
+\end{table}
+

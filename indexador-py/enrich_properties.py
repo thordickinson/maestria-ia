@@ -12,7 +12,7 @@ async def get_property_enrichment(lat: float, lng: float) -> dict:
     columns: dict[str, int|float] = {}
     valuation = stats.valuation
     region = stats.region_info
-    valuation["estrato_calculado"] = int(valuation.pop("estrato"))
+    # valuation["estrato_calculado"] = int(valuation.pop("estrato"))
 
     def count_places(radius: int, place_type: str) -> int:
         places = stats.nearby_places[f"{radius}m"]

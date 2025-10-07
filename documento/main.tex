@@ -1,0 +1,139 @@
+%        1         2         3         4         5         6         7         8         9         0         1         2
+%23456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+\documentclass[12pt]{MIA-USA}
+
+\usepackage{layout}
+\usepackage{subcaption}
+\usepackage{paralist}
+\usepackage{breakcites}
+\usepackage{pgfgantt}
+\usepackage{pdflscape}
+
+%% Semana del 16 de junio ¡ANTEPROYECTO! 12 clases
+% Cada trabajo vale lo mismo que el anterior. 16%
+% 
+
+% Trabajos, aproximadamente cada dos semanas.
+% Problema y justificación [Título] (13 de marzo)
+% Objetivos [General y espécificos (No más de 4)] (3 de abril)
+%   * Cada objetivo espécifico se debe soportar por un capítulo en el proyecto.
+% Estado del arte (17 de abril)
+% Metodología (8 de mayo)
+% Cronograma y presupuesto (22 de mayo)
+% Resultados esperados (5 de junio)
+
+
+% La introducción y los resumenes es lo último que se hace. ()
+
+%Para las referencias usar mendeley o google académico
+% * Usar artículos recientes en lo posible
+% * sci-hub.se? (Ver los artículos copiar el DOI)
+
+
+\usepackage[pagebackref=true,breaklinks=true]{hyperref}
+\hypersetup{
+	pdftitle={Documento de trabajo Makers}, 
+	pdfauthor={MAKERS}, 
+	pdfsubject={}, 
+	pdfcreator={Dickinson Arismendy}, 
+	colorlinks=true,
+	linkcolor=GrisUno,
+	citecolor=AzulInstitucional,
+	filecolor=AzulClaro,
+	urlcolor=AzulInstitucional,
+	linktoc=all
+}
+
+\graphicspath{{Imagenes/}}
+
+
+
+\title{Predicción de Precios de Viviendas en Bogotá Usando Machine Learning y Datos Enriquecidos}
+\author{Dickinson Román Arismendy Torres}
+\documenttype{Maestr\'ia en Inteligencia Artificial}
+
+\advisor{Phd. Juan Pablo Ospina Lopez}
+
+% Si hay un coasesor 
+% \coadvisor{Nombres y apellidos Co-Asesor}
+
+
+% Aqui comienza el documento
+% - -- --- ----- ------- ------- ----- --- -- -
+\begin{document}
+    % \layout{}
+	
+    \maketitle
+    
+    % Crea la tabla de contenidos a partir de la estructura del documento
+    \tableofcontents
+    % Crea la lista de figuras
+    \listoffigures
+    % Crea la lista de tablas
+    \listoftables
+    
+    % A partir de este punto se crea la estructura del documento para el espacio de práctica con la siguiente 
+    % jerarquía
+    % chapter (Capitulo)
+    %   - section (sección)
+    %       - subsection (subsección)
+    %           - subsubsection (subsubsección)
+    
+    
+    % Glosario
+    \chapter*{Glosario}
+    \input{FrontMatter/F01-Glossary}
+ 	
+    % Resumen
+    \chapter*{Resumen}
+    \input{FrontMatter/F02-Abstract}
+
+    % Introduction
+    \chapter{Introducci\'on}
+    \input{MainMatter/M01-Introduction}
+    
+    % Trabajos previos
+    \chapter{Estado del Arte}
+    \input{MainMatter/M02-PreviousWork}
+    
+    % Problema de investigacion
+    \chapter{Problema de investigaci\'on}
+    \input{MainMatter/M03-ResearchProblem}
+    
+    % Justificación
+    \chapter{Justificaci\'on}
+    \input{MainMatter/M04-Justification}
+    
+    % Objetivos
+    \chapter{Objetivos}
+    \input{MainMatter/M05-Objectives}
+    
+    % Metodologia
+    \chapter{Metodolog\'ia de investigación}
+    \input{MainMatter/M06-Methodology}
+    
+    % Cronograma
+    \chapter{Resultados y An\'alisis}
+    \input{MainMatter/M07-Results}
+    
+    % Presupuesto
+    \chapter{Discusi\'on}
+    \input{MainMatter/M08-Discussion}
+    
+    % Resultados esperados
+    \chapter{Conclusiones y Trabajo Futuro}
+    \input{MainMatter/M09-Conclusions}
+    
+    % Anexos
+    \chapter*{Anexos}
+    \input{BackMatter/B01-Anexos}
+    
+    % Indices
+    % \chapter*{\'Indices}
+    % \input{BackMatter/B10-Index}
+    
+	% Incluye las referencias
+    \bibliographystyle{apalike}
+    \bibliography{Bibliography/referencias}
+
+\end{document}
