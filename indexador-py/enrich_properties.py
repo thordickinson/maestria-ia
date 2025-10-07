@@ -43,108 +43,57 @@ async def save_to_database(df_enriched: pd.DataFrame) -> None:
     """Guarda los datos enriquecidos en la tabla property_data de PostgreSQL"""
     db = DatabaseClient.instance()
     
-    # Crear tabla si no existe
-    create_table_sql = """
-    CREATE TABLE IF NOT EXISTS property_data (
-        id SERIAL PRIMARY KEY,
-        estrato FLOAT,
-        area INTEGER,
-        habitaciones FLOAT,
-        banos FLOAT,
-        parqueaderos FLOAT,
-        antiguedad VARCHAR(50),
-        tipo_propiedad VARCHAR(50),
-        tipo_operacion VARCHAR(50),
-        latitud DOUBLE PRECISION,
-        longitud DOUBLE PRECISION,
-        localidad VARCHAR(100),
-        barrio VARCHAR(100),
-        precio_venta FLOAT,
-        administracion FLOAT,
-        gimnasio FLOAT,
-        ascensor FLOAT,
-        piscina FLOAT,
-        conjunto_cerrado FLOAT,
-        salon_comunal FLOAT,
-        terraza FLOAT,
-        vigilancia FLOAT,
-        education_100 INTEGER,
-        healthcare_100 INTEGER,
-        retail_access_100 INTEGER,
-        dining_and_entertainment_100 INTEGER,
-        accommodation_100 INTEGER,
-        parks_and_recreation_100 INTEGER,
-        infrastructure_services_100 INTEGER,
-        cultural_amenities_100 INTEGER,
-        education_300 INTEGER,
-        healthcare_300 INTEGER,
-        retail_access_300 INTEGER,
-        dining_and_entertainment_300 INTEGER,
-        accommodation_300 INTEGER,
-        parks_and_recreation_300 INTEGER,
-        infrastructure_services_300 INTEGER,
-        cultural_amenities_300 INTEGER,
-        education_500 INTEGER,
-        healthcare_500 INTEGER,
-        retail_access_500 INTEGER,
-        dining_and_entertainment_500 INTEGER,
-        accommodation_500 INTEGER,
-        parks_and_recreation_500 INTEGER,
-        infrastructure_services_500 INTEGER,
-        cultural_amenities_500 INTEGER,
-        education_1000 INTEGER,
-        healthcare_1000 INTEGER,
-        retail_access_1000 INTEGER,
-        dining_and_entertainment_1000 INTEGER,
-        accommodation_1000 INTEGER,
-        parks_and_recreation_1000 INTEGER,
-        infrastructure_services_1000 INTEGER,
-        cultural_amenities_1000 INTEGER,
-        education_2000 INTEGER,
-        healthcare_2000 INTEGER,
-        retail_access_2000 INTEGER,
-        dining_and_entertainment_2000 INTEGER,
-        accommodation_2000 INTEGER,
-        parks_and_recreation_2000 INTEGER,
-        infrastructure_services_2000 INTEGER,
-        cultural_amenities_2000 INTEGER,
-        upz_calculada VARCHAR(100),
-        barrio_calculado VARCHAR(100),
-        localidad_calculada VARCHAR(100),
-        catastral FLOAT,
-        comercial FLOAT
+    # 1. Eliminar tabla si existe
+    drop_table_sql = "DROP TABLE IF EXISTS property_data CASCADE;"
+    await db.execute_async_update("POSTGIS", drop_table_sql)
+    print("✓ Tabla property_data eliminada (si existía)")
+    
+    # 2. Generar estructura de tabla dinámicamente basada en el DataFrame
+    def get_postgres_type(dtype, column_name: str) -> str:
+        """Mapea tipos de pandas a tipos de PostgreSQL"""
+        dtype_str = str(dtype)
+        
+        # Tipos específicos por nombre de columna
+        if column_name in ['latitud', 'longitud']:
+            return 'DOUBLE PRECISION'
+        elif column_name in ['antiguedad', 'tipo_propiedad', 'tipo_operacion']:
+            return 'VARCHAR(50)'
+        elif column_name in ['localidad', 'barrio', 'upz', 'upz_calculada', 'barrio_calculado', 'localidad_calculada']:
+            return 'VARCHAR(100)'
+        
+        # Tipos por dtype de pandas
+        if 'int' in dtype_str:
+            return 'INTEGER'
+        elif 'float' in dtype_str:
+            return 'FLOAT'
+        elif 'object' in dtype_str:
+            return 'VARCHAR(255)'
+        elif 'bool' in dtype_str:
+            return 'BOOLEAN'
+        else:
+            return 'TEXT'
+    
+    # Construir columnas dinámicamente
+    columns_def = ['id SERIAL PRIMARY KEY']
+    for col in df_enriched.columns:
+        pg_type = get_postgres_type(df_enriched[col].dtype, col)
+        columns_def.append(f"{col} {pg_type}")
+    
+    create_table_sql = f"""
+    CREATE TABLE property_data (
+        {',\n        '.join(columns_def)}
     );
     """
+    
     await db.execute_async_update("POSTGIS", create_table_sql)
-    print("✓ Tabla property_data creada/verificada")
+    print(f"✓ Tabla property_data creada con {len(df_enriched.columns)} columnas")
     
-    # Verificar si la tabla tiene datos
-    count_sql = "SELECT COUNT(*) as count FROM property_data;"
-    result = await db.execute_async_select_one("POSTGIS", count_sql)
-    existing_count = result['count'] if result else 0
+    # Mostrar algunas columnas creadas (para debug)
+    sample_cols = list(df_enriched.columns)[:5] + ['...'] + list(df_enriched.columns)[-3:]
+    print(f"   Columnas: {', '.join(sample_cols)}")
     
-    if existing_count > 0:
-        print(f"⚠️  La tabla property_data contiene {existing_count} registros existentes")
-        print("   Limpiando tabla antes de insertar nuevos datos...")
-    
-    # Limpiar tabla existente para evitar duplicados
-    truncate_sql = "TRUNCATE TABLE property_data RESTART IDENTITY CASCADE;"
-    await db.execute_async_update("POSTGIS", truncate_sql)
-    print("✓ Tabla property_data limpiada")
-    
-    # Renombrar columnas para que coincidan con la estructura de la BD
+    # Preparar DataFrame para inserción (sin renombrar, la tabla se adapta al DF)
     df_to_save = df_enriched.copy()
-    
-    # Mapear nombres de columnas de formato "100_education" a "education_100"
-    column_mapping = {}
-    for radius in PLACE_SEARCH_RADIUS_METERS:
-        for place_type in OSM_PLACE_TYPES:
-            old_name = f"{place_type}_{radius}"
-            new_name = f"{place_type}_{radius}"
-            if old_name in df_to_save.columns:
-                column_mapping[old_name] = new_name.replace(f"{radius}_", "") + f"_{radius}"
-    
-    df_to_save = df_to_save.rename(columns=column_mapping)
     
     # Insertar datos en lotes
     batch_size = 500
