@@ -45,3 +45,12 @@ SELECT * FROM propiedades WHERE barrio = ?
     * Baños en el barrio
     * Tamaño de Apartamento
 
+
+## Pasos para preparar los datos
+* Ejecutar los notebooks hasta obtener `aptos_bogota_enriched.csv`.
+* Cargar datos abiertos en postgis.
+* Ejecutar el script de enriquecimiento `python enrich_properties.py`.
+* Cargar datos de propiedades `./indexador-py/precalculated/load_property_data.ipynb`.
+* Ejecutar script para crear stats `estadisticas_region.sql`.
+
+
