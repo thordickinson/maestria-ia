@@ -152,13 +152,13 @@ async def calculate_region_statistics() -> None:
     print("✓ Tabla region_stats limpiada")
     
     # 3. Calcular estadísticas por BARRIO
-    print("\n📊 Calculando estadísticas por barrio...")
+    print("\nCalculando estadísticas por barrio...")
     barrio_stats_sql = """
     INSERT INTO region_stats (tipo_region, codigo, nombre, estadisticas_propiedades)
     SELECT
       'barrio',
       b.gid::text,
-      b.localidad,
+      b.barrio,
       jsonb_build_object(
         'n', COUNT(p.*),
         'habitaciones_promedio', AVG(p.habitaciones),
@@ -179,8 +179,8 @@ async def calculate_region_statistics() -> None:
       ON ST_Contains(b.geom, ST_SetSRID(ST_MakePoint(p.longitud, p.latitud), 4326))
     LEFT JOIN avaluo_catastral_manzana m
       ON ST_Contains(b.geom, m.geom)
-    WHERE b.gid IS NOT NULL AND b.nombre IS NOT NULL
-    GROUP BY b.gid, b.nombre
+    WHERE b.gid IS NOT NULL AND b.barrio IS NOT NULL
+    GROUP BY b.gid, b.barrio
     ON CONFLICT (tipo_region, codigo)
     DO UPDATE SET
       nombre = EXCLUDED.nombre,
@@ -194,7 +194,7 @@ async def calculate_region_statistics() -> None:
     print(f"   ✓ {result['count']} barrios procesados")
     
     # 4. Calcular estadísticas por UPZ
-    print("\n📊 Calculando estadísticas por UPZ...")
+    print("\nCalculando estadísticas por UPZ...")
     upz_stats_sql = """
     INSERT INTO region_stats (tipo_region, codigo, nombre, estadisticas_propiedades)
     SELECT
@@ -235,7 +235,7 @@ async def calculate_region_statistics() -> None:
     print(f"   ✓ {result['count']} UPZs procesadas")
     
     # 5. Calcular estadísticas por LOCALIDAD
-    print("\n📊 Calculando estadísticas por localidad...")
+    print("\nCalculando estadísticas por localidad...")
     localidad_stats_sql = """
     INSERT INTO region_stats (tipo_region, codigo, nombre, estadisticas_propiedades)
     SELECT
