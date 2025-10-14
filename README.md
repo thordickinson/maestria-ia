@@ -50,7 +50,7 @@ SELECT * FROM propiedades WHERE barrio = ?
 * Ejecutar los notebooks hasta obtener `aptos_bogota_enriched.csv`.
 * Cargar datos abiertos en postgis.
 * Ejecutar el script de enriquecimiento `python enrich_properties.py`.
-* Cargar datos de propiedades `./indexador-py/precalculated/load_property_data.ipynb`.
-* Ejecutar script para crear stats `estadisticas_region.sql`.
-
+  * Crea la tabla `property_data`.
+  * Calcula estadísticas por barrio, localidad, upz.
+* Ejecutar hasta la creacion de los modelos `./indexador-py/notebooks/3.2.1_modelo_aumentado_v1.ipynb`.
 
