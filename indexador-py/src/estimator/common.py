@@ -70,9 +70,11 @@ class XGBoostEstimator(AugmentedEstimator):
     def __get_model(self):
         if self.__model is None:
             with open(self.model_path, "rb") as f:
+                logger.info(f"Loading model from {self.model_path}")
+                # Cludpickle puede fallar si la version de python es diferente a la 
+                # que se utilizo para entrenar el modelo.
                 artifact = cloudpickle.load(f)
                 self.__model = artifact["model"]
-                logger.info(f"Model loaded from {self.model_path}")
                 if "info" in artifact:
                     self.__model_info = artifact["info"]
                     logger.info(f"Model info: {self.__model_info}")
