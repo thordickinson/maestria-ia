@@ -1,5 +1,5 @@
 import { Table } from "antd";
-import type { EstimationResponse } from "../hooks/useEstimation";
+import type { EstimationResponse, Place } from "../lib/types";
 import { useMemo } from "react";
 import type { ColumnType } from "antd/es/table";
 import Card from "./card";
@@ -8,12 +8,6 @@ import { getSiteTypeLabel } from "../lib/utils";
 interface SitestTableParams {
     response: EstimationResponse
 }
-
-function parseDistance(distance: string): number{
-    // 100m
-    return parseInt(distance.slice(distance.length - 1))
-}
-
 
 function buildDataSource(response: EstimationResponse): {columns: ColumnType[], data: Record<string, string|number>[]}{
     const {nearby_places} = response
@@ -39,7 +33,7 @@ function buildDataSource(response: EstimationResponse): {columns: ColumnType[], 
         Object.entries(nearby_places[distance]).forEach(([placeType, placeList]) => {
             const countsObject = getPlaceCounts(placeType)
             const count = countsObject[distance] as number
-            countsObject[distance] = count + placeList.length
+            countsObject[distance] = count + (placeList as Place[]).length
         })
     }
     console.log(counts, columns)

@@ -203,8 +203,8 @@ const EstadisticasPropiedad = ({ result }: EstadisticasPropiedadParams) => {
             title: {
               text: "Relación de tu propiedad con el promedio por región",
             },
-            xaxis: { title: "Métrica" },
-            yaxis: { title: "Región" },
+            xaxis: { title: { text: "Métrica" } },
+            yaxis: { title: { text: "Región" } },
             height: standardHeight,
           }}
           style={{ width: "100%" }}

@@ -14,7 +14,7 @@ import EstimationCard from "../components/estimation.card";
 
 export default function EstimationPage() {
   const navigate = useNavigate();
-  const {estimation, loading, error, estimate, response } = useEstimation();
+  const {estimation, error, response } = useEstimation();
 
   useEffect(() => {
     console.log(estimation);

@@ -53,7 +53,7 @@ export default function useEstimation() {
 function buildEstimation(response: EstimationResponse | null): EstimationResult | null {
   if (!response) return null;
 
-  const { geohash, center, valuation, estimation, nearby_places, region_info } = response;
+  const { geohash, center, estimation, nearby_places, region_info } = response;
   const location = { lat: center.lat, lng: center.lng };
 
   const mapLayers: Record<string, MapLayer> = {};
