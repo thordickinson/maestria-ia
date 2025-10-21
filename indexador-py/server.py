@@ -3,6 +3,9 @@ from typing import Annotated
 import uvicorn
 from pydantic import BaseModel
 from src.estimator.estimator import estimate, EstimationInput, EstimationResult
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from src.etl.geohash_stats import get_point_stats, get_region_stats
 
