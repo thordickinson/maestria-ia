@@ -4,6 +4,7 @@ import uvicorn
 from pydantic import BaseModel
 from src.estimator.estimator import estimate, EstimationInput, EstimationResult
 from dotenv import load_dotenv
+from fastapi.staticfiles import StaticFiles
 
 load_dotenv()
 
@@ -18,6 +19,8 @@ class EstimationResponse(BaseModel):
     estimation: dict
 
 app = FastAPI()
+
+app.mount("/web", StaticFiles(directory="./web"), name="web")
 
 @app.get("/api/estimate")
 async def handle_estimate(params: Annotated[EstimationRequest, Query()]):
