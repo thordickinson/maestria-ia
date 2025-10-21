@@ -6,6 +6,12 @@ COPY estimador-react /app
 RUN pnpm install
 RUN pnpm run build
 
+ENV POSTGIS_DB_HOST=localhost
+ENV POSTGIS_DB_PORT=5432
+ENV POSTGIS_DB_USER=postgres
+ENV POSTGIS_DB_PASSWORD=postgres
+ENV POSTGIS_DB_NAME=gisdb
+
 
 FROM python:3.12-slim
 WORKDIR /app
