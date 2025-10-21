@@ -1,0 +1,10 @@
+estimador-react/node_modules
+estimador-react/.next
+estimador-react/.vscode
+estimador-react/dist
+
+indexador-py/.venv
+indexador-py/.vscode
+indexador-py/dist
+**/__pycache__/
+

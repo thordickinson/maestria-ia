@@ -1,7 +1,6 @@
-# Build a dockerfile that takes the indexador-py and estimador-react and puts them in a docker container
-# create a builder image from estimador-react
-FROM node:20-alpine
+FROM node:20-alpine AS builder
 WORKDIR /app
+RUN npm install -g pnpm
 COPY estimador-react /app
 RUN pnpm install
 RUN pnpm run build
@@ -15,9 +14,12 @@ ENV POSTGIS_DB_NAME=gisdb
 
 FROM python:3.12-slim
 WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
 COPY indexador-py /app
 RUN pip install --no-cache-dir -r requirements.txt
-# copy from builder image
 COPY --from=builder /app/dist /app/web
 
 EXPOSE 8000
