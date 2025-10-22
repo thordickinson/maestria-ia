@@ -5,6 +5,8 @@ COPY estimador-react /app
 RUN pnpm install
 RUN pnpm run build
 
+FROM python:3.12-slim
+
 ENV POSTGIS_DB_HOST=localhost
 ENV POSTGIS_DB_PORT=5432
 ENV POSTGIS_DB_USER=postgres
@@ -13,8 +15,6 @@ ENV POSTGIS_DB_NAME=gisdb
 
 ARG model=xgboost_model_2.1.pkl
 
-
-FROM python:3.12-slim
 WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
