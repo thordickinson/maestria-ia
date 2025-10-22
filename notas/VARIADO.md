@@ -8,7 +8,7 @@
         * Los portales ofrecen planes de publicacion limitados
         * Los agentes e inmobiliarias prefieren publicar inmuebles con comisiones altas
         * Publicaciones en sectores similares
-    * Como se hace el calculo de precios (estudio de mercado (calculo del valor del metro cuadrado), contar con espacio para negociar)
+    * Como se hace el calculo de precios (estudio de mercado (calculo del valor del metro cuadrado), contar con espacio para negociar). El valor de una propiedad está definida por el valor promedio del metro cuadrado de los inmuebles publicados en plataformas o por valores históricos de precios en el mismo sector o sectores similares.
 * Explicar la causa de los resultados (peor o mejor)
 
 
