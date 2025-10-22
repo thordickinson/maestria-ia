@@ -7,7 +7,28 @@
     <title>Estimador de precios</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div id="loading" class="loading-animation">
+        <p>Por favor espera...</p>
+      </div>
+      <style>
+        .loading-animation {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: 100vh;
+          font-size: 1.5em;
+          color: #646cff;
+          animation: blink 1.5s step-start infinite;
+        }
+        
+        @keyframes blink {
+          50% {
+            opacity: 0.5;
+          }
+        }
+      </style>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
