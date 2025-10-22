@@ -56,3 +56,27 @@ Conclusiones
 Tareas pendientes:
 [] A partir del modelo nuevo, detectar las variables más importantes y solo preguntar eso en el formulario.
 [] Optimizar la cantidad de variables que se usan
+
+[] Hacer la introducción
+[] Hacer el resumen (abstract)
+
+[] Mejoras al estado del arte
+[] Modificar el estado del arte para que no parezca una lista de métodos
+[] Agregar la metodología de calculo de precios que se conoce
+[] Agregar información a cerca del avaluo catastral
+
+
+[] Actualizar los objetivos?
+[] Los objetivos actuales indican que voy a hacer webscrapping, pero no es así
+
+[] Metodología?
+[] Actualizar la metodología: Describir en un documento y luego aumentar
+
+[] Resultados
+Reportar resultados
+Hacer tres caso de estudio
+
+[] Discusión
+
+
+[] Conclusiones y trabajo futuro
