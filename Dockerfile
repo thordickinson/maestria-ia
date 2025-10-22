@@ -23,7 +23,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY indexador-py /app
 RUN pip install --no-cache-dir -r requirements.txt
 COPY --from=builder /app/dist /app/web
-COPY ./analisis/data/models/${model} data/prediction_model.pkl
+COPY ./analisis/data/models/${model} models/prediction_model.pkl
 
 EXPOSE 8000
 # use uvicorn to run the server

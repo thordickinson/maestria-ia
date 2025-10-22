@@ -51,3 +51,8 @@ Creacion de la utilidad web para prediccion
     * Creacion de estadisticas a partir de los datos aumentados
 
 Conclusiones
+
+
+Tareas pendientes:
+[] A partir del modelo nuevo, detectar las variables más importantes y solo preguntar eso en el formulario.
+[] Optimizar la cantidad de variables que se usan
