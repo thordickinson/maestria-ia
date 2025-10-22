@@ -12,7 +12,7 @@ class EstimatorV1(XGBoostEstimator):
         'VILLAS DE ARANJUEZ', 'SAN', 'SAN PATRICIO', 'CHICO RESERVADO'
     ]
     def __init__(self):
-        super().__init__("data/models/xgboost_model_2.1.pkl")
+        super().__init__("data/models/prediction_model.pkl")
 
     async def extract_features(self, input: EstimationInput, augmented_data: GeohashStats) -> dict:
         

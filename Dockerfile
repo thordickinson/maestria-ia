@@ -11,6 +11,8 @@ ENV POSTGIS_DB_USER=postgres
 ENV POSTGIS_DB_PASSWORD=postgres
 ENV POSTGIS_DB_NAME=gisdb
 
+ARG model=xgboost_model_2.1.pkl
+
 
 FROM python:3.12-slim
 WORKDIR /app
@@ -21,6 +23,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY indexador-py /app
 RUN pip install --no-cache-dir -r requirements.txt
 COPY --from=builder /app/dist /app/web
+COPY ./analisis/data/models/${model} data/prediction_model.pkl
 
 EXPOSE 8000
 # use uvicorn to run the server
