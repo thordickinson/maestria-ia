@@ -1,0 +1,12 @@
+#!/bin/bash
+
+version=$1
+
+if [ -z "$version" ]; then
+  echo "Error: Version argument is required."
+  echo "Usage: build <version>"
+  exit 1
+fi
+
+
+docker build -t usa/estimador:$version .
