@@ -1,114 +1,30 @@
-% Incluir el cronograma de actividades
-
-\section{2024}
-\subsection{Abril 2024 - Junio 2024}
+\section{Resultados}
+\subsection{Modelo base}
+Se evaluaron múltiples algoritmos con validación cruzada (KFold=5, \texttt{shuffle=True}, \texttt{random\_state=42}), usando RMSE en escala real. El mejor desempeño base lo obtuvo \textbf{Random Forest}:
 \begin{itemize}
-    \item \textbf{Abril 2024:}
-    \begin{itemize}
-        \item Inicio del proyecto.
-        \item Revisión de la literatura y estudios previos sobre detección de patrones de pesca.
-        \item Definición de objetivos específicos y alcance del proyecto.
-    \end{itemize}
-    
-    \item \textbf{Mayo 2024:}
-    \begin{itemize}
-        \item Identificación y selección de fuentes de datos AIS.
-        \item Diseño del plan de adquisición de datos.
-        \item Configuración del entorno de trabajo (instalación de software y herramientas necesarias).
-    \end{itemize}
-    
-    \item \textbf{Junio 2024:}
-    \begin{itemize}
-        \item Inicio de la adquisición de datos AIS.
-        \item Realización de un análisis exploratorio inicial de los datos obtenidos.
-        \item Identificación de posibles problemas de calidad de los datos.
-    \end{itemize}
+    \item \textbf{CV (aprox)}: RF \(\approx\) 245M; XGB \(\approx\) 245M; LGBM \(\approx\) 246M; lineales \(\approx\) 348M; SVR \(\approx\) 913M.
+    \item \textbf{Hold-out (20\%)}: RF RMSE \(\approx\) 250.6M; MAE \(\approx\) 129.9M; R\textsuperscript{2} \(\approx\) 0.915.
+\end{itemize}
+El uso de transformaciones \(\log(\textit{precio\_venta})\) y \(\log(\textit{area})\) mejoró las métricas al regresar a la escala original.
+
+\subsection{Modelos con datos aumentados}
+Tras enriquecer con variables contextuales (POIs por radio, asignación de UPZ/barrio/localidad, avalúos por geohash) se entrenaron variantes XGBoost:
+\begin{itemize}
+    \item \textbf{v1 (reducido + \textit{barrio\_top})}: RMSE \(\approx\) 254.66M; MAE \(\approx\) 136.54M; R\textsuperscript{2} \(\approx\) 0.9139. Modelo exportado: \texttt{xgboost\_model\_2.1.pkl}.
+    \item \textbf{v2 (búsqueda aleatoria)}: hiperparámetros: \(n\_\textit{estimators}=500\), \(\textit{max\_depth}=9\), \(\textit{learning\_rate}=0.05\), \(\textit{subsample}=0.8\), \(\textit{colsample\_bytree}=0.8\), \(\alpha=0\), \(\lambda=1\). Hold-out: RMSE \(\approx\) 233.49M; MAE \(\approx\) 121.96M; R\textsuperscript{2} \(\approx\) 0.9276. Modelo exportado: \texttt{xgboost\_model\_2.2.pkl}.
 \end{itemize}
 
-\subsection{Julio 2024 - Septiembre 2024}
+\subsection{Importancia de variables y hallazgos}
 \begin{itemize}
-    \item \textbf{Julio 2024:}
-    \begin{itemize}
-        \item Limpieza y preprocesamiento de datos.
-        \item Desarrollo de métodos preliminares para la detección de patrones.
-        \item Diseño del estudio piloto.
-    \end{itemize}
-    
-    \item \textbf{Agosto 2024:}
-    \begin{itemize}
-        \item Ejecución del estudio piloto con un subconjunto de datos.
-        \item Evaluación y ajuste de los métodos basados en los resultados del estudio piloto.
-        \item Documentación de los hallazgos preliminares.
-    \end{itemize}
-    
-    \item \textbf{Septiembre 2024:}
-    \begin{itemize}
-        \item Refinamiento de los métodos y técnicas de análisis.
-        \item Planificación detallada del análisis completo del proyecto.
-        \item Revisión y ajuste del cronograma según los resultados obtenidos.
-    \end{itemize}
+    \item \textbf{Variables dominantes}: \emph{área}, \emph{latitud}, \emph{administración}, \emph{antigüedad}, \emph{longitud} aparecen consistentemente entre las más relevantes.
+    \item \textbf{Contexto espacial}: las variables de POIs por radio aportan de forma complementaria; su efecto es menor que el de las estructurales pero mejora el ajuste en v2.
+    \item \textbf{Distribución del error}: el percentil 80 del error absoluto se ubica en torno a \(\sim\)187M para el RF base; v2 reduce RMSE y MAE manteniendo estabilidad.
 \end{itemize}
 
-\subsection{Octubre 2024 - Diciembre 2024}
+\subsection{Artefactos y reproducibilidad}
 \begin{itemize}
-    \item \textbf{Octubre 2024:}
-    \begin{itemize}
-        \item Inicio del análisis de patrones de pesca en datos a gran escala.
-    \end{itemize}
-    
-    \item \textbf{Noviembre 2024:}
-    \begin{itemize}
-        \item Monitoreo y ajuste continuo de los métodos según los resultados obtenidos.
-        \item Desarrollo de visualizaciones y reportes preliminares.
-    \end{itemize}
-    
-    \item \textbf{Diciembre 2024:}
-    \begin{itemize}
-        \item Consolidación de resultados preliminares.
-        \item Revisión y ajustes finales antes de la pausa de fin de año.
-    \end{itemize}
+    \item Modelos serializados en \texttt{analisis/data/models/}: \texttt{randomforest\_model\_base.pkl}, \texttt{xgboost\_model\_2.1.pkl}, \texttt{xgboost\_model\_2.2.pkl}.
+    \item Dataset enriquecido: \texttt{analisis/data/aptos\_bogota\_enriched.csv}.
+    \item Pipeline de estimación expuesto vía \texttt{GET /api/estimate} en el backend (ver metodología).
 \end{itemize}
 
-\section{2025}
-\subsection{Enero 2025 - Marzo 2025}
-\begin{itemize}
-    \item \textbf{Enero 2025:}
-    \begin{itemize}
-        \item Reanudación del análisis de datos.
-        \item Revisión de los objetivos y ajuste de la metodología si es necesario.
-    \end{itemize}
-    
-    \item \textbf{Febrero 2025:}
-    \begin{itemize}
-        \item Integración de nuevos datos (si corresponde).
-        \item Continuación del análisis de patrones de pesca.
-    \end{itemize}
-    
-    \item \textbf{Marzo 2025:}
-    \begin{itemize}
-        \item Evaluación de los resultados obtenidos hasta la fecha.
-        \item Preparación de un informe intermedio.
-    \end{itemize}
-\end{itemize}
-
-\subsection{Abril 2025 - Junio 2025}
-\begin{itemize}
-    \item \textbf{Abril 2025:}
-    \begin{itemize}
-        \item Inicio de la fase de validación de los resultados.
-        \item Comparación de los resultados con estudios previos y datos reales.
-    \end{itemize}
-    
-    \item \textbf{Mayo 2025:}
-    \begin{itemize}
-        \item Ajustes finales en los métodos y técnicas de análisis.
-        \item Preparación del informe final y de las visualizaciones de resultados.
-    \end{itemize}
-    
-    \item \textbf{Junio 2025:}
-    \begin{itemize}
-        \item Revisión y finalización del informe del proyecto.
-        \item Presentación de los resultados a las partes interesadas.
-        \item Conclusión del proyecto y recomendaciones para futuros estudios.
-    \end{itemize}
-\end{itemize}

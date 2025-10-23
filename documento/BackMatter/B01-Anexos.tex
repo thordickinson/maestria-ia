@@ -4,3 +4,62 @@
 
 % \section{Informe de ejecución de pruebas}
 
+\section{Anexo técnico}
+
+\subsection{Capas PostGIS y SRID}
+\begin{itemize}
+    \item \textbf{Capas}: \texttt{barrios\_bogota}, \texttt{upz\_bogota}, \texttt{localidades\_bogota}, \texttt{estratos\_manzana}, \texttt{avaluo\_catastral\_manzana}, \texttt{gis\_osm\_pois\_free\_1}, \texttt{gis\_osm\_pois\_a\_free\_1} \cite{datosabiertos_bogota}.
+    \item \textbf{SRID}: 4326 (WGS84). Para consultas por distancia se usa proyección a 3857 cuando aplica (\texttt{ST\_Transform}).
+    \item \textbf{Consultas típicas}: \texttt{ST\_DWithin}, \texttt{ST\_Contains}, \texttt{ST\_Intersects}, centroids y buffers en metros.
+\end{itemize}
+
+\subsection{Sistemas de referencia: WGS84 (EPSG:4326) y Web Mercator (EPSG:3857)}\label{annex:crs}
+\begin{itemize}
+    \item \textbf{WGS84 (EPSG:4326)}: sistema geodésico global usado por GPS. \emph{Coordenadas en grados} (latitud/longitud). Ventaja: interoperabilidad y exactitud posicional. Limitación: los grados no son métricos; 1$^{\circ}$ de longitud equivale a distintas distancias según la latitud.
+    \item \textbf{Web Mercator (EPSG:3857)}: proyección métrica popular para mapas web. \emph{Coordenadas en metros} (pseudo-mercator). Ventaja: permite cálculos de distancia y \texttt{ST\_DWithin} en \emph{metros}. Limitación: distorsiona áreas y distancias al alejarse del ecuador (aceptable para escalas urbanas como Bogotá).
+    \item \textbf{Cuándo usar cada uno}: almacenar y cruzar capas administrativas en 4326; proyectar a 3857 para consultas con radios en metros o buffers métricos (\texttt{ST\_Transform(geom, 3857)}).
+    \item \textbf{Implicaciones en PostGIS}: para \texttt{ST\_DWithin} con radio en metros, asegure que ambas geometrías estén en 3857; para \texttt{ST\_Contains}/\texttt{ST\_Intersects} topológicos, 4326 es suficiente.
+\end{itemize}
+
+\subsection{Reglas de limpieza}
+\begin{itemize}
+    \item \textbf{Outliers (p99)}: \emph{área} \(\leq 464\,m^2\), \emph{precio\_venta} \(\leq 5{,}4\times10^9\) COP.
+    \item \textbf{Precio mínimo}: \(\geq 50{,}000{,}000\) COP.
+    \item \textbf{Área = 0}: mediana de comparables (\emph{estrato}, \emph{habitaciones}, \emph{banos}, \emph{sector}); si no hay, mediana por \emph{estrato}.
+    \item \textbf{Parqueaderos < 0}: reemplazo por moda del mismo \emph{estrato}; si no hay, moda global.
+    \item \textbf{Coordenadas}: imputación por mediana del \emph{sector} y filtro final a Bogotá: lat \([4.4,4.9]\), lon \([-74.3,-73.9]\).
+    \item \textbf{Estrato fuera [1--6]}: imputación por modo del \emph{sector}; si no hay, modo global.
+\end{itemize}
+
+\subsection{Enriquecimiento geoespacial}
+\begin{itemize}
+    \item \textbf{Conteos OSM por radio}: 100, 300, 500, 1000, 2000 m.
+    \item \textbf{Categorías}: \emph{education}, \emph{healthcare}, \emph{retail\_access}, \emph{dining\_and\_entertainment}, \emph{accommodation}, \emph{parks\_and\_recreation}, \emph{infrastructure\_services}, \emph{cultural\_amenities}.
+    \item \textbf{Región calculada}: \emph{upz\_calculada}, \emph{barrio\_calculado}, \emph{localidad\_calculada} por \texttt{ST\_Contains}.
+    \item \textbf{Avalúos por geohash}: promedios de \emph{catastral} y \emph{comercial} en bbox del geohash sobre \texttt{avaluo\_catastral\_manzana}.
+    \item \textbf{Persistencia}: tabla \texttt{property\_data} adaptada al DF y agregados \texttt{region\_stats} (barrio/UPZ/localidad) con \(n\), medias, desviaciones y cuartiles.
+\end{itemize}
+
+\subsection{Modelos, métricas e hiperparámetros}
+\begin{itemize}
+    \item \textbf{Validación}: KFold=5 (\texttt{shuffle=True}, \texttt{random\_state=42}); métrica principal RMSE (escala real).
+    \item \textbf{Base}: RF \(\approx\) 245M (CV); hold-out (20\%): RMSE \(\approx\) 250.6M, MAE \(\approx\) 129.9M, R\textsuperscript{2} \(\approx\) 0.915.
+    \item \textbf{Aumentados}: v1 (XGB reducido + \emph{barrio\_top}) RMSE \(\approx\) 254.66M; v2 (XGB tuning) RMSE \(\approx\) 233.49M.
+    \item \textbf{Hiperparámetros v2}: \(n\_\textit{estimators}=500\), \(\textit{max\_depth}=9\), \(\textit{learning\_rate}=0.05\), \(\textit{subsample}=0.8\), \(\textit{colsample\_bytree}=0.8\), \(\alpha=0\), \(\lambda=1\).
+\end{itemize}
+
+\subsection{API y operación}
+\begin{itemize}
+    \item \textbf{Endpoint}: \texttt{GET /api/estimate} (FastAPI). Entrada: lat, lon y atributos de la propiedad; salida: estadísticos del punto/region y predicción del modelo.
+    \item \textbf{Modelo por defecto}: 2.1 (recomendado 2.2 por menor RMSE).
+    \item \textbf{Ambiente}: PostGIS con SRID 4326; consultas en metros usando \texttt{ST\_Transform} a 3857.
+\end{itemize}
+
+\subsection{Reproducibilidad}
+\begin{itemize}
+    \item Notebooks en \texttt{analisis/notebooks/} para descarga, limpieza, EDA y entrenamiento.
+    \item Artefactos de modelos en \texttt{analisis/data/models/} (\texttt{randomforest\_model\_base.pkl}, \texttt{xgboost\_model\_2.1.pkl}, \texttt{xgboost\_model\_2.2.pkl}).
+    \item Enriquecimiento y persistencia en \texttt{indexador-py/} (ETL asíncrono, inserción por lotes, creación dinámica de tabla).
+    \item Semillas y configuración de validación fijadas para replicar métricas.
+\end{itemize}
+
