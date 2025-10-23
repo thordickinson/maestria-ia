@@ -1,5 +1,5 @@
 \section*{Metodología}
-La metodología implementada comprende: (i) adquisición de datos base, (ii) limpieza y preprocesamiento con umbrales y reglas reproducibles, (iii) enriquecimiento geoespacial mediante capas del distrito y conteos de POIs (OSM), (iv) entrenamiento y evaluación de modelos base y aumentados, y (v) persistencia y exposición vía API.
+Se estructuró un proceso reproducible para estimación de precios de vivienda que incluyó: (i) adquisición y validación de datos, (ii) limpieza con reglas explícitas para mitigar sesgos por valores extremos y errores de captura, (iii) enriquecimiento geoespacial con capas oficiales y POIs, (iv) entrenamiento y evaluación de modelos con validación cruzada, y (v) persistencia de artefactos y exposición mediante API. Se privilegió una redacción técnica, impersonal y concisa, siguiendo criterios de claridad y neutralidad.
 
 \begin{figure}[h]
     \centering
@@ -9,13 +9,14 @@ La metodología implementada comprende: (i) adquisición de datos base, (ii) lim
 \end{figure}
 
 \subsection*{Fuentes de datos}
+Se integraron fuentes públicas y abiertas que aseguran trazabilidad y actualización. Los datos de inmuebles proveen variables estructurales, mientras que las capas distritales y POIs agregan contexto espacial y de accesibilidad.
 \begin{itemize}
-    \item \textbf{Datos de inmuebles (base)}: JSON único de agosto de 2024 publicado en GitHub (\texttt{builker-col/bogota-apartments}). Se procesó a CSV.
-    \item \textbf{Datos abiertos del distrito (PostGIS)}: capas consultadas en agosto de 2025: \texttt{barrios\_bogota}, \texttt{upz\_bogota}, \texttt{localidades\_bogota}, \texttt{estratos\_manzana}, \texttt{avaluo\_catastral\_manzana}, y POIs OSM (\texttt{gis\_osm\_pois\_free\_1}, \texttt{gis\_osm\_pois\_a\_free\_1}), con SRID esperado 4326 \cite{datosabiertos_bogota}.
+    \item \textbf{Datos de inmuebles (base)}: JSON único de agosto de 2024 publicado en GitHub (\texttt{builker-col/bogota-apartments}). Se transformó a CSV para su análisis.
+    \item \textbf{Datos abiertos del distrito (PostGIS)}: capas consultadas en agosto de 2025: \texttt{barrios\_bogota}, \texttt{upz\_bogota}, \texttt{localidades\_bogota}, \texttt{estratos\_manzana}, \texttt{avaluo\_catastral\_manzana}, y POIs OSM (\texttt{gis\_osm\_pois\_free\_1}\allowbreak, \texttt{gis\_osm\_pois\_a\_free\_1}), con SRID esperado 4326 \cite{datosabiertos_bogota}.
 \end{itemize}
 
 \subsection*{Limpieza y preprocesamiento}
-Realizado en Python (\textit{Pandas}, \textit{NumPy}, \textit{scikit-learn}) sobre el CSV base:
+Se normalizó la calidad del dataset para reducir la influencia de colas largas y errores de captura. Se imputaron valores faltantes preservando coherencia estructural entre variables comparables. El proceso se ejecutó en Python (\textit{Pandas}, \textit{NumPy}, \textit{scikit-learn}).
 \begin{itemize}
     \item \textbf{Outliers}: filtro por percentil 99. \emph{Área} \(\leq 464\,m^2\), \emph{precio\_venta} \(\leq 5{,}4\times 10^9\) COP.
     \item \textbf{Precio mínimo}: \(\geq 50{,}000{,}000\) COP.
@@ -26,16 +27,17 @@ Realizado en Python (\textit{Pandas}, \textit{NumPy}, \textit{scikit-learn}) sob
 \end{itemize}
 
 \subsection*{Enriquecimiento geoespacial}
-Se calcula por propiedad (lat, lon) con un pipeline asíncrono y persistencia en PostGIS:
+Se incorporó información de entorno con el fin de capturar efectos de accesibilidad y amenidades. El cómputo se realizó por propiedad (lat, lon) mediante pipeline asíncrono con persistencia en PostGIS.
 \begin{itemize}
-    \item \textbf{Conteos de POIs OSM} por radios de 100, 300, 500, 1000 y 2000 metros en categorías agregadas: \emph{education}, \emph{healthcare}, \emph{retail\_access}, \emph{dining\_and\_entertainment}, \emph{accommodation}, \emph{parks\_and\_recreation}, \emph{infrastructure\_services}, \emph{cultural\_amenities}.
+    \item \textbf{Conteos de POIs OSM}: radios de 100, 300, 500, 1000 y 2000 metros en categorías agregadas: \emph{education}, \emph{healthcare}, \emph{retail\_access}, \emph{dining\_and\_entertainment}, \emph{accommodation}, \emph{parks\_and\_recreation}, \emph{infrastructure\_services}, \emph{cultural\_amenities}.
     \item \textbf{Metadatos regionales}: asignación de UPZ, barrio y localidad; variables \emph{upz\_calculada}, \emph{barrio\_calculado}, \emph{localidad\_calculada}.
     \item \textbf{Valuación por geohash}: promedios de \emph{catastral} y \emph{comercial} por celda (geohash), usando \texttt{avaluo\_catastral\_manzana}.
     \item \textbf{Persistencia y estadísticas}: escritura en \texttt{property\_data} y agregación en \texttt{region\_stats} (barrio, UPZ, localidad) vía \texttt{ST\_Contains}, con \(n\), medias, desviaciones y cuartiles.
 \end{itemize}
 
 \subsection*{Modelos base}
-Conjunto de modelos evaluados con validación cruzada \(KFold=5,\ \texttt{shuffle=True},\ \texttt{random\_state=42}\), métrica RMSE (escala real). Preprocesamiento: \texttt{SimpleImputer} (media/moda), \texttt{StandardScaler}, \texttt{OneHotEncoder}. Resultados (aprox.):
+Se evaluaron varios algoritmos con una misma estrategia de preprocesamiento para asegurar comparabilidad. La validación cruzada controló varianza y evitó sobreajuste; la métrica principal fue RMSE en escala real.
+Preprocesamiento: \texttt{SimpleImputer} (media/moda), \texttt{StandardScaler}, \texttt{OneHotEncoder}. Resultados (aprox.):
 \begin{itemize}
     \item \textbf{Random Forest}: RMSE \(\approx\) 245M (CV); en\ hold-out (20\%): RMSE \(\approx\) 250.6M, MAE \(\approx\) 129.9M, R\textsuperscript{2} \(\approx\) 0.915.
     \item \textbf{XGBoost / LightGBM}: RMSE \(\approx\) 245--246M (CV).
@@ -44,7 +46,7 @@ Conjunto de modelos evaluados con validación cruzada \(KFold=5,\ \texttt{shuffl
 Se evaluó además con \(\log(\textit{precio\_venta})\) y \(\log(\textit{area})\), mejorando métricas en escala original.
 
 \subsection*{Modelos con datos aumentados}
-Se entrenaron variantes con variables enriquecidas y selección reducida:
+Se entrenaron variantes con variables enriquecidas y selección reducida para medir el aporte incremental del contexto espacial.
 \begin{itemize}
     \item \textbf{v0 (XGB)}: \(\log(\textit{area})\), one-hot; variables estructurales dominan; enriquecidas con aporte marginal.
     \item \textbf{v1 (XGB reducido + barrio\_top)}: hold-out RMSE \(\approx\) 254.66M, MAE \(\approx\) 136.54M, R\textsuperscript{2} \(\approx\) 0.9139. Modelo exportado como \texttt{xgboost\_model\_2.1.pkl}.
@@ -52,8 +54,8 @@ Se entrenaron variantes con variables enriquecidas y selección reducida:
 \end{itemize}
 
 \subsection*{Exposición de resultados y API}
-Se expone un endpoint \texttt{GET /api/estimate} (FastAPI) que combina estadísticas del punto (POIs, región, valuación) y la predicción del modelo: agrega \texttt{get\_point\_stats}, \texttt{get\_region\_stats} y \texttt{estimate(...)} sobre la versión de modelo configurada (por defecto 2.1; se recomienda 2.2 por mejor RMSE).
+Se expuso un endpoint \texttt{GET /api/estimate} (FastAPI) que integra estadísticos del punto (POIs, región, valuación) y la predicción del modelo. El servicio agrega \texttt{get\_point\_stats}, \texttt{get\_region\_stats} y \texttt{estimate(...)} sobre la versión de modelo configurada (por defecto 2.1; se recomienda 2.2 por mejor RMSE).
 
 \subsection*{Reproducibilidad}
-Los notebooks en \texttt{analisis/notebooks/} contienen el detalle de extracción, limpieza, evaluación y entrenamiento; el proyecto \texttt{indexador-py/} encapsula el enriquecimiento y la persistencia en PostGIS. Se controlaron semillas aleatorias y configuración de validación para permitir replicación de métricas.
+Se documentó el flujo completo para su ejecución independiente. Los notebooks en \texttt{analisis/notebooks/} contienen extracción, limpieza, EDA y entrenamiento; el proyecto \texttt{indexador-py/} encapsula el enriquecimiento y la persistencia en PostGIS. Se fijaron semillas aleatorias y la configuración de validación para replicar métricas. Los modelos serializados y datasets intermedios se registraron en \texttt{analisis/data/}.
 
