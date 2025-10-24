@@ -1,5 +1,19 @@
 \section*{Metodología}
-Se estructuró un proceso reproducible para estimación de precios de vivienda que incluyó: (i) adquisición y validación de datos, (ii) limpieza con reglas explícitas para mitigar sesgos por valores extremos y errores de captura, (iii) enriquecimiento geoespacial con capas oficiales y POIs, (iv) entrenamiento y evaluación de modelos con validación cruzada, y (v) persistencia de artefactos y exposición mediante API. Se privilegió una redacción técnica, impersonal y concisa, siguiendo criterios de claridad y neutralidad.
+Durante el desarrollo del proyecto se estructuró un proceso reproducible para estimación 
+de precios de vivienda que incluyó: 
+
+% TODO: Usar una lista ordenada
+(i) adquisición y validación de datos, 
+(ii) limpieza con reglas explícitas para mitigar sesgos por valores extremos y errores de captura,
+(iii) entrenamiento de modelo de linea base, 
+(iv) enriquecimiento geoespacial con capas oficiales y POIs, 
+(v) entrenamiento y evaluación de modelos con validación cruzada,
+(vi) cálculo de valores estadísticos agrupados para enriquecer resultados, 
+(vii) persistencia de artefactos y exposición mediante API. 
+
+
+% TODO: incorporar información a cerca de la selección de la metrica de error RMSE, por su interpretabilidad y su unidad (pesos colombianos)
+
 
 \begin{figure}[h]
     \centering
@@ -9,11 +23,23 @@ Se estructuró un proceso reproducible para estimación de precios de vivienda q
 \end{figure}
 
 \subsection*{Fuentes de datos}
-Se integraron fuentes públicas y abiertas que aseguran trazabilidad y actualización. Los datos de inmuebles proveen variables estructurales, mientras que las capas distritales y POIs agregan contexto espacial y de accesibilidad.
+Se integraron fuentes públicas y abiertas. 
+Los datos de inmuebles proveen variables estructurales, mientras que las capas distritales y POIs agregan contexto espacial y de accesibilidad.
 \begin{itemize}
     \item \textbf{Datos de inmuebles (base)}: JSON único de agosto de 2024 publicado en GitHub (\texttt{builker-col/bogota-apartments}). Se transformó a CSV para su análisis.
-    \item \textbf{Datos abiertos del distrito (PostGIS)}: capas consultadas en agosto de 2025: \texttt{barrios\_bogota}, \texttt{upz\_bogota}, \texttt{localidades\_bogota}, \texttt{estratos\_manzana}, \texttt{avaluo\_catastral\_manzana}, y POIs OSM (\texttt{gis\_osm\_pois\_free\_1}\allowbreak, \texttt{gis\_osm\_pois\_a\_free\_1}), con SRID esperado 4326 \cite{datosabiertos_bogota}.
+    \item \textbf{Datos abiertos del distrito (PostGIS)}: Se obtuvieron capas desde la web de datos abiertos del Distrito \cite{datosabiertos_bogota} 
+    (consultada en julio de 2025), estos archivos fueron descargados en formato .shp y 
+    luego fueron cargados como capas en postgis mediante un script de importación, las capas
+    descargados fueron las siguientes: \texttt{barrios\_bogota}, \texttt{upz\_bogota}, 
+    \texttt{localidades\_bogota}, 
+    \texttt{estratos\_manzana}, \texttt{avaluo\_catastral\_manzana}, 
+    y POIs OSM (\texttt{gis\_osm\_pois\_free\_1}\allowbreak, \texttt{gis\_osm\_pois\_a\_free\_1}).
+    \item \textbf{Puntos de interés (POIs)}:
+    Los puntos de interés cercanos se obtuvieron a partir de datos de OpenStreet map, 
+    descargados desde la página web de Geofabrik \cite{geofabrik}.
 \end{itemize}
+
+
 
 \subsection*{Limpieza y preprocesamiento}
 Se normalizó la calidad del dataset para reducir la influencia de colas largas y errores de captura. Se imputaron valores faltantes preservando coherencia estructural entre variables comparables. El proceso se ejecutó en Python (\textit{Pandas}, \textit{NumPy}, \textit{scikit-learn}).
@@ -26,15 +52,6 @@ Se normalizó la calidad del dataset para reducir la influencia de colas largas 
     \item \textbf{Estrato fuera de rango [1--6]}: imputación por modo del \emph{sector}; si no hay, modo global.
 \end{itemize}
 
-\subsection*{Enriquecimiento geoespacial}
-Se incorporó información de entorno con el fin de capturar efectos de accesibilidad y amenidades. El cómputo se realizó por propiedad (lat, lon) mediante pipeline asíncrono con persistencia en PostGIS.
-\begin{itemize}
-    \item \textbf{Conteos de POIs OSM}: radios de 100, 300, 500, 1000 y 2000 metros en categorías agregadas: \emph{education}, \emph{healthcare}, \emph{retail\_access}, \emph{dining\_and\_entertainment}, \emph{accommodation}, \emph{parks\_and\_recreation}, \emph{infrastructure\_services}, \emph{cultural\_amenities}.
-    \item \textbf{Metadatos regionales}: asignación de UPZ, barrio y localidad; variables \emph{upz\_calculada}, \emph{barrio\_calculado}, \emph{localidad\_calculada}.
-    \item \textbf{Valuación por geohash}: promedios de \emph{catastral} y \emph{comercial} por celda (geohash), usando \texttt{avaluo\_catastral\_manzana}.
-    \item \textbf{Persistencia y estadísticas}: escritura en \texttt{property\_data} y agregación en \texttt{region\_stats} (barrio, UPZ, localidad) vía \texttt{ST\_Contains}, con \(n\), medias, desviaciones y cuartiles.
-\end{itemize}
-
 \subsection*{Modelos base}
 Se evaluaron varios algoritmos con una misma estrategia de preprocesamiento para asegurar comparabilidad. La validación cruzada controló varianza y evitó sobreajuste; la métrica principal fue RMSE en escala real.
 Preprocesamiento: \texttt{SimpleImputer} (media/moda), \texttt{StandardScaler}, \texttt{OneHotEncoder}. Resultados (aprox.):
@@ -44,6 +61,27 @@ Preprocesamiento: \texttt{SimpleImputer} (media/moda), \texttt{StandardScaler}, 
     \item \textbf{Lineales}: \(\approx\) 348M; \textbf{SVR}: \(\approx\) 913M.
 \end{itemize}
 Se evaluó además con \(\log(\textit{precio\_venta})\) y \(\log(\textit{area})\), mejorando métricas en escala original.
+
+
+% TODO: Inicio de creación del modelo aumentado
+
+\subsection*{Uso de Geohash}
+Para optimizar el cálculo de puntos cercanos, se utilizó el geohash con un nivel de precisión que 
+asegurara una granularidad adecuada para agrupar sectores similares sin comprometer el rendimiento. 
+Se seleccionó un nivel de precisión 7, que genera cuadrículas de aproximadamente 
+152.59 metros \cite{geohash_size}.
+
+\subsection*{Enriquecimiento geoespacial}
+Se incorporó información de entorno con el fin de capturar efectos de accesibilidad y amenidades. 
+El cómputo se realizó por geohash y luego cada propiedad se ubicó dentro de cada geohash para 
+agregar variables como conteos de POIs OSM, metadatos regionales y valuación por geohash.
+\begin{itemize}
+    \item \textbf{Conteos de POIs OSM}: radios de 100, 300, 500, 1000 y 2000 metros en categorías agregadas: \emph{education}, \emph{healthcare}, \emph{retail\_access}, \emph{dining\_and\_entertainment}, \emph{accommodation}, \emph{parks\_and\_recreation}, \emph{infrastructure\_services}, \emph{cultural\_amenities}.
+    \item \textbf{Metadatos regionales}: asignación de UPZ, barrio y localidad; variables \emph{upz\_calculada}, \emph{barrio\_calculado}, \emph{localidad\_calculada}.
+    \item \textbf{Valuación por geohash}: promedios de \emph{catastral} y \emph{comercial} por celda (geohash), usando \texttt{avaluo\_catastral\_manzana}.
+    \item \textbf{Persistencia y estadísticas}: escritura en \texttt{property\_data} y agregación en \texttt{region\_stats} (barrio, UPZ, localidad) vía \texttt{ST\_Contains}, con \(n\), medias, desviaciones y cuartiles.
+\end{itemize}
+
 
 \subsection*{Modelos con datos aumentados}
 Se entrenaron variantes con variables enriquecidas y selección reducida para medir el aporte incremental del contexto espacial.
