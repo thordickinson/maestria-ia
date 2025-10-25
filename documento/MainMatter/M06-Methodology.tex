@@ -1,18 +1,18 @@
 \section*{Metodología}
 Durante el desarrollo del proyecto se estructuró un proceso reproducible para estimación 
-de precios de vivienda que incluyó: 
+de precios de vivienda que incluyó:
+\begin{enumerate}
+    \item Adquisición y validación de datos.
+    \item Limpieza con reglas explícitas para mitigar sesgos por valores extremos y errores de captura.
+    \item Entrenamiento de un modelo de línea base.
+    \item Enriquecimiento geoespacial con capas oficiales y POIs.
+    \item Entrenamiento y evaluación de modelos con validación cruzada.
+    \item Cálculo de valores estadísticos agrupados para enriquecer resultados.
+    \item Persistencia de artefactos y exposición mediante API.
+\end{enumerate}
 
-% TODO: Usar una lista ordenada
-(i) adquisición y validación de datos, 
-(ii) limpieza con reglas explícitas para mitigar sesgos por valores extremos y errores de captura,
-(iii) entrenamiento de modelo de linea base, 
-(iv) enriquecimiento geoespacial con capas oficiales y POIs, 
-(v) entrenamiento y evaluación de modelos con validación cruzada,
-(vi) cálculo de valores estadísticos agrupados para enriquecer resultados, 
-(vii) persistencia de artefactos y exposición mediante API. 
 
-
-% TODO: incorporar información a cerca de la selección de la metrica de error RMSE, por su interpretabilidad y su unidad (pesos colombianos)
+La métrica principal seleccionada fue \textbf{RMSE} (raíz del error cuadrático medio) por su interpretabilidad en la misma unidad del objetivo (pesos colombianos) y su mayor penalización de errores grandes, deseable en valuaciones. Se reportan además \textbf{MAE} como medida robusta del error absoluto y \(\mathbf{R^2}\) para el ajuste explicativo.
 
 
 \begin{figure}[h]
@@ -62,8 +62,7 @@ Preprocesamiento: \texttt{SimpleImputer} (media/moda), \texttt{StandardScaler}, 
 \end{itemize}
 Se evaluó además con \(\log(\textit{precio\_venta})\) y \(\log(\textit{area})\), mejorando métricas en escala original.
 
-
-% TODO: Inicio de creación del modelo aumentado
+Con base en la línea base, se desarrolló un \emph{modelo aumentado} incorporando variables de contexto espacial (POIs por radio, metadatos regionales y valuación por geohash) para capturar efectos de accesibilidad y localización.
 
 \subsection*{Uso de Geohash}
 Para optimizar el cálculo de puntos cercanos, se utilizó el geohash con un nivel de precisión que 

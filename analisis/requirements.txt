@@ -1,0 +1,32 @@
+python-dotenv
+
+sqlalchemy
+psycopg2-binary
+asyncpg
+tqdm
+
+python-geohash
+
+scikit-learn
+scipy
+numpy
+pandas
+polars
+seaborn
+xgboost
+lightgbm
+shap
+joblib
+cloudpickle
+
+ipykernel
+pydantic
+
+
+# For Jupyter Notebook support
+jupyterlab
+# For visualization
+plotly
+
+fastapi
+uvicorn
