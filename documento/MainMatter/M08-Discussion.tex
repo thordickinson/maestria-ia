@@ -1,26 +1,52 @@
-% Incluir el presupuesto necesario para el desarrollo del proyecto, estime los recursos necesarios y el costo de cada uno de ellos así como el de cada una de las horas del trabajo de los involucrados en el desarrollo del proyecto
+\section*{Discusión}
 
-% Incluir el presupuesto necesario para el desarrollo del proyecto, estime los recursos necesarios y el costo de cada uno de ellos así como el de cada una de las horas del trabajo de los involucrados en el desarrollo del proyecto, a continuaci\'on se provee un ejemplo del presupuesto
+El presente estudio tuvo como propósito evaluar el impacto del enriquecimiento geoespacial en la predicción de precios de vivienda en Bogotá, analizando si la incorporación de variables contextuales (proximidad a servicios, equipamientos urbanos y características de entorno) mejoraba la capacidad explicativa de un modelo de aprendizaje automático respecto a uno construido únicamente con variables estructurales. Los resultados mostraron que, aunque las variables espaciales no incrementaron de forma sustancial la precisión del modelo, sí aportaron información valiosa para interpretar la lógica territorial del mercado inmobiliario.
 
-Se ha realizado una estimación de costos para el procesamiento de datos de Global Fishing Watch utilizando Amazon SageMaker, considerando un tamaño de dataset de 10 GB, el uso de instancias de tipo \texttt{ml.m5.large} para procesamiento y entrenamiento, y almacenamiento en Amazon S3. El procesamiento se estima en 8 horas diarias durante 20 días al mes, con 5 modelos entrenados al mes, cada uno tomando 10 horas. Los costos mensuales incluyen \$18.56 para procesamiento, \$5.80 para entrenamiento y \$0.23 para almacenamiento, resultando en un costo total mensual de \$24.59. Para un periodo de 15 meses (abril 2024 - junio 2025), el costo total estimado es de aproximadamente \$368.85.
+\subsection*{Evaluación técnica y estabilidad del modelo}
 
-\section{Tabla de Estimación de Costos}
+El modelo base, entrenado con variables estructurales y administrativas, presentó un desempeño destacado y estable, con un RMSE promedio de 0.151 y un $R^2$ de 0.965. Este resultado confirma que los atributos físicos del inmueble —principalmente el área, el estrato, el número de parqueaderos y la antigüedad— concentran la mayor parte de la varianza explicativa del precio. La validación cruzada de diez pliegues evidenció una baja dispersión en los errores, lo cual indica robustez y ausencia de sobreajuste. Asimismo, la transformación logarítmica aplicada al precio y al área permitió estabilizar la varianza y mejorar la linealidad de las relaciones, contribuyendo a la calidad del ajuste.
 
-\begin{table}[h!]
-\centering
-\caption{Estimación de costos para el procesamiento de datos de Global Fishing Watch usando Amazon SageMaker}
-\begin{tabular}{|m{6cm}|m{4cm}|m{4cm}|}
-\hline
-\textbf{Concepto} & \textbf{Costo Mensual (\$)} & \textbf{Total para 15 meses (\$)} \\
-\hline
-Procesamiento (SageMaker) & 18.56 & 278.40 \\
-\hline
-Entrenamiento de Modelos & 5.80 & 87.00 \\
-\hline
-Almacenamiento (S3) & 0.23 & 3.45 \\
-\hline
-\textbf{Costo Total} & \textbf{24.59} & \textbf{368.85} \\
-\hline
-\end{tabular}
-\end{table}
+\subsection*{Interpretación económica de los resultados}
+
+El comportamiento del modelo base refleja, en gran medida, las dinámicas reales de valoración utilizadas por agentes inmobiliarios y portales especializados. En la práctica, las inmobiliarias y asesores comerciales suelen estimar los precios de publicación a partir del \textit{precio por metro cuadrado} de propiedades comparables en la misma zona, ajustando ligeramente por características como número de baños o estado de conservación. Este procedimiento, basado en comparaciones locales, implica que las variables estructurales y socioeconómicas ya contienen implícitamente gran parte de la información espacial que el modelo podría aprender.
+
+Desde esta perspectiva, el alto rendimiento del modelo base no solo valida su solidez técnica, sino que también revela la racionalidad del mercado: la ubicación y el tamaño explican la mayor parte del precio porque reflejan las prácticas habituales de valoración en el sector inmobiliario.
+
+\subsection*{Aporte y limitaciones de las variables geoespaciales}
+
+Aunque las variables geoespaciales no produjeron una mejora significativa en el RMSE, su inclusión permitió una interpretación más rica del entorno urbano. Sin embargo, el efecto predictivo limitado puede explicarse por varios factores:
+
+\begin{itemize}
+    \item \textbf{Redundancia espacial:} los inmuebles cercanos tienden a compartir características similares de accesibilidad y entorno. Al utilizar radios fijos (100 a 2000 metros) para el cálculo de puntos de interés, muchos registros presentaron conteos de POIs prácticamente idénticos, lo que redujo la variabilidad informativa.
+    \item \textbf{Segmentación del mercado:} los estratos socioeconómicos en Bogotá ya actúan como proxy espacial del acceso a servicios y equipamientos, haciendo que las variables de entorno sean parcialmente redundantes.
+    \item \textbf{Resolución de los datos:} la agregación por geohash de nivel 7 (aprox. 150 metros) ofrece una granularidad adecuada, pero no capta microdiferencias relevantes en áreas con alta densidad de servicios o variabilidad de precios.
+\end{itemize}
+
+A pesar de estas limitaciones, las variables geoespaciales aportaron valor interpretativo. La importancia asignada a la latitud y longitud dentro del modelo reducido sugiere que la localización sigue siendo un componente estructural del valor, aunque su efecto marginal sea menor una vez controladas las variables internas del inmueble.
+
+\subsection*{Sesgos y representatividad de los datos}
+
+Un aspecto relevante para comprender los resultados es la naturaleza de los datos utilizados. Los portales inmobiliarios operan bajo esquemas de pago por publicación: las inmobiliarias adquieren paquetes que les permiten listar un número limitado de inmuebles por mes. En consecuencia, tienden a priorizar la publicación de propiedades de mayor valor, que generan comisiones más altas y justifican mejor la inversión publicitaria. Este comportamiento introduce un sesgo estructural en la muestra, sobrerrepresentando inmuebles de estratos medios y altos, y subrepresentando zonas periféricas o de menor valor.
+
+Este sesgo puede explicar por qué los modelos —tanto el base como el enriquecido— alcanzan un rendimiento mayor en los sectores de alta valorización y presentan errores más altos en áreas con menor presencia de datos. En otras palabras, el modelo no solo refleja patrones del mercado inmobiliario, sino también las dinámicas de visibilidad y acceso a la información dentro de los portales digitales.
+
+\subsection*{Análisis de error y generalización}
+
+El análisis de error mostró que el modelo mantiene un comportamiento estable a lo largo de los diferentes rangos de precios: el error relativo promedio se mantiene entre 3\% y 4\%. Las desviaciones mayores se concentran en zonas de alta valorización (Chicó, Santa Cecilia, Cerros de Suba), donde intervienen factores cualitativos no registrados, como acabados, vista panorámica o reputación del edificio. En contraste, los sectores intermedios y periféricos presentaron un error más uniforme, lo que sugiere que el modelo generaliza bien en contextos homogéneos.
+
+Este patrón refuerza la idea de que la mayor parte de la varianza explicativa proviene de características estructurales y de mercado, mientras que las variables de entorno aportan información secundaria más útil para análisis espaciales que para predicción directa.
+
+\subsection*{Implicaciones y oportunidades futuras}
+
+Los resultados demuestran que los modelos basados en aprendizaje automático pueden replicar con alta fidelidad las dinámicas de valoración observadas en el mercado inmobiliario. El enriquecimiento geoespacial, aunque no mejora de forma significativa las métricas de precisión, amplía la interpretabilidad del modelo y permite visualizar los factores contextuales que influyen en la formación de precios. 
+
+De cara a futuras investigaciones, se sugiere:
+\begin{itemize}
+    \item Incrementar la granularidad espacial (por manzana o código catastral) y temporal (series trimestrales o mensuales).
+    \item Incorporar variables de conectividad real, como tiempos de desplazamiento o accesibilidad multimodal.
+    \item Integrar fuentes complementarias de datos económicos (tasa de valorización, dinámica de oferta y demanda).
+    \item Explorar modelos híbridos o espaciales avanzados (GWR, \textit{graph neural networks}) para capturar autocorrelaciones geográficas.
+\end{itemize}
+
+En síntesis, los resultados reflejan tanto la estructura técnica del modelo como las lógicas de mercado que determinan el precio de la vivienda en Bogotá: el área y la ubicación siguen siendo los principales determinantes del valor, mientras que el contexto geográfico aporta profundidad analítica sin alterar de manera sustancial la precisión global del sistema.
 

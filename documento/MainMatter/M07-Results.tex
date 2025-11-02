@@ -1,30 +1,61 @@
-\section{Resultados}
-\subsection{Modelo base}
-Se evaluaron múltiples algoritmos con validación cruzada (KFold=5, \texttt{shuffle=True}, \texttt{random\_state=42}), usando RMSE en escala real. El mejor desempeño base lo obtuvo \textbf{Random Forest}:
-\begin{itemize}
-    \item \textbf{CV (aprox)}: RF \(\approx\) 245M; XGB \(\approx\) 245M; LGBM \(\approx\) 246M; lineales \(\approx\) 348M; SVR \(\approx\) 913M.
-    \item \textbf{Hold-out (20\%)}: RF RMSE \(\approx\) 250.6M; MAE \(\approx\) 129.9M; R\textsuperscript{2} \(\approx\) 0.915.
-\end{itemize}
-El uso de transformaciones \(\log(\textit{precio\_venta})\) y \(\log(\textit{area})\) mejoró las métricas al regresar a la escala original.
+\section*{Resultados}
 
-\subsection{Modelos con datos aumentados}
-Tras enriquecer con variables contextuales (POIs por radio, asignación de UPZ/barrio/localidad, avalúos por geohash) se entrenaron variantes XGBoost:
-\begin{itemize}
-    \item \textbf{v1 (reducido + \textit{barrio\_top})}: RMSE \(\approx\) 254.66M; MAE \(\approx\) 136.54M; R\textsuperscript{2} \(\approx\) 0.9139. Modelo exportado: \texttt{xgboost\_model\_2.1.pkl}.
-    \item \textbf{v2 (búsqueda aleatoria)}: hiperparámetros: \(n\_\textit{estimators}=500\), \(\textit{max\_depth}=9\), \(\textit{learning\_rate}=0.05\), \(\textit{subsample}=0.8\), \(\textit{colsample\_bytree}=0.8\), \(\alpha=0\), \(\lambda=1\). Hold-out: RMSE \(\approx\) 233.49M; MAE \(\approx\) 121.96M; R\textsuperscript{2} \(\approx\) 0.9276. Modelo exportado: \texttt{xgboost\_model\_2.2.pkl}.
-\end{itemize}
+Los resultados obtenidos a partir de la validación cruzada y la comparación de modelos permiten evaluar el desempeño predictivo del sistema desarrollado, así como el aporte de las variables geoespaciales al modelo final.
 
-\subsection{Importancia de variables y hallazgos}
-\begin{itemize}
-    \item \textbf{Variables dominantes}: \emph{área}, \emph{latitud}, \emph{administración}, \emph{antigüedad}, \emph{longitud} aparecen consistentemente entre las más relevantes.
-    \item \textbf{Contexto espacial}: las variables de POIs por radio aportan de forma complementaria; su efecto es menor que el de las estructurales pero mejora el ajuste en v2.
-    \item \textbf{Distribución del error}: el percentil 80 del error absoluto se ubica en torno a \(\sim\)187M para el RF base; v2 reduce RMSE y MAE manteniendo estabilidad.
-\end{itemize}
+\subsection*{Rendimiento del modelo base}
 
-\subsection{Artefactos y reproducibilidad}
-\begin{itemize}
-    \item Modelos serializados en \texttt{analisis/data/models/}: \texttt{randomforest\_model\_base.pkl}, \texttt{xgboost\_model\_2.1.pkl}, \texttt{xgboost\_model\_2.2.pkl}.
-    \item Dataset enriquecido: \texttt{analisis/data/aptos\_bogota\_enriched.csv}.
-    \item Pipeline de estimación expuesto vía \texttt{GET /api/estimate} en el backend (ver metodología).
-\end{itemize}
+El modelo base, entrenado únicamente con variables estructurales y administrativas del inmueble, mostró un desempeño sobresaliente. Tras la optimización de hiperparámetros, el modelo \textbf{XGBoost} alcanzó un \textbf{RMSE promedio de 0.151}, un \textbf{MAE de 0.107} y un \textbf{coeficiente de determinación $R^2 = 0.965$}. Estos valores equivalen a un error relativo aproximado del 16\% sobre el precio real, con una desviación baja entre pliegues, lo cual evidencia estabilidad y ausencia de sobreajuste.
+
+La Figura~\ref{fig:importancia_base} muestra la importancia relativa de las variables en el modelo base. Se observa que las características estructurales explican la mayor parte de la varianza del precio, encabezadas por el área construida, el estrato socioeconómico, el número de parqueaderos y la antigüedad.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Images/feature_importance_base.png}
+    \caption{Importancia de variables en el modelo base (XGBoost optimizado)}
+    \label{fig:importancia_base}
+\end{figure}
+
+El análisis de error por rango de precios (Figura~\ref{fig:error_base}) muestra que, si bien el error absoluto aumenta con el valor del inmueble, el error relativo se mantiene estable entre 3\% y 4\%, lo que indica consistencia del modelo a lo largo del espectro de precios. Los sectores con mayor error corresponden a zonas de alta valorización y heterogeneidad (Chicó, Santa Cecilia, Cerros de Suba), donde factores no observados como acabados o vista pueden alterar el precio significativamente.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.85\linewidth]{Images/analisis_error_base.png}
+    \caption{Error absoluto y relativo por rango de precios y sector — modelo base}
+    \label{fig:error_base}
+\end{figure}
+
+\subsection*{Rendimiento del modelo enriquecido reducido}
+
+El modelo enriquecido reducido incorporó variables de contexto espacial, calculadas mediante geohash y agregaciones por proximidad a puntos de interés (POIs) y metadatos regionales. Este modelo fue entrenado con el mismo pipeline de preprocesamiento y validación cruzada de diez pliegues, empleando también el algoritmo XGBoost.
+
+Los resultados promedio fueron: \textbf{RMSE = 0.165}, \textbf{MAE = 0.121} y \textbf{$R^2 = 0.958$}. Aunque las métricas presentan una ligera degradación respecto al modelo base (incremento de 9.2\% en RMSE y reducción de 0.7\% en $R^2$), el modelo mantiene un desempeño competitivo y agrega información interpretativa sobre los efectos espaciales.
+
+La Figura~\ref{fig:importancia_reducido} muestra la importancia de las variables en el modelo reducido. El área, la latitud y la longitud se consolidan como los factores más influyentes, confirmando el peso de la localización geográfica y las características estructurales. El resto de variables, como antigüedad, parqueaderos y administración, conservan contribuciones menores pero consistentes.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Images/feature_importance_reducido.png}
+    \caption{Importancia de variables en el modelo enriquecido reducido}
+    \label{fig:importancia_reducido}
+\end{figure}
+
+\subsection*{Comparación de desempeño}
+
+La Tabla~\ref{tab:comparacion_modelos} resume el desempeño promedio de ambos modelos. Se observa que el modelo enriquecido reducido no supera al modelo base en precisión, pero proporciona un marco más explicativo al integrar variables geográficas, lo que facilita la interpretación espacial de los precios y la identificación de patrones de mercado locales.
+
+\begin{table}[h]
+    \centering
+    \caption{Comparación de desempeño entre modelos}
+    \label{tab:comparacion_modelos}
+    \begin{tabular}{lcccc}
+        \toprule
+        \textbf{Modelo} & \textbf{RMSE} & \textbf{MAE} & \textbf{$R^2$} & \textbf{ΔRMSE (\%)} \\
+        \midrule
+        Base (XGBoost) & 0.151 & 0.107 & 0.965 & 0.0 \\
+        Enriquecido reducido & 0.165 & 0.121 & 0.958 & +9.2 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+En conjunto, los resultados muestran que las variables estructurales y socioeconómicas explican la mayor parte de la varianza del precio, mientras que las variables espaciales aportan un valor interpretativo adicional sin incrementar significativamente la precisión global.
 

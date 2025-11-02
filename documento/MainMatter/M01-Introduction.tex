@@ -2,49 +2,21 @@
 
 % Entre 60 y 80 páginas
 
-De acuerdo con la NTC1486, la introducción es un espacio dónde el autor presenta y señala la importancia, el origen (los antecedentes teóricos y prácticos), los objetivos, los alcances, las limitaciones, la metodología empleada, el significado que el estudio tiene en el avance del campo respectivo y su aplicación en el área investigada. No debe confundirse con el resumen, ni contener un recuento detallado de la teoría, el método o los resultados, como tampoco anticipar las conclusiones y recomendaciones~\cite{NTC14862008}.\\
+\section*{Introducción}
 
-Para el desarrollo del documento utilizando la plantilla en \LaTeX se recomienda la guía \textit{the not so short guide to \LaTeX}~\cite{Oetiker2016} que brinda una introducci\'on breve pero muy completa. En donde se presentan entro otras cosas los comandos y ambeintes para el trabajo con gr\'aficas y tablas, como las que se muestran a continuaci\'on:
+La vivienda constituye uno de los pilares fundamentales del bienestar social y del desarrollo urbano. Su acceso, calidad y localización inciden directamente en la equidad, la movilidad y la planificación del territorio. En Colombia, el déficit habitacional, tanto en su dimensión cuantitativa como cualitativa, representa uno de los principales retos sociales y económicos del país. Según Castillo (2004), el déficit no solo se relaciona con la cantidad insuficiente de viviendas, sino también con la precariedad en las condiciones del entorno y los servicios urbanos \cite{castillo2004anotaciones}. En ciudades como Bogotá, el crecimiento desordenado y la urbanización informal han intensificado la segregación socioespacial y la exclusión \cite{castillo2004anotaciones}.
 
-\begin{figure}[htbp!]
-    \caption{Muestra de inclusio\'on de un elemento gr\'afico}
-    \centering
-    \includegraphics[width=0.8\textwidth]{Images/ImagenYoda.jpg}
-    \label{fig:yoda}
-\end{figure}
+La problemática se agrava por la falta de acceso a crédito hipotecario y la especulación inmobiliaria, factores que distorsionan el mercado y encarecen los precios, especialmente para los hogares de bajos ingresos. Se estima que más del 80\% de estos hogares no tiene acceso a financiamiento formal, lo cual acentúa la desigualdad en el acceso a vivienda \cite{castillo2004anotaciones}. A su vez, políticas de subsidio como \textit{Mi Casa Ya} han experimentado una implementación irregular, afectando tanto a desarrolladores como a compradores y generando incertidumbre en el sector \cite{coyunturaVivienda2023}.
 
-As\'i la Figura~\ref{fig:yoda} muestra una imagen que se encuentra en el directorio images, mientras la tabla~\ref{tab:tablasEx}, muestra dos ejemplos de información tabular con combinaci\'on de columnas, y combinaci\'on de filas.
+En este contexto, la vivienda también ha sido utilizada como un instrumento de especulación financiera y política, lo que dificulta la construcción de indicadores confiables sobre el valor real de los inmuebles. Los métodos tradicionales de valoración —basados en el juicio experto o en comparaciones de propiedades cercanas— tienden a reproducir sesgos de subjetividad y a depender de información incompleta. En la práctica, los agentes inmobiliarios suelen estimar el precio de una propiedad utilizando métricas simplificadas como el \textit{precio por metro cuadrado}, ajustando ligeramente por número de baños, estado o ubicación. Este enfoque refleja la estructura empírica del mercado, pero carece de una integración sistemática de factores espaciales, económicos y sociales.
 
-\begin{table}[htbp!]
-    \centering
-    \caption{Ejemplo de tabla con multi columnas (arriba) y multi filas(abajo)}
-    \begin{tabular}{ |p{3cm}||p{3cm}|p{3cm}|p{3cm}|  }
-        \hline
-        \multicolumn{4}{|c|}{Country List} \\
-        \hline
-        Country Name or Area Name& ISO ALPHA 2 Code &ISO ALPHA 3 Code&ISO numeric Code\\
-        \hline
-        Afghanistan   & AF    &AFG&   004\\
-        Aland Islands&   AX  & ALA   &248\\
-        Albania &AL & ALB&  008\\
-        Algeria    &DZ & DZA&  012\\
-        American Samoa&   AS  & ASM&016\\
-        Andorra& AD  & AND   &020\\
-        Angola& AO  & AGO&024\\
-        \hline
-    \end{tabular}\\
-    \vspace{0.5cm}
-    \begin{tabular}{ |c|c|c|c| } 
-        \hline
-        col1 & col2 & col3 \\
-        \hline
-        \multirow{3}{4em}{Multiple row} & cell2 & cell3 \\ 
-        & cell5 & cell6 \\ 
-        & cell8 & cell9 \\ 
-        \hline
-    \end{tabular}
+A nivel internacional, la literatura reciente ha demostrado que el uso de técnicas de aprendizaje automático permite capturar relaciones no lineales y multidimensionales en la formación del precio de la vivienda. Estudios como \textit{Real Estate Price Prediction with Regression and Classification} \cite{RealEstatePricePrediction}, \textit{Big Data Analytics Predicting Real Estate Prices} \cite{BigDataRealEstate} y \textit{Machine and Deep Learning for Hedonic Real Estate Price Prediction} \cite{MachineDeepLearningHedonic} muestran que modelos como XGBoost, LightGBM y redes neuronales profundas pueden superar los enfoques hedónicos tradicionales, integrando grandes volúmenes de datos estructurales y contextuales con altos niveles de precisión. Sin embargo, la aplicación de estos enfoques en contextos latinoamericanos, y en particular en Colombia, sigue siendo limitada debido a la fragmentación de las fuentes de datos, la escasa disponibilidad de información espacial normalizada y la falta de estudios reproducibles.
 
-    \label{tab:tablasEx}
-\end{table}
+En Colombia, los modelos automatizados de estimación de precios de vivienda se basan principalmente en información proveniente de portales inmobiliarios. Estos portales, además, presentan sesgos estructurales derivados de su modelo de negocio: las inmobiliarias y agentes deben pagar por paquetes de publicaciones, lo que incentiva la visibilización de los inmuebles de mayor valor, capaces de generar comisiones más altas. En consecuencia, los datos publicados reflejan de forma parcial la realidad del mercado, concentrándose en zonas de alto valor y dejando subrepresentados los sectores populares o periféricos.
 
-Adem\'as se recomienda consultar los manuales que aparecen en al secci\'on de aprendizaje de overleaf, por ejemplo el de \href{https://www.overleaf.com/learn/latex/Tables}{tablas}.
+El presente trabajo busca abordar esta brecha mediante el desarrollo de un modelo de estimación de precios de vivienda en Bogotá utilizando técnicas de aprendizaje automático y datos abiertos enriquecidos con información geoespacial. A diferencia de los enfoques convencionales, se propone integrar características estructurales del inmueble con variables de contexto derivadas de capas oficiales (barrios, UPZ, localidades, estratos y avalúos) y puntos de interés (hospitales, colegios, parques, comercio, entre otros), obtenidos desde OpenStreetMap y datos abiertos distritales.
+
+La investigación se centra en tres aspectos complementarios: (i) la construcción de un conjunto de datos reproducible que combine información estructural y espacial, (ii) la comparación de modelos predictivos con y sin variables geográficas para evaluar su impacto en el rendimiento y la interpretabilidad, y (iii) el análisis de la importancia de las variables y la distribución del error para comprender los factores que determinan el precio de la vivienda. 
+
+El documento se organiza de la siguiente manera: la \textbf{Sección de Metodología} describe las etapas de adquisición, limpieza, enriquecimiento y modelado de los datos; la \textbf{Sección de Resultados} presenta las métricas obtenidas en los modelos base y enriquecidos, junto con los análisis de importancia y error; la \textbf{Discusión} interpreta los resultados en el contexto del mercado inmobiliario bogotano y sus sesgos estructurales; y finalmente, la \textbf{Conclusión} sintetiza los hallazgos principales y propone líneas de trabajo futuro.
+

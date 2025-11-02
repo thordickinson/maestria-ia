@@ -1,20 +1,28 @@
+\section*{Conclusiones}
 
-% Incluya los resultados esperados del desarrollo del proyecto de investigación en el marco del programa de Maestría en Inteligencia Artificial desde tres perspectivas: 
+El desarrollo del presente trabajo permitió construir y validar un modelo de estimación de precios de vivienda en Bogotá basado en técnicas de aprendizaje automático, combinando información estructural del inmueble con variables geoespaciales obtenidas de fuentes abiertas. El proceso metodológico, reproducible y escalable, permitió evaluar de forma cuantitativa el impacto del contexto espacial sobre la predicción de precios.
 
-\input{Tables/GeneracionConocimiento}
+\subsection*{Principales hallazgos}
 
-La anterior tabla resume los resultados esperados del actual proyecto desde tres perspectivas clave:
+Los resultados mostraron que las variables estructurales —particularmente el área, el estrato, los parqueaderos y la antigüedad— explican la mayor parte de la variabilidad del precio. El modelo base, entrenado con estas variables, alcanzó un desempeño sobresaliente con un RMSE promedio de 0.151 y un $R^2$ de 0.965, demostrando alta estabilidad y generalización. 
 
-\begin{enumerate}
-    \item Generación de nuevo conocimiento
-    \item Fortalecimiento de la capacidad científica nacional
-    \item Apropiación social del conocimiento
-\end{enumerate}
+El enriquecimiento geoespacial, implementado mediante la incorporación de capas oficiales y puntos de interés, no mejoró significativamente las métricas de precisión global, pero sí aportó un valor interpretativo adicional. Las variables espaciales (latitud, longitud y conteos de POIs) permitieron identificar patrones de concentración y heterogeneidad del mercado urbano, fortaleciendo la explicación del modelo más que su capacidad predictiva.
 
-Cada resultado esperado se acompaña de indicadores específicos para medir su éxito y los beneficiarios principales que se verán impactados positivamente por el proyecto.
+\subsection*{Contribuciones del estudio}
 
-% A continuaci\'on se presenta una tablas para la consolidaci\'on de estos resultados esperados a manera de ejemplo.
+El proyecto aporta un marco metodológico reproducible para la estimación automatizada de precios de vivienda en contextos urbanos latinoamericanos, integrando fuentes abiertas y técnicas modernas de aprendizaje de máquina. Además, demuestra que la dinámica del mercado inmobiliario en Bogotá sigue una lógica de valoración basada principalmente en el \textit{precio por metro cuadrado} y en comparaciones locales, lo cual se refleja en la capacidad del modelo base para capturar con precisión las prácticas reales de estimación de precios.
 
+Asimismo, el estudio evidencia cómo los sesgos inherentes a los portales inmobiliarios —como la sobrerrepresentación de inmuebles de alto valor por su rentabilidad publicitaria— influyen en la distribución de los datos y, por tanto, en la respuesta del modelo. Este hallazgo destaca la necesidad de considerar la estructura del mercado digital como parte del análisis de los datos y no solo como fuente de información.
 
+\subsection*{Implicaciones y proyección futura}
 
+El modelo desarrollado puede servir como base para sistemas de valoración automatizada y herramientas de apoyo a la planeación urbana, permitiendo estimaciones masivas y coherentes del valor de la vivienda. En términos de investigación, los resultados abren la posibilidad de explorar enfoques más complejos de modelado espacial y temporal, tales como:
+
+\begin{itemize}
+    \item Modelos híbridos que integren variables económicas y de transporte.
+    \item Series temporales de precios para capturar tendencias y ciclos del mercado.
+    \item Métodos espaciales avanzados (GWR, redes neuronales gráficas) para detectar autocorrelaciones geográficas.
+\end{itemize}
+
+Finalmente, se concluye que el enriquecimiento geoespacial no necesariamente mejora la precisión numérica de los modelos, pero amplía su capacidad explicativa y su valor analítico. Comprender las interacciones entre las características físicas, socioeconómicas y espaciales de la vivienda es fundamental para avanzar hacia sistemas de valoración más transparentes, contextualizados y útiles para la toma de decisiones públicas y privadas.
 

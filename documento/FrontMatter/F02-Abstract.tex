@@ -1,6 +1,20 @@
-% Presentación abreviada y precisa del contenido de un documento, sin agregar interpretación o crítica y se recomienda un exceda una página.
+\section*{Resumen}
 
-El resumen es una presentación abreviada y precisa del contenido de un documento, sin agregar interpretación o crítica. Para documentos extensos como informes, tesis y trabajos de grado, no debe exceder de 500 palabras, y debe ser lo suficientemente breve para que no ocupe más de una página~\cite{NTC14862008}.
+El presente trabajo desarrolla un modelo de estimación de precios de vivienda en la ciudad de Bogotá utilizando técnicas de aprendizaje automático y datos abiertos enriquecidos con información geoespacial. El estudio parte del reconocimiento de que el déficit habitacional y la desigualdad en el acceso a vivienda digna constituyen problemáticas estructurales del país, y que la falta de herramientas analíticas transparentes limita la comprensión del mercado inmobiliario. 
 
-% debe incluir una lista de palabras clave 
-\textbf{palabras clave}: palabra 1, palabra 2, palabra 3, ...
+Se integraron fuentes de datos provenientes de portales inmobiliarios, capas geográficas oficiales y puntos de interés de OpenStreetMap. Tras un proceso de limpieza, imputación y normalización, se construyó un conjunto de datos de más de 27.000 registros, que permitió entrenar y comparar diferentes modelos predictivos, incluyendo regresión lineal, Ridge, Lasso, SVR, Random Forest, LightGBM y XGBoost. La evaluación se realizó mediante validación cruzada de diez pliegues, utilizando como métrica principal la raíz del error cuadrático medio (RMSE).
+
+El modelo base, entrenado únicamente con variables estructurales, alcanzó un RMSE promedio de 0.151 y un $R^2$ de 0.965, evidenciando alta estabilidad y capacidad explicativa. El modelo enriquecido con variables geoespaciales obtuvo un RMSE de 0.165 y un $R^2$ de 0.958, mostrando un rendimiento comparable pero con mayor interpretabilidad espacial. Los resultados sugieren que las características físicas del inmueble concentran la mayor parte de la información predictiva, mientras que las variables espaciales aportan contexto para entender las dinámicas urbanas y socioeconómicas del mercado.
+
+\textbf{Palabras clave:} vivienda, precios inmobiliarios, aprendizaje automático, XGBoost, datos abiertos, geolocalización, Bogotá.
+
+
+\section*{Abstract}
+
+This work presents a housing price estimation model for Bogotá using machine learning techniques and open data enriched with geospatial information. The study acknowledges that Colombia’s housing deficit and inequality in access to adequate housing are long-standing structural problems, and that the lack of transparent analytical tools limits the understanding of the real estate market.
+
+Data were integrated from multiple sources, including real estate listings, official geographic layers, and points of interest from OpenStreetMap. After a process of cleaning, imputation, and normalization, a dataset of more than 27,000 records was constructed, enabling the training and comparison of several predictive models such as Linear Regression, Ridge, Lasso, SVR, Random Forest, LightGBM, and XGBoost. Evaluation was carried out using ten-fold cross-validation, with the root mean squared error (RMSE) as the primary performance metric.
+
+The baseline model, trained only with structural variables, achieved an average RMSE of 0.151 and an $R^2$ of 0.965, demonstrating high stability and explanatory power. The enriched model, incorporating geospatial features, reached an RMSE of 0.165 and an $R^2$ of 0.958, yielding comparable performance but improved spatial interpretability. Results suggest that structural characteristics account for most of the predictive information, while spatial variables provide valuable context for understanding the urban and socioeconomic dynamics of the housing market.
+
+\textbf{Keywords:} housing, real estate prices, machine learning, XGBoost, open data, geolocation, Bogotá.
