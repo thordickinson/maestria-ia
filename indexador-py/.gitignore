@@ -185,3 +185,4 @@ data/
 .DS_Store
 **/*.pkl
 web/
+models/

@@ -5,19 +5,13 @@
 
 \section{Objetivo general}
 
-Desarrollar un modelo de predicción de precios de viviendas en Bogotá utilizando técnicas de \textit{machine learning}, que incorpore tanto características internas de las propiedades (como tamaño, número de habitaciones y ubicación) como datos externos (indicadores de seguridad, proximidad a puntos de interés, y accesibilidad a servicios), con el fin de mejorar la precisión en la estimación de precios y contribuir a la toma de decisiones informada en el mercado inmobiliario.
-
-
-% Preprocesamiento
-% Evitar modelos que se van a usar (modelos predictivos)
-% No poner métricas
-
-% General un modelo predictivo
+Desarrollar un modelo de estimación de precios de vivienda en Bogotá utilizando técnicas de aprendizaje automático y datos abiertos, que combine variables estructurales y geoespaciales para ofrecer predicciones confiables y explicativas. Además, implementar una herramienta web que permita a los usuarios consultar estimaciones personalizadas y visualizar estadísticas informativas sobre el contexto urbano del inmueble.
 
 \section{Objetivos específicos}
 \begin{itemize}
-    \item Crear una base de datos consolidada a partir de la recolección de información mediante \textit{web scraping} de diversas plataformas inmobiliarias en Bogotá.
-    \item Enriquecer los datos obtenidos integrando información adicional proveniente de fuentes externas, como indicadores de seguridad, convivencia y proximidad a servicios.
-    \item Seleccionar el mejor modelo de predicción de precios a partir de la comparación de un conjunto de modelos desarrollados, evaluando su rendimiento mediante métricas de precisión y eficiencia.
+    \item Consolidar un conjunto de datos de viviendas en Bogotá a partir de fuentes públicas y bases de datos disponibles en línea, integrando información estructural (área, número de habitaciones, baños, parqueaderos, estrato) y espacial (ubicación geográfica, barrio, UPZ, proximidad a puntos de interés).
+    \item Estandarizar, limpiar e imputar los datos garantizando su coherencia y calidad para el entrenamiento de modelos predictivos.
+    \item Desarrollar y comparar distintos algoritmos de aprendizaje automático para la estimación de precios, seleccionando el modelo con mejor desempeño y capacidad explicativa.
+    \item Incorporar variables geoespaciales y evaluar su impacto sobre la precisión y la interpretabilidad del modelo.
+    \item Diseñar e implementar una utilidad web que permita al usuario ingresar las características de un inmueble y obtener una estimación de precio junto con información estadística contextual (por ejemplo, precios promedio en el sector, accesibilidad y servicios cercanos).
 \end{itemize}
-

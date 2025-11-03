@@ -1,6 +1,6 @@
 \section*{Metodología}
 
-El desarrollo del proyecto se estructuró como un proceso reproducible de estimación de precios de vivienda para la ciudad de Bogotá, combinando técnicas de análisis de datos, modelado predictivo y enriquecimiento geoespacial. La metodología se organizó en etapas secuenciales, desde la adquisición de datos hasta la validación comparativa de modelos, como se resume en la Figura~\ref{fig:metodologia}.
+El desarrollo del proyecto se estructuró como un proceso reproducible de estimación de precios de vivienda para la ciudad de Bogotá, combinando técnicas de análisis de datos, modelado predictivo y enriquecimiento geoespacial. La metodología se organizó en etapas secuenciales, desde la adquisición de datos hasta la validación comparativa de modelos.
 
 \begin{enumerate}
     \item Adquisición y validación de datos.
@@ -14,19 +14,12 @@ El desarrollo del proyecto se estructuró como un proceso reproducible de estima
 
 La métrica principal seleccionada fue la \textbf{raíz del error cuadrático medio (RMSE)}, por su interpretabilidad en la misma unidad del objetivo (pesos colombianos) y su sensibilidad a errores grandes, deseable en contextos de valoración. Como métricas complementarias se reportan el \textbf{error absoluto medio (MAE)} y el \(\mathbf{R^2}\), indicador del grado de ajuste explicativo.
 
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.85\linewidth]{Images/metodologia.png}
-    \caption{Etapas generales de la metodología desarrollada}
-    \label{fig:metodologia}
-\end{figure}
-
 \subsection*{Fuentes de datos}
 
 Se integraron fuentes públicas y abiertas que combinan información estructural del inmueble con variables contextuales espaciales. 
 
 \begin{itemize}
-    \item \textbf{Datos de inmuebles (base):} Se utilizaron registros provenientes del repositorio público \texttt{builker-col/bogota-apartments}, con datos correspondientes a agosto de 2024. Los archivos originales en formato JSON fueron transformados a CSV para su procesamiento.
+    \item \textbf{Datos de inmuebles (base):} Se utilizaron registros provenientes del repositorio público \texttt{builker-col/bogota-apartments} \cite{portales_inmobiliarios}, con datos correspondientes a agosto de 2024. Los archivos originales en formato JSON fueron transformados a CSV para su procesamiento.
     \item \textbf{Datos abiertos del Distrito (PostGIS):} Se descargaron capas geoespaciales desde el portal de datos abiertos de la Alcaldía de Bogotá \cite{datosabiertos_bogota}, incluyendo \texttt{barrios\_bogota}, \texttt{upz\_bogota}, \texttt{localidades\_bogota}, \texttt{estratos\_manzana}, \texttt{avaluo\_catastral\_manzana} y \texttt{avaluo\_comercial\_manzana}. Estas capas fueron cargadas en una base de datos PostGIS mediante el uso de la herramienta shp2pgsql.
     \item \textbf{Puntos de interés (POIs):} Se obtuvieron datos de OpenStreetMap descargados desde Geofabrik \cite{geofabrik}. Se procesaron las categorías \emph{education}, \emph{healthcare}, \emph{retail\_access}, \emph{dining}, \emph{accommodation}, \emph{parks}, \emph{infrastructure} y \emph{culture}, calculando su cercanía a cada inmueble en radios de 100 a 2000 metros.
 \end{itemize}
@@ -45,21 +38,15 @@ Se ejecutaron rutinas de limpieza orientadas a garantizar la coherencia estructu
 \subsection*{Transformaciones y normalización de variables}
 
 Dada la asimetría positiva de las distribuciones de \textit{área} y \textit{precio\_venta}, se aplicó una transformación logarítmica para estabilizar la varianza y mejorar la linealidad en las relaciones con el objetivo.  
-La Figura~\ref{fig:log_area} y la Figura~\ref{fig:log_precio} muestran la diferencia en la distribución de ambas variables antes y después de la transformación.
+La Figura~\ref{fig:log_area_precio} muestra la diferencia en la distribución de ambas variables antes y después de la transformación.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.8\linewidth]{Images/log_area.png}
-    \caption{Distribución del área antes y después de la transformación logarítmica}
-    \label{fig:log_area}
+    \includegraphics[width=0.8\linewidth]{Images/log_area_precio.png}
+    \caption{Distribución del área y precio antes y después de la transformación logarítmica}
+    \label{fig:log_area_precio}
 \end{figure}
 
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.8\linewidth]{Images/log_precio.png}
-    \caption{Distribución del precio de venta antes y después de la transformación logarítmica}
-    \label{fig:log_precio}
-\end{figure}
 
 \subsection*{Uso de geohash y enriquecimiento geoespacial}
 
@@ -101,10 +88,10 @@ Este patrón justifica la incorporación de variables geoespaciales para captura
 El modelo \textbf{enriquecido reducido} (con variables geoespaciales) obtuvo un \(\text{RMSE} = 0.165\), \(\text{MAE} = 0.121\) y \(R^2 = 0.958\), mientras que el modelo base mantuvo \(\text{RMSE} = 0.151\) y \(R^2 = 0.965\).  
 La diferencia relativa del 9.2\% en RMSE y del -0.7\% en \(R^2\) indica que el enriquecimiento geoespacial no mejora sustancialmente el rendimiento, pero aporta valor explicativo adicional y mejora la interpretabilidad espacial del modelo.
 
-\subsection*{Exposición de resultados y reproducibilidad}
+\subsection*{Implementación del sistema web}
 
-El modelo final se expuso mediante un servicio \texttt{FastAPI} con el endpoint \texttt{/api/estimate}, que recibe las características de un inmueble y devuelve su estimación junto con indicadores contextuales.  
-Todo el proceso fue documentado en notebooks reproducibles y scripts modulares (Python / PostGIS).  
-Las semillas aleatorias y la configuración de validación fueron fijadas para garantizar replicabilidad.  
-Los modelos entrenados y datasets intermedios fueron versionados en el directorio \texttt{analisis/data/}.
+Además del modelo analítico, se desarrolló una \textbf{arquitectura web funcional} compuesta por un servicio \textit{backend} en Python (FastAPI) y una interfaz \textit{frontend} en ReactJS. El \textit{backend} expone un conjunto de endpoints REST que permiten no solo estimar el precio de un apartamento a partir de sus características estructurales, sino también consultar \textbf{estadísticas contextuales} sobre el sector correspondiente, incluyendo precios promedio, estratos predominantes, proximidad a servicios y conteo de amenidades registradas en OpenStreetMap.
+
+El \textit{frontend}, desarrollado con ReactJS, ofrece una interfaz interactiva que facilita la introducción de las variables del inmueble (área, número de baños, parqueaderos, estrato, barrio, entre otros). La aplicación envía estos datos al servicio FastAPI, el cual los enriquece con información geoespacial y devuelve la predicción generada por el modelo final optimizado y con características reducidas. Esta integración asegura la \textbf{usabilidad práctica del sistema} y su potencial aplicación como herramienta de consulta para agentes, ciudadanos y analistas del mercado inmobiliario.
+
 

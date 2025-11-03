@@ -1,15 +1,11 @@
 #!/bin/bash
-set -e
+# set -e
 
-# Compile LaTeX document (BibLaTeX + Biber) using a Docker TeX Live image
-IMG=texlive/texlive
+IMG=danteev/texlive:latest
 
-# First LaTeX pass
-docker run --rm -v "$(pwd)":/workdir -w /workdir "$IMG" pdflatex -interaction=nonstopmode -halt-on-error main.tex
+rm -f *.aux *.bbl *.bcf *.blg *.run.xml main.pdf
 
-# Biber pass (bibliography)
-docker run --rm -v "$(pwd)":/workdir -w /workdir "$IMG" biber main
-
-# Second and third LaTeX passes to resolve references
-docker run --rm -v "$(pwd)":/workdir -w /workdir "$IMG" pdflatex -interaction=nonstopmode -halt-on-error main.tex
-docker run --rm -v "$(pwd)":/workdir -w /workdir "$IMG" pdflatex -interaction=nonstopmode -halt-on-error main.tex
+docker run --rm -v "$(pwd)":/workdir -w /workdir "$IMG" pdflatex -interaction=nonstopmode main.tex || true
+docker run --rm -v "$(pwd)":/workdir -w /workdir "$IMG" bibtex main
+docker run --rm -v "$(pwd)":/workdir -w /workdir "$IMG" pdflatex -interaction=nonstopmode main.tex
+docker run --rm -v "$(pwd)":/workdir -w /workdir "$IMG" pdflatex -interaction=nonstopmode main.tex

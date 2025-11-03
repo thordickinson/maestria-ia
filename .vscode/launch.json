@@ -7,7 +7,7 @@
     {
       "name": "Backend",
       "cwd": "${workspaceFolder}/indexador-py",
-      "python": "${workspaceFolder}/indexador-py/.venv/Scripts/python",
+      "python": "${workspaceFolder}/indexador-py/.venv/bin/python",
       "type": "debugpy",
       "request": "launch",
       "module": "uvicorn",
