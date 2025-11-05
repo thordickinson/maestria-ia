@@ -14,9 +14,9 @@ export default function EstimationCard({ estimation }: { estimation: EstimationR
   const gaugeValue = r2 ? Math.round(r2 * 100) : 0;
 
   return (
-    <Card title="Precio estimado">
+    <Card title="Precio estimado" subtitle="Este es el precio estimado de tu apartamento">
       <div className="w-full flex flex-col gap-6">
-
+        {!interval && <div className="text-xl font-bold text-red-500 text-center">{usdFormat.format(price)}</div>}
         {/* Intervalo de confianza */}
         {interval && (
           <Tooltip

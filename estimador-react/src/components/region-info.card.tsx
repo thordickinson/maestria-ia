@@ -15,7 +15,7 @@ export default function RegionInfoCard({ regionInfo, estrato }: { regionInfo: Re
               <span className="font-medium">{RegionLabels[key] ?? key}:</span> {value.nombre}
             </li>
           ))}
-          <li><span className="font-medium">Estrato:</span>{estrato}</li>
+          {estrato && <li><span className="font-medium">Estrato:</span>{estrato}</li>}
         </ul>
     </Card>
   );

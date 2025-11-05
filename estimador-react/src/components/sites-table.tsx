@@ -36,7 +36,6 @@ function buildDataSource(response: EstimationResponse): {columns: ColumnType[], 
             countsObject[distance] = count + (placeList as Place[]).length
         })
     }
-    console.log(counts, columns)
     return {columns, data: Object.values(counts)}
 }
 

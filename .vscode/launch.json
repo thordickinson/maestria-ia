@@ -6,8 +6,8 @@
   "configurations": [
     {
       "name": "Backend",
-      "cwd": "${workspaceFolder}/indexador-py",
-      "python": "${workspaceFolder}/indexador-py/.venv/bin/python",
+      "cwd": "${workspaceFolder}/backend",
+      "python": "${workspaceFolder}/backend/.venv/bin/python",
       "type": "debugpy",
       "request": "launch",
       "module": "uvicorn",
