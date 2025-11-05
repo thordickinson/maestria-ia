@@ -1,9 +1,13 @@
 **/*.aux
 **/*.log
-**/*.out
+
 **/*.lot
 **/*.lof
-**/*.toc
+
 **/*.bbl
+**/*.blg
+**/*.brf
 **/*.pdf
 
+**/*.toc
+**/*.out
