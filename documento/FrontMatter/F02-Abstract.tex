@@ -9,17 +9,3 @@ El modelo base, entrenado únicamente con variables estructurales, alcanzó un R
 Finalmente, se desarrolló una \textbf{aplicación web} compuesta por un backend en \textit{FastAPI} y un frontend en \textit{ReactJS}, que permite al usuario ingresar las características de un apartamento, estimar su precio y consultar información estadística contextual sobre su entorno urbano. 
 
 \textbf{Palabras clave:} apartamentos, precios inmobiliarios, aprendizaje automático, XGBoost, datos abiertos, geolocalización, Bogotá.
-
-
-\section*{Abstract}
-
-This study presents a housing price estimation model focused on \textbf{apartments} in Bogotá, using machine learning techniques and open data enriched with geospatial information. The research recognizes that Colombia’s housing deficit and inequality in access to adequate housing are long-standing structural issues, and that the lack of transparent analytical tools limits the understanding of the real estate market.
-
-Data were integrated from publicly available sources, including official geographic layers and points of interest from OpenStreetMap. After a process of cleaning, imputation, and normalization, a dataset of more than 27,000 records was built, allowing the training and comparison of several predictive models such as Linear Regression, Ridge, Lasso, SVR, Random Forest, LightGBM, and XGBoost. Evaluation was performed through ten-fold cross-validation, using the root mean squared error (RMSE) as the main performance metric.
-
-The baseline model, trained only with structural variables, achieved an average RMSE of 0.151 and an $R^2$ of 0.965, demonstrating high stability and explanatory power. The enriched model, incorporating geospatial features, reached an RMSE of 0.165 and an $R^2$ of 0.958, yielding comparable performance but improved spatial interpretability.
-
-Finally, a \textbf{web application} was developed, consisting of a backend built with \textit{FastAPI} and a frontend built with \textit{ReactJS}, enabling users to input apartment characteristics, obtain price estimates, and access contextual statistical information about the property’s urban environment.
-
-\textbf{Keywords:} apartments, real estate prices, machine learning, XGBoost, open data, geolocation, Bogotá.
-

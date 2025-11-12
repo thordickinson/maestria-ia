@@ -1,51 +1,38 @@
-\section*{Resultados}
+El sistema desarrollado fue validado mediante un esquema de validación cruzada de diez pliegues, lo que permitió evaluar su precisión y estabilidad. Se construyeron dos modelos: uno base, con variables estructurales y administrativas, y otro enriquecido reducido, que incorporó información geoespacial derivada de puntos de interés y capas urbanas.
 
-Los resultados obtenidos a partir de la validación cruzada y la comparación de modelos permiten evaluar el desempeño predictivo del sistema desarrollado, así como el aporte de las variables geoespaciales al modelo final.
+\subsection*{Desempeño del modelo base}
 
-\subsection*{Rendimiento del modelo base}
+El modelo base, entrenado únicamente con variables internas del inmueble, alcanzó un \textbf{RMSE promedio de 0.151}, un \textbf{MAE de 0.107} y un \textbf{$R^2 = 0.965$}, evidenciando alta capacidad predictiva y estabilidad. Los atributos más influyentes fueron el área construida, el estrato socioeconómico, el número de parqueaderos y la antigüedad (Figura~\ref{fig:importancia_base}).
 
-El modelo base, entrenado únicamente con variables estructurales y administrativas del inmueble, mostró un desempeño sobresaliente. Tras la optimización de hiperparámetros, el modelo \textbf{XGBoost} alcanzó un \textbf{RMSE promedio de 0.151}, un \textbf{MAE de 0.107} y un \textbf{coeficiente de determinación $R^2 = 0.965$}. Estos valores equivalen a un error relativo aproximado del 16\% sobre el precio real, con una desviación baja entre pliegues, lo cual evidencia estabilidad y ausencia de sobreajuste.
-
-La Figura~\ref{fig:importancia_base} muestra la importancia relativa de las variables en el modelo base. Se observa que las características estructurales explican la mayor parte de la varianza del precio, encabezadas por el área construida, el estrato socioeconómico, el número de parqueaderos y la antigüedad.
+Este resultado confirma que la estructura física y el contexto socioeconómico del inmueble concentran la mayor parte de la varianza explicativa. En la práctica, refleja el mismo patrón que utilizan las inmobiliarias al fijar precios de oferta: comparaciones locales basadas en el precio por metro cuadrado y ajustes menores por características adicionales. El modelo mantuvo un error relativo estable (3\%–4\%) a lo largo del rango de precios, con mayor desviación en zonas de alta valorización (Chicó, Santa Cecilia, Cerros de Suba), donde factores no registrados como vista o acabados pueden alterar el valor.
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.8\linewidth]{Images/feature_importance_base.png}
-    \caption{Importancia de variables en el modelo base (XGBoost optimizado)}
+    \caption{Importancia de variables en el modelo base (XGBoost optimizado).}
     \label{fig:importancia_base}
 \end{figure}
 
-El análisis de error por rango de precios (Figura~\ref{fig:error_base}) muestra que, si bien el error absoluto aumenta con el valor del inmueble, el error relativo se mantiene estable entre 3\% y 4\%, lo que indica consistencia del modelo a lo largo del espectro de precios. Los sectores con mayor error corresponden a zonas de alta valorización y heterogeneidad (Chicó, Santa Cecilia, Cerros de Suba), donde factores no observados como acabados o vista pueden alterar el precio significativamente.
+\subsection*{Desempeño del modelo enriquecido reducido}
 
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.85\linewidth]{Images/analisis_error_base.png}
-    \caption{Error absoluto y relativo por rango de precios y sector — modelo base}
-    \label{fig:error_base}
-\end{figure}
+El modelo enriquecido reducido integró variables espaciales derivadas de proximidad a servicios, densidad de puntos de interés y codificación geográfica (geohash). Tras la misma validación cruzada, obtuvo \textbf{RMSE = 0.165}, \textbf{MAE = 0.121} y \textbf{$R^2 = 0.958$}, una ligera degradación frente al modelo base (+9.2\% en RMSE).
 
-\subsection*{Rendimiento del modelo enriquecido reducido}
-
-El modelo enriquecido reducido incorporó variables de contexto espacial, calculadas mediante geohash y agregaciones por proximidad a puntos de interés (POIs) y metadatos regionales. Este modelo fue entrenado con el mismo pipeline de preprocesamiento y validación cruzada de diez pliegues, empleando también el algoritmo XGBoost.
-
-Los resultados promedio fueron: \textbf{RMSE = 0.165}, \textbf{MAE = 0.121} y \textbf{$R^2 = 0.958$}. Aunque las métricas presentan una ligera degradación respecto al modelo base (incremento de 9.2\% en RMSE y reducción de 0.7\% en $R^2$), el modelo mantiene un desempeño competitivo y agrega información interpretativa sobre los efectos espaciales.
-
-La Figura~\ref{fig:importancia_reducido} muestra la importancia de las variables en el modelo reducido. El área, la latitud y la longitud se consolidan como los factores más influyentes, confirmando el peso de la localización geográfica y las características estructurales. El resto de variables, como antigüedad, parqueaderos y administración, conservan contribuciones menores pero consistentes.
+Aunque no mejoró la precisión, aportó una lectura más interpretativa del espacio urbano. La \textbf{latitud y longitud} emergieron entre las variables más relevantes, seguidas por área, antigüedad y parqueaderos (Figura~\ref{fig:importancia_reducido}). La permanencia de la variable \texttt{upz} fue un hallazgo clave: este indicador territorial agrupa zonas homogéneas en estrato, morfología y equipamientos, actuando como una unidad óptima de análisis espacial. Su relevancia confirma que la estructura socioespacial de la ciudad está implícitamente codificada en este nivel administrativo.
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.8\linewidth]{Images/feature_importance_reducido.png}
-    \caption{Importancia de variables en el modelo enriquecido reducido}
+    \caption{Importancia de variables en el modelo enriquecido reducido.}
     \label{fig:importancia_reducido}
 \end{figure}
 
-\subsection*{Comparación de desempeño}
+\subsection*{Comparación y análisis}
 
-La Tabla~\ref{tab:comparacion_modelos} resume el desempeño promedio de ambos modelos. Se observa que el modelo enriquecido reducido no supera al modelo base en precisión, pero proporciona un marco más explicativo al integrar variables geográficas, lo que facilita la interpretación espacial de los precios y la identificación de patrones de mercado locales.
+La Tabla~\ref{tab:comparacion_modelos} resume el rendimiento comparativo. El modelo base mantiene la mejor precisión, pero el enriquecido introduce mayor interpretabilidad espacial sin pérdida sustancial de ajuste. Ambos replican fielmente las dinámicas del mercado bogotano, donde el área y la ubicación definen el valor principal del inmueble.
 
 \begin{table}[h]
     \centering
-    \caption{Comparación de desempeño entre modelos}
+    \caption{Comparación de desempeño entre modelos.}
     \label{tab:comparacion_modelos}
     \begin{tabular}{lcccc}
         \toprule
@@ -57,5 +44,6 @@ La Tabla~\ref{tab:comparacion_modelos} resume el desempeño promedio de ambos mo
     \end{tabular}
 \end{table}
 
-En conjunto, los resultados muestran que las variables estructurales y socioeconómicas explican la mayor parte de la varianza del precio, mientras que las variables espaciales aportan un valor interpretativo adicional sin incrementar significativamente la precisión global.
+Las variables geoespaciales mostraron un efecto predictivo limitado, en parte por redundancia con los estratos socioeconómicos y por la homogeneidad de los conteos de servicios en radios fijos. Sin embargo, su incorporación permitió entender la distribución territorial del mercado y visualizar zonas con comportamiento diferenciado.
 
+El análisis de error por sectores confirmó que el modelo generaliza bien en contextos homogéneos, mientras que las zonas de alta valorización presentan mayor incertidumbre asociada a factores cualitativos no registrados. En conjunto, los resultados indican que las variables estructurales y socioeconómicas explican la mayor parte del precio, y que la información geográfica mejora la comprensión del fenómeno sin alterar significativamente la precisión numérica.

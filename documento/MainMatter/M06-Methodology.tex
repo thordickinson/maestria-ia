@@ -1,5 +1,3 @@
-\section*{Metodología}
-
 El desarrollo del proyecto se estructuró como un proceso reproducible de estimación de precios de vivienda para la ciudad de Bogotá, combinando técnicas de análisis de datos, modelado predictivo y enriquecimiento geoespacial. La metodología se organizó en etapas secuenciales, desde la adquisición de datos hasta la validación comparativa de modelos.
 
 \begin{enumerate}
@@ -93,5 +91,48 @@ La diferencia relativa del 9.2\% en RMSE y del -0.7\% en \(R^2\) indica que el e
 Además del modelo analítico, se desarrolló una \textbf{arquitectura web funcional} compuesta por un servicio \textit{backend} en Python (FastAPI) y una interfaz \textit{frontend} en ReactJS. El \textit{backend} expone un conjunto de endpoints REST que permiten no solo estimar el precio de un apartamento a partir de sus características estructurales, sino también consultar \textbf{estadísticas contextuales} sobre el sector correspondiente, incluyendo precios promedio, estratos predominantes, proximidad a servicios y conteo de amenidades registradas en OpenStreetMap.
 
 El \textit{frontend}, desarrollado con ReactJS, ofrece una interfaz interactiva que facilita la introducción de las variables del inmueble (área, número de baños, parqueaderos, estrato, barrio, entre otros). La aplicación envía estos datos al servicio FastAPI, el cual los enriquece con información geoespacial y devuelve la predicción generada por el modelo final optimizado y con características reducidas. Esta integración asegura la \textbf{usabilidad práctica del sistema} y su potencial aplicación como herramienta de consulta para agentes, ciudadanos y analistas del mercado inmobiliario.
+
+
+\subsection*{Implementación del sistema web}
+
+Como resultado complementario del proceso de modelado, se desarrolló una aplicación web que permite interactuar con el modelo predictivo y consultar estimaciones de precios de vivienda en Bogotá. El sistema se diseñó con una arquitectura ligera y modular compuesta por tres capas principales:
+
+\begin{itemize}
+    \item \textbf{Base de datos:} Implementada en \textit{PostgreSQL}, almacena los datos estructurales, geoespaciales y las predicciones generadas por el modelo. Se emplean extensiones \textit{PostGIS} para manejar coordenadas y operaciones espaciales.
+    \item \textbf{Backend:} Desarrollado con \textit{FastAPI}, expone un conjunto de endpoints que permiten realizar predicciones, consultar información contextual y administrar las variables utilizadas. Este servicio aloja el modelo entrenado en formato serializado y gestiona la comunicación con la base de datos.
+    \item \textbf{Frontend:} Construido en \textit{ReactJS}, ofrece una interfaz interactiva para que el usuario introduzca las características del inmueble y obtenga el valor estimado junto con un resumen de las condiciones del entorno.
+\end{itemize}
+
+La arquitectura se despliega como una aplicación cliente-servidor, donde el backend procesa las solicitudes de estimación y el frontend muestra los resultados en tiempo real. Esta implementación no solo permite validar empíricamente el desempeño del modelo, sino también demostrar su aplicabilidad práctica como herramienta de apoyo para la toma de decisiones en el mercado inmobiliario.
+
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+    node distance=1.8cm,
+    every node/.style={font=\sffamily, align=center},
+    box/.style={draw, rounded corners=3pt, minimum width=3.8cm, minimum height=1cm, thick, fill=blue!10},
+    arrow/.style={->, thick}
+]
+
+% Nodes
+\node[box] (frontend) {Frontend \\ \textbf{ReactJS}};
+\node[box, below=of frontend] (backend) {Backend \\ \textbf{FastAPI}};
+\node[box, below=of backend] (database) {Base de datos \\ \textbf{PostgreSQL / PostGIS}};
+\node[draw, rounded corners=3pt, fill=gray!10, minimum width=6cm, minimum height=5.5cm, label={[yshift=3.1cm]\textbf{Arquitectura del sistema web}}] (container) {};
+
+% Reorder visually
+\begin{scope}[on background layer]
+    \node[fill=white, rounded corners=3pt, draw=gray!60, fit=(frontend)(backend)(database)] {};
+\end{scope}
+
+% Arrows
+\draw[arrow] (frontend) -- node[right]{API REST} (backend);
+\draw[arrow] (backend) -- node[right]{Consultas SQL / Spatial} (database);
+
+\end{tikzpicture}
+\caption{Arquitectura general del sistema web desarrollado.}
+\label{fig:arquitectura_web}
+\end{figure}
 
 

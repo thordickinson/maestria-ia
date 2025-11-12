@@ -65,6 +65,9 @@
 	
     \maketitle
     
+    % Resumen
+    \chapter*{Resumen}
+    \input{FrontMatter/F02-Abstract}
     % Crea la tabla de contenidos a partir de la estructura del documento
     \tableofcontents
     % Crea la lista de figuras
@@ -83,30 +86,26 @@
     % Glosario
     \chapter*{Glosario}
     \input{FrontMatter/F01-Glossary}
- 	
-    % Resumen
-    \chapter*{Resumen}
-    \input{FrontMatter/F02-Abstract}
 
     % Introduction
     \chapter{Introducci\'on}
     \input{MainMatter/M01-Introduction}
+
+    % Problema de investigacion
+    \chapter{Problema de investigaci\'on}
+    \input{MainMatter/M03-ResearchProblem}
+
+    % Objetivos
+    \chapter{Objetivos}
+    \input{MainMatter/M05-Objectives}
     
     % Trabajos previos
     \chapter{Estado del Arte}
     \input{MainMatter/M02-PreviousWork}
     
-    % Problema de investigacion
-    \chapter{Problema de investigaci\'on}
-    \input{MainMatter/M03-ResearchProblem}
-    
     % Justificación
-    \chapter{Justificaci\'on}
-    \input{MainMatter/M04-Justification}
-    
-    % Objetivos
-    \chapter{Objetivos}
-    \input{MainMatter/M05-Objectives}
+    % \chapter{Justificaci\'on}
+    % \input{MainMatter/M04-Justification}
     
     % Metodologia
     \chapter{Metodolog\'ia de investigación}

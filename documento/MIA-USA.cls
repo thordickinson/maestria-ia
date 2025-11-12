@@ -224,11 +224,11 @@
     \put (1in, -1in){
         \ifthenelse{\value{page}>2} {
             \backgroundsetup{
-                contents={\includegraphics[height=3cm]{Images/ImagenesPlantilla/LogoSimboloUSA-V-G.pdf}},
+                contents={\includegraphics[height=1.5cm]{Images/ImagenesPlantilla/LogoSimboloUSA-V-G.pdf}},
                 opacity=0.15,
                 angle=0,
                 scale=1,
-                position={0.75\paperwidth,-.85\paperheight}
+                position={0.85\paperwidth,-.90\paperheight}
             }% 
         }%
         {
