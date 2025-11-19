@@ -1,138 +1,141 @@
-El desarrollo del proyecto se estructuró como un proceso reproducible de estimación de precios de vivienda para la ciudad de Bogotá, combinando técnicas de análisis de datos, modelado predictivo y enriquecimiento geoespacial. La metodología se organizó en etapas secuenciales, desde la adquisición de datos hasta la validación comparativa de modelos.
+La metodología de este estudio sigue un enfoque reproducible y basado en datos abiertos para la estimación del precio de apartamentos en Bogotá. El proceso incluye adquisición e integración de datos, análisis exploratorio, limpieza y transformación, enriquecimiento geoespacial, entrenamiento de modelos base y aumentados, selección del modelo final y la implementación de una utilidad web para su uso práctico. La Figura~\ref{fig:metodologia_general} presenta una vista general del flujo metodológico.
 
-\begin{enumerate}
-    \item Adquisición y validación de datos.
-    \item Limpieza, imputación y normalización de variables.
-    \item Entrenamiento del modelo base y evaluación de algoritmos.
-    \item Enriquecimiento geoespacial mediante capas distritales y puntos de interés (POIs).
-    \item Optimización de hiperparámetros y análisis de importancia de variables.
-    \item Evaluación cruzada, análisis de error y comparación final de modelos.
-    \item Exposición de resultados y persistencia mediante API.
-\end{enumerate}
-
-La métrica principal seleccionada fue la \textbf{raíz del error cuadrático medio (RMSE)}, por su interpretabilidad en la misma unidad del objetivo (pesos colombianos) y su sensibilidad a errores grandes, deseable en contextos de valoración. Como métricas complementarias se reportan el \textbf{error absoluto medio (MAE)} y el \(\mathbf{R^2}\), indicador del grado de ajuste explicativo.
-
-\subsection*{Fuentes de datos}
-
-Se integraron fuentes públicas y abiertas que combinan información estructural del inmueble con variables contextuales espaciales. 
-
-\begin{itemize}
-    \item \textbf{Datos de inmuebles (base):} Se utilizaron registros provenientes del repositorio público \texttt{builker-col/bogota-apartments} \cite{portales_inmobiliarios}, con datos correspondientes a agosto de 2024. Los archivos originales en formato JSON fueron transformados a CSV para su procesamiento.
-    \item \textbf{Datos abiertos del Distrito (PostGIS):} Se descargaron capas geoespaciales desde el portal de datos abiertos de la Alcaldía de Bogotá \cite{datosabiertos_bogota}, incluyendo \texttt{barrios\_bogota}, \texttt{upz\_bogota}, \texttt{localidades\_bogota}, \texttt{estratos\_manzana}, \texttt{avaluo\_catastral\_manzana} y \texttt{avaluo\_comercial\_manzana}. Estas capas fueron cargadas en una base de datos PostGIS mediante el uso de la herramienta shp2pgsql.
-    \item \textbf{Puntos de interés (POIs):} Se obtuvieron datos de OpenStreetMap descargados desde Geofabrik \cite{geofabrik}. Se procesaron las categorías \emph{education}, \emph{healthcare}, \emph{retail\_access}, \emph{dining}, \emph{accommodation}, \emph{parks}, \emph{infrastructure} y \emph{culture}, calculando su cercanía a cada inmueble en radios de 100 a 2000 metros.
-\end{itemize}
-
-\subsection*{Limpieza y preprocesamiento}
-
-Se ejecutaron rutinas de limpieza orientadas a garantizar la coherencia estructural de las variables y reducir la influencia de errores de captura o valores extremos. El procesamiento se realizó en Python utilizando \textit{pandas}, \textit{NumPy} y \textit{scikit-learn}.
-
-\begin{itemize}
-    \item \textbf{Outliers:} Se eliminaron observaciones por encima del percentil 99 en área y precio. \(\textit{Área} \leq 464\,m^2\), \(\textit{precio\_venta} \leq 5{,}4\times10^9\) COP.
-    \item \textbf{Valores mínimos:} Se excluyeron registros con precios inferiores a 50 millones de pesos.
-    \item \textbf{Imputación:} Se imputaron valores faltantes de \textit{área}, \textit{estrato}, \textit{estado} y \textit{administración} por mediana o moda dentro del mismo sector o estrato.
-    \item \textbf{Coordenadas:} Se validó que las coordenadas estuvieran dentro del bounding box de Bogotá (latitud \([4.4, 4.9]\); longitud \([-74.3, -73.9]\)).
-\end{itemize}
-
-\subsection*{Transformaciones y normalización de variables}
-
-Dada la asimetría positiva de las distribuciones de \textit{área} y \textit{precio\_venta}, se aplicó una transformación logarítmica para estabilizar la varianza y mejorar la linealidad en las relaciones con el objetivo.  
-La Figura~\ref{fig:log_area_precio} muestra la diferencia en la distribución de ambas variables antes y después de la transformación.
-
-\begin{figure}[h]
+\begin{figure}[ht]
     \centering
-    \includegraphics[width=0.8\linewidth]{Images/log_area_precio.png}
-    \caption{Distribución del área y precio antes y después de la transformación logarítmica}
-    \label{fig:log_area_precio}
+    \includegraphics[width=0.95\linewidth]{Images/metodologia/overview.png}
+    \caption{Flujo general de la metodología desarrollada.}
+    \label{fig:metodologia_general}
 \end{figure}
 
+\subsection{Adquisición e integración de datos}
 
-\subsection*{Uso de geohash y enriquecimiento geoespacial}
+El conjunto de datos principal se obtuvo a partir de una recopilación pública de inmuebles publicada en 2024. Este dataset incluye información estructural como área, baños, parqueaderos, estrato, antigüedad, estado, administración y coordenadas geográficas. Con el fin de reducir la heterogeneidad tipológica, el análisis se restringió exclusivamente a \textbf{apartamentos}, que representaban la categoría con mejor disponibilidad y coherencia estructural.
 
-Para agregar información contextual de forma eficiente, se utilizó la codificación \textbf{geohash} con nivel de precisión 7, correspondiente a celdas de aproximadamente 150 metros \cite{geohash_size}.  
-Esto permitió agrupar propiedades próximas y calcular estadísticas agregadas de variables geográficas como estrato, valor catastral y densidad de puntos de interés.  
-El enriquecimiento geoespacial se implementó sobre PostGIS mediante funciones \texttt{ST\_Contains} y \texttt{ST\_Distance}, generando nuevas variables para cada inmueble.
+Para complementar la información base, se integraron capas oficiales del portal de Datos Abiertos de Bogotá, incluyendo barrios, UPZ, localidades, estratos y avalúos catastrales. Asimismo, se incorporaron puntos de interés (POIs) provenientes de OpenStreetMap. Todas las capas espaciales fueron cargadas en una base de datos PostGIS, lo que permitió realizar operaciones geográficas como intersecciones, cálculos de distancias y agregaciones por geohash.
 
-\begin{itemize}
-    \item Conteo de POIs por categorías OSM en radios de 100, 300, 500, 1000 y 2000 metros.
-    \item Asignación de variables \textit{barrio\_calculado}, \textit{upz\_calculada} y \textit{localidad\_calculada}.
-    \item Estadísticos agregados (\(n\), media, desviación y cuartiles) por celda geohash y por región administrativa.
-\end{itemize}
+\subsection{Exploración y análisis inicial de los datos}
 
-\subsection*{Evaluación de modelos y validación cruzada}
+El análisis exploratorio incluyó visualizaciones iniciales de las variables principales. Las Figuras~\ref{fig:area_log} y \ref{fig:precio_log} presentan la distribución original y transformada del área y del precio. Se observó una marcada asimetría positiva en ambas variables, lo que justificó la aplicación de la transformación logarítmica para estabilizar la varianza y mejorar la linealidad de sus relaciones.
 
-Se evaluaron diferentes algoritmos de regresión: regresión lineal, Ridge, Lasso, SVR, Random Forest, XGBoost y LightGBM.  
-Todos los modelos compartieron un pipeline común de preprocesamiento (\texttt{SimpleImputer}, \texttt{StandardScaler}, \texttt{OneHotEncoder}) y fueron validados mediante \textbf{validación cruzada de 10 pliegues}.
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.85\linewidth]{Images/metodologia/area_log.png}
+    \caption{Distribución del área antes y después de la transformación logarítmica.}
+    \label{fig:area_log}
+\end{figure}
 
-El modelo \textbf{XGBoost} presentó el mejor desempeño en el conjunto base, con \(\text{RMSE} = 0.151\), \(\text{MAE} = 0.107\) y \(R^2 = 0.965\).  
-Este modelo se seleccionó como línea base para la comparación con los modelos enriquecidos.
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.85\linewidth]{Images/metodologia/precio_log.png}
+    \caption{Distribución del precio antes y después de la transformación logarítmica.}
+    \label{fig:precio_log}
+\end{figure}
 
-\subsection*{Optimización e interpretabilidad}
+Se analizó la relación entre variables estructurales mediante un mapa de calor de correlaciones (Figura~\ref{fig:correlacion}). Este análisis mostró que el área y el estrato tenían la mayor correlación con el precio, mientras que variables como habitaciones, ascensor o piscina tenían correlaciones bajas, anticipando su menor utilidad en la predicción final.
 
-Se aplicó búsqueda aleatoria de hiperparámetros (\texttt{RandomizedSearchCV}, 5x25) para optimizar los parámetros del modelo base.  
-Los mejores valores obtenidos fueron \(n\_\textit{estimators}=627\), \(\textit{max\_depth}=9\), \(\textit{learning\_rate}=0.05\), \(\textit{subsample}=0.85\) y \(\textit{colsample\_bytree}=0.90\).  
-Tras la optimización, el modelo mantuvo un RMSE similar (0.158), lo que confirmó su estabilidad.
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.85\linewidth]{Images/metodologia/correlacion_heatmap.png}
+    \caption{Mapa de calor de correlaciones entre variables estructurales.}
+    \label{fig:correlacion}
+\end{figure}
 
-El análisis de importancia de variables mostró que las características estructurales dominan la predicción: \textbf{área} (0.29), \textbf{estrato} (0.15), \textbf{parqueaderos} (0.11) y \textbf{antigüedad} (0.06) son los factores más determinantes.  
-Las variables de amenidades y ubicación (latitud, longitud, piscina, gimnasio) aportan información adicional, pero con influencia menor.
+\subsection{Limpieza, imputación y transformación}
 
-\subsection*{Análisis de error}
+El dataset fue sometido a un proceso riguroso de depuración. Se eliminaron registros con coordenadas fuera del área urbana de Bogotá y valores atípicos definidos mediante percentiles (área $> 464\ \text{m}^2$ y precio $> 5.4\times10^9$ COP). Se descartaron registros inconsistentes con precios inferiores a 50 millones de pesos.
 
-El análisis de error por rangos de precio mostró que el error absoluto aumenta con el valor del inmueble, pero el error relativo se mantiene estable (3--4\%), lo que evidencia consistencia en todo el rango de precios.  
-Por sectores, los errores más altos se concentraron en zonas de alta valorización (Chicó, Santa Cecilia, Cerros de Suba), debido a su heterogeneidad.  
-Este patrón justifica la incorporación de variables geoespaciales para capturar diferencias locales no explicadas por las variables estructurales.
+La imputación siguió una estrategia jerárquica: el área se imputó mediante la mediana de comparables dentro del mismo estrato, número de baños, parqueaderos y sector. El estrato y estado se imputaron con la moda del sector, mientras que la administración se imputó con la mediana del estrato. Variables con más de 70\% de ausencia fueron descartadas.
 
-\subsection*{Comparación final de modelos}
+El precio se transformó aplicando el logaritmo natural, definiendo como variable objetivo \texttt{precio\_venta\_log}. La variable área también fue transformada logarítmicamente debido a su asimetría. Las variables numéricas se escalaron mediante \texttt{StandardScaler} y las categóricas se codificaron mediante \texttt{OneHotEncoder}.
 
-El modelo \textbf{enriquecido reducido} (con variables geoespaciales) obtuvo un \(\text{RMSE} = 0.165\), \(\text{MAE} = 0.121\) y \(R^2 = 0.958\), mientras que el modelo base mantuvo \(\text{RMSE} = 0.151\) y \(R^2 = 0.965\).  
-La diferencia relativa del 9.2\% en RMSE y del -0.7\% en \(R^2\) indica que el enriquecimiento geoespacial no mejora sustancialmente el rendimiento, pero aporta valor explicativo adicional y mejora la interpretabilidad espacial del modelo.
+\subsection{Enriquecimiento geoespacial}
 
-\subsection*{Implementación del sistema web}
+El enriquecimiento geoespacial permitió capturar efectos del entorno urbano. Se utilizó geohash nivel 7 para agrupar propiedades dentro de celdas de aproximadamente 150 metros. A partir de las coordenadas, se asignaron automáticamente el \textbf{barrio} y la \textbf{UPZ}, que posteriormente demostraron ser variables de alta relevancia predictiva.
 
-Además del modelo analítico, se desarrolló una \textbf{arquitectura web funcional} compuesta por un servicio \textit{backend} en Python (FastAPI) y una interfaz \textit{frontend} en ReactJS. El \textit{backend} expone un conjunto de endpoints REST que permiten no solo estimar el precio de un apartamento a partir de sus características estructurales, sino también consultar \textbf{estadísticas contextuales} sobre el sector correspondiente, incluyendo precios promedio, estratos predominantes, proximidad a servicios y conteo de amenidades registradas en OpenStreetMap.
+La Figura~\ref{fig:upz_precio} muestra un ejemplo de la relación entre UPZ y el precio promedio de los inmuebles, evidenciando la importancia territorial de esta variable.
 
-El \textit{frontend}, desarrollado con ReactJS, ofrece una interfaz interactiva que facilita la introducción de las variables del inmueble (área, número de baños, parqueaderos, estrato, barrio, entre otros). La aplicación envía estos datos al servicio FastAPI, el cual los enriquece con información geoespacial y devuelve la predicción generada por el modelo final optimizado y con características reducidas. Esta integración asegura la \textbf{usabilidad práctica del sistema} y su potencial aplicación como herramienta de consulta para agentes, ciudadanos y analistas del mercado inmobiliario.
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.85\linewidth]{Images/metodologia/upz_precio.png}
+    \caption{Precio promedio por UPZ en Bogotá.}
+    \label{fig:upz_precio}
+\end{figure}
 
+También se calcularon conteos de POIs por radios de 100 a 2000 metros, como ilustrado en la Figura~\ref{fig:pois_radio}, que muestra la agregación espacial de servicios cercanos en un inmueble ejemplo.
 
-\subsection*{Implementación del sistema web}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.85\linewidth]{Images/metodologia/pois_radio.png}
+    \caption{Ejemplo de conteo de puntos de interés en radios de proximidad (captura de la utilidad web).}
+    \label{fig:pois_radio}
+\end{figure}
 
-Como resultado complementario del proceso de modelado, se desarrolló una aplicación web que permite interactuar con el modelo predictivo y consultar estimaciones de precios de vivienda en Bogotá. El sistema se diseñó con una arquitectura ligera y modular compuesta por tres capas principales:
+\subsection{Construcción del modelo base}
 
-\begin{itemize}
-    \item \textbf{Base de datos:} Implementada en \textit{PostgreSQL}, almacena los datos estructurales, geoespaciales y las predicciones generadas por el modelo. Se emplean extensiones \textit{PostGIS} para manejar coordenadas y operaciones espaciales.
-    \item \textbf{Backend:} Desarrollado con \textit{FastAPI}, expone un conjunto de endpoints que permiten realizar predicciones, consultar información contextual y administrar las variables utilizadas. Este servicio aloja el modelo entrenado en formato serializado y gestiona la comunicación con la base de datos.
-    \item \textbf{Frontend:} Construido en \textit{ReactJS}, ofrece una interfaz interactiva para que el usuario introduzca las características del inmueble y obtenga el valor estimado junto con un resumen de las condiciones del entorno.
-\end{itemize}
+El modelo base se desarrolló utilizando únicamente variables estructurales. Se evaluaron siete algoritmos: regresión lineal, Ridge, Lasso, SVR, Random Forest, LightGBM y XGBoost. Las métricas se calcularon mediante validación cruzada de diez pliegues.
 
-La arquitectura se despliega como una aplicación cliente-servidor, donde el backend procesa las solicitudes de estimación y el frontend muestra los resultados en tiempo real. Esta implementación no solo permite validar empíricamente el desempeño del modelo, sino también demostrar su aplicabilidad práctica como herramienta de apoyo para la toma de decisiones en el mercado inmobiliario.
+Los resultados se resumen en la Tabla~\ref{tab:modelos_base} y la Figura~\ref{fig:rmse_modelos}.
 
-
-\begin{figure}[h]
+\begin{table}[ht]
 \centering
-\begin{tikzpicture}[
-    node distance=1.8cm,
-    every node/.style={font=\sffamily, align=center},
-    box/.style={draw, rounded corners=3pt, minimum width=3.8cm, minimum height=1cm, thick, fill=blue!10},
-    arrow/.style={->, thick}
-]
+\caption{Comparación de algoritmos en el modelo base.}
+\label{tab:modelos_base}
+\begin{tabular}{lccc}
+\hline
+\textbf{Modelo} & \textbf{RMSE} & \textbf{MAE} & \textbf{$R^2$} \\
+\hline
+XGBoost & 0.1514 & 0.1073 & 0.9650 \\
+LightGBM & 0.1604 & 0.1180 & 0.9607 \\
+Random Forest & 0.1612 & 0.1121 & 0.9603 \\
+\hline
+\end{tabular}
+\end{table}
 
-% Nodes
-\node[box] (frontend) {Frontend \\ \textbf{ReactJS}};
-\node[box, below=of frontend] (backend) {Backend \\ \textbf{FastAPI}};
-\node[box, below=of backend] (database) {Base de datos \\ \textbf{PostgreSQL / PostGIS}};
-\node[draw, rounded corners=3pt, fill=gray!10, minimum width=6cm, minimum height=5.5cm, label={[yshift=3.1cm]\textbf{Arquitectura del sistema web}}] (container) {};
-
-% Reorder visually
-\begin{scope}[on background layer]
-    \node[fill=white, rounded corners=3pt, draw=gray!60, fit=(frontend)(backend)(database)] {};
-\end{scope}
-
-% Arrows
-\draw[arrow] (frontend) -- node[right]{API REST} (backend);
-\draw[arrow] (backend) -- node[right]{Consultas SQL / Spatial} (database);
-
-\end{tikzpicture}
-\caption{Arquitectura general del sistema web desarrollado.}
-\label{fig:arquitectura_web}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Images/metodologia/rmse_modelos_base.png}
+    \caption{Desempeño comparado de algoritmos del modelo base (RMSE).}
+    \label{fig:rmse_modelos}
 \end{figure}
 
+El mejor desempeño fue obtenido por XGBoost, que se seleccionó como modelo base oficial.
+
+\subsection{Construcción del modelo aumentado}
+
+El modelo aumentado incorporó todas las variables geoespaciales (POIs, geohash, avalúo catastral, barrio y UPZ). Aunque visualmente las variables espaciales son informativas, su aporte predictivo resultó marginal. La Figura~\ref{fig:importancia_aumentado} muestra la importancia de variables del modelo aumentado.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Images/metodologia/importance_modelo_aumentado.png}
+    \caption{Importancia de variables en el modelo aumentado.}
+    \label{fig:importancia_aumentado}
+\end{figure}
+
+\subsection{Modelo reducido y selección final}
+
+A partir del análisis de importancias y permutation importance, se seleccionaron once variables para construir un modelo reducido más interpretable. La Figura~\ref{fig:importancia_reducido} presenta la importancia relativa de estas variables.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Images/metodologia/importance_modelo_reducido.png}
+    \caption{Permutation importance del modelo reducido.}
+    \label{fig:importancia_reducido}
+\end{figure}
+
+El modelo reducido tuvo un buen desempeño pero no superó al modelo base. La Figura~\ref{fig:error_precio} muestra el error relativo según el precio real.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.85\linewidth]{Images/metodologia/error_vs_precio.png}
+    \caption{Error relativo del modelo según rango de precios reales.}
+    \label{fig:error_precio}
+\end{figure}
+
+\subsection{Implementación del sistema web}
+
+El sistema final integra un \textbf{backend en FastAPI} y un \textbf{frontend en ReactJS}. El usuario ingresa características básicas del apartamento y una dirección. La dirección se geocodifica mediante Nominatim para obtener la coordenada final, que se utiliza para asignar automáticamente el barrio y la UPZ mediante PostGIS. Esta información se envía al modelo reducido optimizado, y el backend retorna la estimación junto con estadísticas del entorno.
+
+\subsection{Reproducibilidad}
+
+El proyecto incluye notebooks organizados en \texttt{analisis/notebooks}, scripts modulares en \texttt{indexador-py} y artefactos almacenados en \texttt{analisis/data/}. Se fijaron semillas aleatorias para permitir replicar todos los resultados y se documentó el proceso completo de enriquecimiento y modelado.
 

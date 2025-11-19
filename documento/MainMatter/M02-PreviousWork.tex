@@ -2,19 +2,11 @@ El análisis y la estimación del valor de los bienes raíces se ha consolidado 
 
 La revisión de la literatura especializada permite identificar cuatro grandes líneas de investigación, diferenciadas por su enfoque metodológico y su contribución al negocio inmobiliario.
 
-\subsection*{Modelos basados en características físicas y estructurales del inmueble}
-
 Los primeros estudios aplicaron métodos estadísticos convencionales, como la regresión lineal múltiple o los modelos hedónicos, para explicar cómo las características físicas —área, número de habitaciones, baños, garajes o antigüedad— influyen en el valor de una vivienda. Investigaciones como las de \cite{yu2016realestate} y \cite{kim2018machinelearning} evidencian la utilidad de estos modelos en contextos homogéneos, donde la estructura del inmueble explica buena parte de la variabilidad del precio. No obstante, su capacidad predictiva disminuye en mercados urbanos complejos, donde factores como la \textbf{ubicación} o el \textbf{entorno socioeconómico} tienen un peso determinante.
-
-\subsection*{Incorporación de variables macroeconómicas y análisis de escenarios}
 
 Con el propósito de anticipar fluctuaciones de precios y evaluar impactos derivados de la coyuntura económica, autores como \cite{li2017realestate} y \cite{zhang2018realestate} incorporaron indicadores macroeconómicos —PIB, inflación, tasas hipotecarias, inversión en construcción o empleo— dentro de modelos predictivos. En estos trabajos se emplean técnicas de \textbf{Support Vector Regression (SVR)} y variantes optimizadas mediante \textbf{Particle Swarm Optimization (PSO)}, orientadas a capturar relaciones no lineales y generar proyecciones útiles para la planeación estratégica del sector inmobiliario.
 
-\subsection*{Aplicación de aprendizaje automático y analítica de grandes volúmenes de datos}
-
 El crecimiento de los portales inmobiliarios y la disponibilidad de datos estructurados a gran escala promovieron la adopción de técnicas más avanzadas de aprendizaje automático. \cite{park2015housing} introducen algoritmos de clasificación como \textbf{C4.5}, \textbf{RIPPER}, \textbf{Naïve Bayes} y \textbf{AdaBoost} para analizar datos de múltiples fuentes (MLS, tasas hipotecarias, calidad educativa), destacando su potencial para apoyar la toma de decisiones de agentes y compradores. De manera complementaria, \cite{bigdata2019realestate} exploraron el uso de \textbf{Random Forest}, \textbf{LASSO} y \textbf{Gradient Boosting} sobre conjuntos de datos con decenas de variables explicativas, evidenciando el papel del aprendizaje automático en la \textbf{automatización de la valoración masiva de propiedades} y en la reducción de la subjetividad en las tasaciones.
-
-\subsection*{Enfoques de inteligencia artificial profunda y análisis espacial}
 
 La integración de arquitecturas neuronales profundas y técnicas de reducción de dimensionalidad ha potenciado la capacidad de los modelos para representar patrones complejos entre variables estructurales, económicas y espaciales. \cite{mostofi2022realestate} proponen un enfoque híbrido \textbf{PCA–DNN} para mejorar la predicción de precios en mercados heterogéneos, mientras que \cite{dabreo2021realestate} aplican redes neuronales y métodos de vecinos más cercanos para estimar precios urbanos en tiempo real. Estas aproximaciones marcan una transición desde modelos descriptivos hacia \textbf{sistemas predictivos aplicables a portales inmobiliarios, procesos de tasación automatizada y gestión de carteras de inversión}.
 
@@ -26,7 +18,8 @@ En síntesis, la literatura revisada muestra una evolución desde modelos explic
 \begin{tabular}{p{4cm} p{6cm} p{3.5cm} p{2.5cm}}
 \hline
 \textbf{Estudio} & \textbf{Contexto de aplicación} & \textbf{Modelos utilizados} & \textbf{Métricas reportadas} \\ \hline
-\cite{park2015housing} & Fairfax County, EE. UU.; integración de datos de MLS, tasas hipotecarias y calificaciones escolares. & C4.5, RIPPER, Naïve Bayes, AdaBoost & Accuracy \\
+\small
+\caption{\captshort\cite{park2015housing}} & Fairfax County, EE. UU.; integración de datos de MLS, tasas hipotecarias y calificaciones escolares. & C4.5, RIPPER, Naïve Bayes, AdaBoost & Accuracy \\
 \cite{li2017realestate} & Mercado chino; predicción de variaciones de precios basada en indicadores económicos. & Regresión múltiple, ANN, SVM & RMSE, R² \\
 \cite{zhang2018realestate} & Predicción de precios mediante optimización de hiperparámetros con PSO. & PSO–SVM, SVM, BP & MAPE, Error relativo \\
 \cite{kim2018machinelearning} & Análisis comparativo entre modelos hedónicos, de ML y deep learning. & Hedonic regression, ANN, CNN & RMSE, MAE, R² \\
