@@ -11,6 +11,8 @@ La metodología de este estudio sigue un enfoque reproducible y basado en datos 
 
 El conjunto de datos principal se obtuvo a partir de una recopilación pública de inmuebles publicada en 2024. Este dataset incluye información estructural como área, baños, parqueaderos, estrato, antigüedad, estado, administración y coordenadas geográficas. Con el fin de reducir la heterogeneidad tipológica, el análisis se restringió exclusivamente a \textbf{apartamentos}, que representaban la categoría con mejor disponibilidad y coherencia estructural.
 
+Durante las etapas iniciales se consideró la posibilidad de complementar esta información mediante técnicas de \textit{web scraping} aplicadas a portales inmobiliarios nacionales. Sin embargo, estos sitios emplean mecanismos estrictos de protección contra automatización y condiciones de uso que restringen la recolección automática de datos, lo cual limita la viabilidad técnica y legal de este enfoque. Por esta razón, y con el objetivo de garantizar transparencia y reproducibilidad, el estudio se basó exclusivamente en fuentes abiertas y en conjuntos de datos disponibles públicamente.
+
 Para complementar la información base, se integraron capas oficiales del portal de Datos Abiertos de Bogotá, incluyendo barrios, UPZ, localidades, estratos y avalúos catastrales. Asimismo, se incorporaron puntos de interés (POIs) provenientes de OpenStreetMap. Todas las capas espaciales fueron cargadas en una base de datos PostGIS, lo que permitió realizar operaciones geográficas como intersecciones, cálculos de distancias y agregaciones por geohash.
 
 \subsection{Exploración y análisis inicial de los datos}
@@ -78,18 +80,26 @@ Los resultados se resumen en la Tabla~\ref{tab:modelos_base} y la Figura~\ref{fi
 
 \begin{table}[ht]
 \centering
-\caption{Comparación de algoritmos en el modelo base.}
+\small
+\caption{Comparación inicial de algoritmos de regresión (RMSE en COP).}
 \label{tab:modelos_base}
-\begin{tabular}{lccc}
+\begin{tabular}{lcc}
 \hline
-\textbf{Modelo} & \textbf{RMSE} & \textbf{MAE} & \textbf{$R^2$} \\
+\textbf{Modelo} & \textbf{RMSE medio} & \textbf{RMSE std} \\
 \hline
-XGBoost & 0.1514 & 0.1073 & 0.9650 \\
-LightGBM & 0.1604 & 0.1180 & 0.9607 \\
-Random Forest & 0.1612 & 0.1121 & 0.9603 \\
+Random Forest      & 2.447126e+08 & 7.637822e+06 \\
+XGBoost            & 2.452488e+08 & 6.392930e+06 \\
+LightGBM           & 2.462642e+08 & 4.892081e+06 \\
+KNN                & 3.416649e+08 & 5.987948e+06 \\
+Decision Tree      & 3.459864e+08 & 8.217641e+06 \\
+Linear Regression  & 3.479858e+08 & 4.397948e+06 \\
+Lasso              & 3.479884e+08 & 4.402652e+06 \\
+Ridge              & 3.479899e+08 & 4.437838e+06 \\
+SVR                & 9.133336e+08 & 5.537129e+06 \\
 \hline
 \end{tabular}
 \end{table}
+
 
 \begin{figure}[ht]
     \centering

@@ -8,3 +8,4 @@ indexador-py/.vscode
 indexador-py/dist
 **/__pycache__/
 
+**/.DS-Store
