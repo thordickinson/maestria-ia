@@ -100,9 +100,9 @@ Random Forest & 0.1612 & 0.1121 & 0.9603 \\
 
 El mejor desempeño fue obtenido por XGBoost, que se seleccionó como modelo base oficial.
 
-\subsection{Construcción del modelo aumentado}
+\subsection{Construcción del modelo enriquecido}
 
-El modelo aumentado incorporó todas las variables geoespaciales (POIs, geohash, avalúo catastral, barrio y UPZ). Aunque visualmente las variables espaciales son informativas, su aporte predictivo resultó marginal. La Figura~\ref{fig:importancia_aumentado} muestra la importancia de variables del modelo aumentado.
+El modelo enriquecido incorporó todas las variables geoespaciales (POIs, geohash, avalúo catastral, barrio y UPZ). Aunque visualmente las variables espaciales son informativas, su aporte predictivo resultó marginal. La Figura~\ref{fig:importancia_aumentado} muestra la importancia de variables del modelo aumentado.
 
 \begin{figure}[ht]
     \centering
@@ -111,25 +111,107 @@ El modelo aumentado incorporó todas las variables geoespaciales (POIs, geohash,
     \label{fig:importancia_aumentado}
 \end{figure}
 
-\subsection{Modelo reducido y selección final}
+\subsection{Interpretabilidad del Modelo mediante SHAP}
 
-A partir del análisis de importancias y permutation importance, se seleccionaron once variables para construir un modelo reducido más interpretable. La Figura~\ref{fig:importancia_reducido} presenta la importancia relativa de estas variables.
+Para analizar la contribuci\'on relativa de todas las variables del modelo enriquecido,
+se emplearon valores SHAP. Tras aplicar el preprocesamiento, se generaron:
 
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.8\linewidth]{Images/metodologia/importance_modelo_reducido.png}
-    \caption{Permutation importance del modelo reducido.}
-    \label{fig:importancia_reducido}
-\end{figure}
+\begin{itemize}
+    \item \textbf{Figura A}: \textit{SHAP Summary Plot},
+    \item \textbf{Figura B}: \textit{SHAP Bar Plot}.
+\end{itemize}
 
-El modelo reducido tuvo un buen desempeño pero no superó al modelo base. La Figura~\ref{fig:error_precio} muestra el error relativo según el precio real.
+Estas figuras permiten identificar qu\'e variables tienen mayor impacto en la predicci\'on 
+y guiar la selecci\'on de caracter\'isticas para un modelo m\'as parsimonioso.
 
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.85\linewidth]{Images/metodologia/error_vs_precio.png}
-    \caption{Error relativo del modelo según rango de precios reales.}
-    \label{fig:error_precio}
-\end{figure}
+
+\subsection{Construcci\'on del Modelo Enriquecido Optimizado}
+
+A partir del ranking global de importancia obtenido con SHAP, se seleccion\'o un subconjunto
+de caracter\'isticas con mayor aporte promedio. Las variables finalmente retenidas se listan en la Tabla~\ref{tab:variables_optimizadas}.
+
+Con estas variables se entren\'o el \textit{modelo enriquecido optimizado},
+utilizando el mismo esquema de preprocesamiento y los mismos hiperpar\'ametros del modelo enriquecido.
+
+
+\subsection{Validaci\'on cruzada y m\'etricas de evaluaci\'on}
+
+La evaluaci\'on de los modelos se realiz\'o mediante \textit{validaci\'on cruzada de diez pliegues} (10-Fold Cross-Validation). 
+En cada iteraci\'on, nueve pliegues se emplean para el entrenamiento y el pliegue restante para validaci\'on, de forma que 
+todas las observaciones act\'uan como conjunto de prueba exactamente una vez.
+
+Para cada pliegue se registraron las m\'etricas:
+\begin{itemize}
+    \item \textbf{RMSE}: Ra\'iz del error cuadr\'atico medio.
+    \item \textbf{MAE}: Error absoluto medio.
+    \item \textbf{R\textsuperscript{2}}: Coeficiente de determinaci\'on.
+\end{itemize}
+
+Los resultados detallados de cada modelo, incluyendo los diez valores individuales por pliegue y las estad\'isticas descriptivas 
+(media, desviaci\'on est\'andar, percentiles, m\'inimo y m\'aximo), se presentan en:
+
+\begin{itemize}
+    \item \textbf{Tabla X}: Resultados del modelo base.
+    \item \textbf{Tabla Y}: Resultados del modelo enriquecido.
+    \item \textbf{Tabla Z}: Resultados del modelo enriquecido optimizado.
+\end{itemize}
+
+Este esquema permite comparar estabilidad, varianza y consistencia del desempe\~no entre modelos.
+
+\subsection{Comparaci\'on estad\'istica entre modelos}
+
+Para determinar si las diferencias de desempe\~no entre los modelos son estad\'isticamente significativas, se aplicaron 
+\textit{pruebas t de Student para muestras pareadas}, utilizando los diez valores de RMSE obtenidos en cada pliegue para cada modelo.
+
+Se evaluaron los siguientes contrastes:
+\begin{enumerate}
+    \item Modelo base vs.\ modelo enriquecido.
+    \item Modelo base vs.\ modelo enriquecido optimizado.
+    \item Modelo enriquecido vs.\ modelo enriquecido optimizado.
+\end{enumerate}
+
+Los resultados del estad\'istico t y los p-valores asociados se presentan en la \textbf{Tabla W}, junto con una interpretaci\'on detallada 
+de los contrastes realizados.
+
+\subsection{Interpretabilidad del modelo mediante SHAP}
+
+El modelo enriquecido fue analizado utilizando valores SHAP (\textit{SHapley Additive exPlanations}), con el fin de identificar 
+las variables con mayor contribuci\'on a la explicaci\'on del modelo.
+
+Se generaron dos visualizaciones principales:
+\begin{itemize}
+    \item \textbf{Figura A}: \textit{SHAP summary plot}, que muestra la distribuci\'on del impacto de cada variable.
+    \item \textbf{Figura B}: \textit{SHAP bar plot}, que presenta la importancia media absoluta de cada caracter\'istica.
+\end{itemize}
+
+Estas figuras permiten analizar el aporte relativo de las variables estructurales y geoespaciales, as\'i como su influencia 
+sobre la predicci\'on del precio de los apartamentos.
+
+\subsection{Construcci\'on del modelo enriquecido optimizado}
+
+A partir de los valores SHAP obtenidos (Figura B), se seleccionaron las variables con contribuci\'on significativa seg\'un su 
+importancia global. Las caracter\'isticas retenidas se listan en la \textbf{Tabla Q}, junto con su valor de importancia media.
+
+Con este conjunto reducido de variables se entren\'o el \textit{modelo enriquecido optimizado}, utilizando el mismo 
+preprocesamiento basado en \texttt{ColumnTransformer} y los mismos hiperpar\'ametros ajustados previamente.
+
+Los resultados completos del proceso de validaci\'on cruzada para este modelo se presentan en la \textbf{Tabla Z}, y su 
+comparaci\'on estad\'istica frente a los otros modelos en la \textbf{Tabla W}.
+
+\subsection{S\'intesis comparativa final}
+
+Para facilitar la interpretaci\'on global del desempe\~no de los modelos, en la \textbf{Tabla R} se presentan de manera consolidada 
+las m\'etricas:
+
+\begin{itemize}
+    \item RMSE medio $\pm$ desviaci\'on est\'andar.
+    \item MAE medio $\pm$ desviaci\'on est\'andar.
+    \item R\textsuperscript{2} medio $\pm$ desviaci\'on est\'andar.
+    \item p-valores de las pruebas t correspondientes.
+\end{itemize}
+
+Esta tabla resume la evidencia cuantitativa necesaria para analizar la contribuci\'on del enriquecimiento de datos, 
+la utilidad del modelo optimizado y la comparaci\'on final entre los enfoques desarrollados.
 
 \subsection{Implementación del sistema web}
 
