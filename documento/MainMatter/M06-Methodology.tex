@@ -7,7 +7,7 @@ La metodología de este estudio sigue un enfoque reproducible y basado en datos 
     \label{fig:metodologia_general}
 \end{figure}
 
-\subsection{Adquisición e integración de datos}
+\section{Adquisición e integración de datos}
 
 El conjunto de datos principal se obtuvo a partir de una recopilación pública de inmuebles publicada en 2024. Este dataset incluye información estructural como área, baños, parqueaderos, estrato, antigüedad, estado, administración y coordenadas geográficas. Con el fin de reducir la heterogeneidad tipológica, el análisis se restringió exclusivamente a \textbf{apartamentos}, que representaban la categoría con mejor disponibilidad y coherencia estructural.
 
@@ -15,7 +15,7 @@ Durante las etapas iniciales se consideró la posibilidad de complementar esta i
 
 Para complementar la información base, se integraron capas oficiales del portal de Datos Abiertos de Bogotá, incluyendo barrios, UPZ, localidades, estratos y avalúos catastrales. Asimismo, se incorporaron puntos de interés (POIs) provenientes de OpenStreetMap. Todas las capas espaciales fueron cargadas en una base de datos PostGIS, lo que permitió realizar operaciones geográficas como intersecciones, cálculos de distancias y agregaciones por geohash.
 
-\subsection{Exploración y análisis inicial de los datos}
+\section{Exploración y análisis inicial de los datos}
 
 El análisis exploratorio incluyó visualizaciones iniciales de las variables principales. Las Figuras~\ref{fig:area_log} y \ref{fig:precio_log} presentan la distribución original y transformada del área y del precio. Se observó una marcada asimetría positiva en ambas variables, lo que justificó la aplicación de la transformación logarítmica para estabilizar la varianza y mejorar la linealidad de sus relaciones.
 
@@ -42,7 +42,7 @@ Se analizó la relación entre variables estructurales mediante un mapa de calor
     \label{fig:correlacion}
 \end{figure}
 
-\subsection{Limpieza, imputación y transformación}
+\section{Limpieza, imputación y transformación}
 
 El dataset fue sometido a un proceso riguroso de depuración. Se eliminaron registros con coordenadas fuera del área urbana de Bogotá y valores atípicos definidos mediante percentiles (área $> 464\ \text{m}^2$ y precio $> 5.4\times10^9$ COP). Se descartaron registros inconsistentes con precios inferiores a 50 millones de pesos.
 
@@ -50,29 +50,24 @@ La imputación siguió una estrategia jerárquica: el área se imputó mediante 
 
 El precio se transformó aplicando el logaritmo natural, definiendo como variable objetivo \texttt{precio\_venta\_log}. La variable área también fue transformada logarítmicamente debido a su asimetría. Las variables numéricas se escalaron mediante \texttt{StandardScaler} y las categóricas se codificaron mediante \texttt{OneHotEncoder}.
 
-\subsection{Enriquecimiento geoespacial}
+\section{Enriquecimiento geoespacial}
 
-El enriquecimiento geoespacial permitió capturar efectos del entorno urbano. Se utilizó geohash nivel 7 para agrupar propiedades dentro de celdas de aproximadamente 150 metros. A partir de las coordenadas, se asignaron automáticamente el \textbf{barrio} y la \textbf{UPZ}, que posteriormente demostraron ser variables de alta relevancia predictiva.
+El enriquecimiento geoespacial tuvo como propósito incorporar información del entorno urbano de cada inmueble y complementar las variables estructurales con características espaciales derivadas de su localización. Para ello se utilizó geohash de nivel 7, que agrupa propiedades dentro de celdas de aproximadamente 150 metros y permite realizar agregaciones espaciales consistentes dentro del pipeline de modelado.
 
-La Figura~\ref{fig:upz_precio} muestra un ejemplo de la relación entre UPZ y el precio promedio de los inmuebles, evidenciando la importancia territorial de esta variable.
+A partir de las coordenadas geográficas se asignaron automáticamente el \textbf{barrio}, la \textbf{UPZ} y la \textbf{localidad}, utilizando las capas oficiales de datos abiertos del Distrito. Estas variables administrativas permiten representar jerarquías territoriales relevantes para la estructura urbana, aun cuando su contribución predictiva no se asume a priori. Su incorporación se orientó principalmente a evaluar si los límites administrativos capturan diferencias espaciales que no están explícitamente presentes en las variables estructurales.
 
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.85\linewidth]{Images/metodologia/upz_precio.png}
-    \caption{Precio promedio por UPZ en Bogotá.}
-    \label{fig:upz_precio}
-\end{figure}
+Además, se calcularon conteos de puntos de interés (POIs) dentro de radios de 100, 500, 1000 y 2000 metros, utilizando categorías de OpenStreetMap como salud, educación, comercio, recreación y servicios. La Figura~\ref{fig:pois_radio} ilustra el proceso de agregación espacial a partir de un inmueble ejemplo, mostrando cómo se cuantifican los servicios disponibles en su entorno inmediato.
 
-También se calcularon conteos de POIs por radios de 100 a 2000 metros, como ilustrado en la Figura~\ref{fig:pois_radio}, que muestra la agregación espacial de servicios cercanos en un inmueble ejemplo.
+Estas variables derivadas no solo permitieron explorar la influencia del entorno urbano en la valoración inmobiliaria, sino también evaluar redundancias espaciales y determinar qué información del contexto se encuentra ya implícitamente codificada en las características estructurales y administrativas del inmueble. Este enriquecimiento constituyó la base para la posterior selección de variables mediante SHAP y la construcción del modelo optimizado.
 
 \begin{figure}[ht]
     \centering
     \includegraphics[width=0.85\linewidth]{Images/metodologia/pois_radio.png}
-    \caption{Ejemplo de conteo de puntos de interés en radios de proximidad (captura de la utilidad web).}
+    \caption{Conteo de POIs en radios de proximidad alrededor de un inmueble ejemplo.}
     \label{fig:pois_radio}
 \end{figure}
 
-\subsection{Construcción del modelo base}
+\section{Construcción del modelo base}
 
 El modelo base se desarrolló utilizando únicamente variables estructurales. Se evaluaron siete algoritmos: regresión lineal, Ridge, Lasso, SVR, Random Forest, LightGBM y XGBoost. Las métricas se calcularon mediante validación cruzada de diez pliegues.
 
@@ -81,25 +76,24 @@ Los resultados se resumen en la Tabla~\ref{tab:modelos_base} y la Figura~\ref{fi
 \begin{table}[ht]
 \centering
 \small
-\caption{Comparación inicial de algoritmos de regresión (RMSE en COP).}
-\label{tab:modelos_base}
-\begin{tabular}{lcc}
+\caption{Comparación inicial de algoritmos de regresión (RMSE en pesos colombianos).}
+\label{tab:modelos_base_cop}
+\begin{tabular}{lrr}
 \hline
-\textbf{Modelo} & \textbf{RMSE medio} & \textbf{RMSE std} \\
+\textbf{Modelo} & \textbf{RMSE medio (COP)} & \textbf{RMSE std (COP)} \\
 \hline
-Random Forest      & 2.447126e+08 & 7.637822e+06 \\
-XGBoost            & 2.452488e+08 & 6.392930e+06 \\
-LightGBM           & 2.462642e+08 & 4.892081e+06 \\
-KNN                & 3.416649e+08 & 5.987948e+06 \\
-Decision Tree      & 3.459864e+08 & 8.217641e+06 \\
-Linear Regression  & 3.479858e+08 & 4.397948e+06 \\
-Lasso              & 3.479884e+08 & 4.402652e+06 \\
-Ridge              & 3.479899e+08 & 4.437838e+06 \\
-SVR                & 9.133336e+08 & 5.537129e+06 \\
+Random Forest      & \$244{,}712{,}600 & \$7{,}637{,}822 \\
+XGBoost            & \$245{,}248{,}800 & \$6{,}392{,}930 \\
+LightGBM           & \$246{,}264{,}200 & \$4{,}892{,}081 \\
+KNN                & \$341{,}664{,}900 & \$5{,}987{,}948 \\
+Decision Tree      & \$345{,}986{,}400 & \$8{,}217{,}641 \\
+Linear Regression  & \$347{,}985{,}800 & \$4{,}397{,}948 \\
+Lasso              & \$347{,}988{,}400 & \$4{,}402{,}652 \\
+Ridge              & \$347{,}989{,}900 & \$4{,}437{,}838 \\
+SVR                & \$913{,}333{,}600 & \$5{,}537{,}129 \\
 \hline
 \end{tabular}
 \end{table}
-
 
 \begin{figure}[ht]
     \centering
@@ -110,124 +104,118 @@ SVR                & 9.133336e+08 & 5.537129e+06 \\
 
 El mejor desempeño fue obtenido por XGBoost, que se seleccionó como modelo base oficial.
 
-\subsection{Construcción del modelo enriquecido}
+\section{Construcción, evaluación e interpretabilidad del modelo enriquecido}
 
-El modelo enriquecido incorporó todas las variables geoespaciales (POIs, geohash, avalúo catastral, barrio y UPZ). Aunque visualmente las variables espaciales son informativas, su aporte predictivo resultó marginal. La Figura~\ref{fig:importancia_aumentado} muestra la importancia de variables del modelo aumentado.
+El modelo enriquecido tuvo como objetivo evaluar el aporte de las variables geoespaciales sobre la capacidad predictiva y explicativa del sistema. Para construir este modelo se integraron todas las variables derivadas del proceso de enriquecimiento espacial: conteos de puntos de interés (POIs) en distintos radios, identificadores administrativos (barrio y UPZ), geohash nivel~7 y el avalúo catastral zonal. Todas estas variables fueron procesadas mediante el mismo \texttt{ColumnTransformer} utilizado en el modelo base, garantizando imputación, escalamiento y codificación categórica consistentes en todas las etapas del pipeline.
+
+Con el fin de evaluar el comportamiento del conjunto enriquecido, se entrenaron y validaron varios algoritmos utilizados previamente en el modelo base: Linear Regression, Ridge, Lasso, Random Forest, LightGBM y XGBoost. El modelo SVR se descartó desde etapas anteriores por su bajo rendimiento y alto costo computacional. La evaluación se realizó mediante validación cruzada de diez pliegues, utilizando RMSE como métrica principal. Los resultados se presentan en la Tabla~\ref{tab:resultados_aumentado}.
+
+\begin{table}[ht]
+\centering
+\small
+\caption{Desempeño de algoritmos en el modelo enriquecido (10-Fold CV).}
+\label{tab:resultados_aumentado}
+\begin{tabular}{lcccc}
+\hline
+\textbf{Modelo} & \textbf{RMSE} & \textbf{RMSE std} & \textbf{MAE} & \textbf{$R^2$} \\
+\hline
+LightGBM          & 0.170 & 0.005 & 0.126 & 0.956 \\
+XGBoost           & 0.170 & 0.005 & 0.126 & 0.956 \\
+Random Forest     & 0.178 & 0.004 & 0.128 & 0.952 \\
+Ridge             & 0.279 & 0.008 & 0.212 & 0.881 \\
+Linear Regression & 0.280 & 0.009 & 0.212 & 0.880 \\
+Lasso             & 0.337 & 0.007 & 0.263 & 0.827 \\
+\hline
+\end{tabular}
+\end{table}
+
+Aunque LightGBM y XGBoost mostraron desempeños equivalentes, se seleccionó XGBoost para las siguientes etapas del análisis por dos razones metodológicas: (i) el modelo base ya había sido entrenado y optimizado con XGBoost, lo que permite comparar ambos modelos modificando exclusivamente el conjunto de variables y no el algoritmo; y (ii) XGBoost tiene una integración más estable y documentada con SHAP, lo cual es fundamental para el análisis interpretativo que guía la selección del subconjunto final de características. Esta elección garantiza consistencia, comparabilidad y estabilidad numérica en todo el proceso de modelado.
+
+Con el modelo enriquecido entrenado, se aplicó SHAP (\textit{SHapley Additive exPlanations}) para analizar la contribución local y global de cada característica después del preprocesamiento. La Figura~\ref{fig:shap_summary} presenta el \textit{SHAP Summary Plot}, que muestra la distribución del impacto de cada variable a nivel individual, mientras que la Figura~\ref{fig:shap_bar} resume la importancia global de las características mediante el valor SHAP absoluto promedio.
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=0.8\linewidth]{Images/metodologia/importance_modelo_aumentado.png}
-    \caption{Importancia de variables en el modelo aumentado.}
-    \label{fig:importancia_aumentado}
+    \includegraphics[width=0.5\linewidth]{Images/metodologia/shap_enriched_summary.png}
+    \caption{SHAP Summary Plot del modelo enriquecido.}
+    \label{fig:shap_summary}
 \end{figure}
 
-\subsection{Interpretabilidad del Modelo mediante SHAP}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.5\linewidth]{Images/metodologia/shap_enriched_barplot.png}
+    \caption{Importancia global de las variables según valores SHAP.}
+    \label{fig:shap_bar}
+\end{figure}
 
-Para analizar la contribuci\'on relativa de todas las variables del modelo enriquecido,
-se emplearon valores SHAP. Tras aplicar el preprocesamiento, se generaron:
+El análisis permitió observar qué variables del entorno urbano ofrecían contribución real y cuáles resultaban redundantes frente a las ya presentes en el modelo base. A partir del ranking SHAP, se seleccionó un subconjunto de variables con mayor aporte promedio, lo que dio lugar al \textit{modelo enriquecido optimizado}. Este modelo se entrenó utilizando el mismo pipeline y los mismos hiperparámetros, manteniendo consistencia metodológica y permitiendo comparar directamente los efectos de la selección de variables.
 
-\begin{itemize}
-    \item \textbf{Figura A}: \textit{SHAP Summary Plot},
-    \item \textbf{Figura B}: \textit{SHAP Bar Plot}.
-\end{itemize}
+Los resultados detallados se reportan en la sección de validación cruzada, donde se contrastan los tres modelos (base, enriquecido y enriquecido optimizado) mediante métricas descriptivas y pruebas estadísticas.
 
-Estas figuras permiten identificar qu\'e variables tienen mayor impacto en la predicci\'on 
-y guiar la selecci\'on de caracter\'isticas para un modelo m\'as parsimonioso.
+\section{Modelo enriquecido optimizado}
+
+A partir del análisis de importancia mediante SHAP se seleccionó un subconjunto reducido de variables con mayor aporte promedio, compuesto principalmente por características estructurales (área, baños, parqueaderos, administración), algunos atributos administrativos (antigüedad) y componentes geográficos esenciales (latitud y longitud). La mayoría de variables geoespaciales derivadas —como conteos de POIs y categorías OSM— mostraron contribución marginal, por lo que fueron descartadas en esta versión optimizada.
+
+El modelo se entrenó utilizando el mismo pipeline y los mismos hiperparámetros del modelo enriquecido, de modo que cualquier cambio en el desempeño se debiera exclusivamente a la selección de variables. La validación cruzada de diez pliegues produjo un RMSE promedio de 0.158 (std 0.008), un MAE de 0.114 y un $R^2$ de 0.960, lo que ubica al modelo optimizado entre el modelo base y el modelo enriquecido en términos de precisión.
+
+Para evaluar si las diferencias eran significativas, se aplicaron pruebas t pareadas utilizando los valores de RMSE de los diez pliegues. Se encontraron diferencias significativas entre el modelo base y el enriquecido ($p = 5.49\times10^{-6}$), así como entre el modelo base y el optimizado ($p = 0.0112$). El modelo optimizado también mostró diferencias significativas frente al enriquecido completo ($p = 0.0037$), indicando que reducir variables mejora su estabilidad sin recuperar totalmente la precisión del modelo base.
+
+La Tabla~\ref{tab:comparacion_modelos_final} resume el desempeño de los tres modelos evaluados. Aunque el modelo base conserva la mayor precisión, el modelo optimizado ofrece un balance adecuado entre simplicidad, interpretabilidad y error, y constituye una alternativa eficiente dentro del conjunto enriquecido.
+
+\begin{table}[ht]
+\centering
+\small
+\caption{Comparación de desempeño entre los modelos evaluados (valores en millones de pesos).}
+\label{tab:comparacion_modelos_final}
+\begin{tabular}{lcccc}
+\hline
+\textbf{Modelo} & \textbf{RMSE (M\$)} & \textbf{MAE (M\$)} & \textbf{$R^2$} & \textbf{p-valor vs. Base} \\
+\hline
+Base                         & 0.151 & 0.107 & 0.965 & --- \\
+Enriquecido                  & 0.170 & 0.126 & 0.956 & $5.49\times10^{-6}$ \\
+Enriquecido optimizado       & 0.158 & 0.114 & 0.960 & 0.0112 \\
+\hline
+\end{tabular}
+\end{table}
+
+===
+
+\section{Implementación del sistema web}
+
+El sistema desarrollado integra un \textbf{backend en FastAPI}, una base de datos \textbf{PostgreSQL con PostGIS} y una interfaz \textbf{frontend en ReactJS}. Su propósito es permitir que un usuario ingrese la información básica de un inmueble y obtenga, en tiempo real, una estimación de precio junto con estadísticas del entorno urbano. La Figura~\ref{fig:arquitectura_sistema} presenta una vista general de la arquitectura implementada.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Images/metodologia/arquitectura_app.png}
+    \caption{Arquitectura general del sistema web desarrollado.}
+    \label{fig:arquitectura_sistema}
+\end{figure}
 
 
-\subsection{Construcci\'on del Modelo Enriquecido Optimizado}
+Durante la fase de preparación de datos, el conjunto de propiedades utilizado para el entrenamiento del modelo fue enriquecido con información geográfica y posteriormente se generaron \textbf{estadísticos agregados por barrio, UPZ y localidad}, incluyendo valores promedio de área, administración, estrato y precio estimado. Estos datos derivados se almacenaron en la base de datos PostgreSQL para permitir su recuperación eficiente cuando el usuario consulta la aplicación. Adicionalmente, el modelo final (enriquecido optimizado) fue exportado a un archivo \texttt{.pkl}, lo que facilita su carga y ejecución dentro del backend sin necesidad de reconstruir el pipeline completo en cada solicitud.
 
-A partir del ranking global de importancia obtenido con SHAP, se seleccion\'o un subconjunto
-de caracter\'isticas con mayor aporte promedio. Las variables finalmente retenidas se listan en la Tabla~\ref{tab:variables_optimizadas}.
+El backend recibe las solicitudes provenientes del frontend y ejecuta tres tareas principales: (i) geocodificación de la dirección ingresada mediante el servicio Nominatim; (ii) asignación automática de barrio y UPZ utilizando consultas espaciales en PostGIS; y (iii) ejecución del modelo optimizado para generar la estimación de precio. La respuesta enviada al frontend incluye tanto la predicción como un conjunto de métricas contextuales del sector, obtenidas directamente desde las tablas agregadas precomputadas en la base de datos.
 
-Con estas variables se entren\'o el \textit{modelo enriquecido optimizado},
-utilizando el mismo esquema de preprocesamiento y los mismos hiperpar\'ametros del modelo enriquecido.
+En la aplicación frontend, la interacción inicia con un formulario donde el usuario ingresa las características físicas del inmueble (área, baños, parqueaderos, antigüedad, estrato y administración). En una segunda pantalla se solicita la \textbf{dirección}, que es geocodificada automáticamente para obtener las coordenadas iniciales. Estas coordenadas se muestran en un mapa interactivo implementado con \texttt{Leaflet}, permitiendo al usuario mover el marcador manualmente para ajustar la ubicación con mayor precisión si lo desea.
 
+Una vez confirmados los datos, la aplicación presenta un \textbf{reporte interactivo}. Este reporte incluye:  
+(1) un mapa con los puntos de interés cercanos al inmueble en distintos radios de distancia;  
+(2) una tabla con los conteos de POIs por categoría y radio;  
+(3) comparaciones visuales entre las características del inmueble y los promedios del barrio, la UPZ y la localidad;  
+(4) gráficos que resumen estadísticas relevantes del entorno urbano.  
+Ejemplos de estas visualizaciones se muestran en las Figuras~\ref{fig:reporte_mapa_pois} y~\ref{fig:comparacion_estadisticas}.
 
-\subsection{Validaci\'on cruzada y m\'etricas de evaluaci\'on}
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.85\linewidth]{Images/metodologia/reporte_mapa.png}
+    \caption{Vista del reporte generado: mapa con puntos de interés cercanos.}
+    \label{fig:reporte_mapa_pois}
+\end{figure}
 
-La evaluaci\'on de los modelos se realiz\'o mediante \textit{validaci\'on cruzada de diez pliegues} (10-Fold Cross-Validation). 
-En cada iteraci\'on, nueve pliegues se emplean para el entrenamiento y el pliegue restante para validaci\'on, de forma que 
-todas las observaciones act\'uan como conjunto de prueba exactamente una vez.
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.85\linewidth]{Images/metodologia/reporte_comparativa_barrio.png}
+    \caption{Comparativa entre las características del inmueble y los promedios del barrio y la UPZ.}
+    \label{fig:comparacion_estadisticas}
+\end{figure}
 
-Para cada pliegue se registraron las m\'etricas:
-\begin{itemize}
-    \item \textbf{RMSE}: Ra\'iz del error cuadr\'atico medio.
-    \item \textbf{MAE}: Error absoluto medio.
-    \item \textbf{R\textsuperscript{2}}: Coeficiente de determinaci\'on.
-\end{itemize}
-
-Los resultados detallados de cada modelo, incluyendo los diez valores individuales por pliegue y las estad\'isticas descriptivas 
-(media, desviaci\'on est\'andar, percentiles, m\'inimo y m\'aximo), se presentan en:
-
-\begin{itemize}
-    \item \textbf{Tabla X}: Resultados del modelo base.
-    \item \textbf{Tabla Y}: Resultados del modelo enriquecido.
-    \item \textbf{Tabla Z}: Resultados del modelo enriquecido optimizado.
-\end{itemize}
-
-Este esquema permite comparar estabilidad, varianza y consistencia del desempe\~no entre modelos.
-
-\subsection{Comparaci\'on estad\'istica entre modelos}
-
-Para determinar si las diferencias de desempe\~no entre los modelos son estad\'isticamente significativas, se aplicaron 
-\textit{pruebas t de Student para muestras pareadas}, utilizando los diez valores de RMSE obtenidos en cada pliegue para cada modelo.
-
-Se evaluaron los siguientes contrastes:
-\begin{enumerate}
-    \item Modelo base vs.\ modelo enriquecido.
-    \item Modelo base vs.\ modelo enriquecido optimizado.
-    \item Modelo enriquecido vs.\ modelo enriquecido optimizado.
-\end{enumerate}
-
-Los resultados del estad\'istico t y los p-valores asociados se presentan en la \textbf{Tabla W}, junto con una interpretaci\'on detallada 
-de los contrastes realizados.
-
-\subsection{Interpretabilidad del modelo mediante SHAP}
-
-El modelo enriquecido fue analizado utilizando valores SHAP (\textit{SHapley Additive exPlanations}), con el fin de identificar 
-las variables con mayor contribuci\'on a la explicaci\'on del modelo.
-
-Se generaron dos visualizaciones principales:
-\begin{itemize}
-    \item \textbf{Figura A}: \textit{SHAP summary plot}, que muestra la distribuci\'on del impacto de cada variable.
-    \item \textbf{Figura B}: \textit{SHAP bar plot}, que presenta la importancia media absoluta de cada caracter\'istica.
-\end{itemize}
-
-Estas figuras permiten analizar el aporte relativo de las variables estructurales y geoespaciales, as\'i como su influencia 
-sobre la predicci\'on del precio de los apartamentos.
-
-\subsection{Construcci\'on del modelo enriquecido optimizado}
-
-A partir de los valores SHAP obtenidos (Figura B), se seleccionaron las variables con contribuci\'on significativa seg\'un su 
-importancia global. Las caracter\'isticas retenidas se listan en la \textbf{Tabla Q}, junto con su valor de importancia media.
-
-Con este conjunto reducido de variables se entren\'o el \textit{modelo enriquecido optimizado}, utilizando el mismo 
-preprocesamiento basado en \texttt{ColumnTransformer} y los mismos hiperpar\'ametros ajustados previamente.
-
-Los resultados completos del proceso de validaci\'on cruzada para este modelo se presentan en la \textbf{Tabla Z}, y su 
-comparaci\'on estad\'istica frente a los otros modelos en la \textbf{Tabla W}.
-
-\subsection{S\'intesis comparativa final}
-
-Para facilitar la interpretaci\'on global del desempe\~no de los modelos, en la \textbf{Tabla R} se presentan de manera consolidada 
-las m\'etricas:
-
-\begin{itemize}
-    \item RMSE medio $\pm$ desviaci\'on est\'andar.
-    \item MAE medio $\pm$ desviaci\'on est\'andar.
-    \item R\textsuperscript{2} medio $\pm$ desviaci\'on est\'andar.
-    \item p-valores de las pruebas t correspondientes.
-\end{itemize}
-
-Esta tabla resume la evidencia cuantitativa necesaria para analizar la contribuci\'on del enriquecimiento de datos, 
-la utilidad del modelo optimizado y la comparaci\'on final entre los enfoques desarrollados.
-
-\subsection{Implementación del sistema web}
-
-El sistema final integra un \textbf{backend en FastAPI} y un \textbf{frontend en ReactJS}. El usuario ingresa características básicas del apartamento y una dirección. La dirección se geocodifica mediante Nominatim para obtener la coordenada final, que se utiliza para asignar automáticamente el barrio y la UPZ mediante PostGIS. Esta información se envía al modelo reducido optimizado, y el backend retorna la estimación junto con estadísticas del entorno.
-
-\subsection{Reproducibilidad}
-
-El proyecto incluye notebooks organizados en \texttt{analisis/notebooks}, scripts modulares en \texttt{indexador-py} y artefactos almacenados en \texttt{analisis/data/}. Se fijaron semillas aleatorias para permitir replicar todos los resultados y se documentó el proceso completo de enriquecimiento y modelado.
-
+Este diseño permite que el modelo predictivo se integre en una plataforma accesible y comprensible para el usuario final, ofreciendo no solo una estimación numérica sino una contextualización completa del entorno urbano, lo cual facilita la interpretación del resultado y mejora la utilidad práctica del sistema en escenarios de consulta inmobiliaria.

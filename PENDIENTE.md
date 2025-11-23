@@ -6,9 +6,9 @@
 [x] El objetivo debería ser crear un modelo que se pueda acceder facilmente a través de una interfaz web?
 [x] Agrega algo como, la tabla X en la metodología presenta un resumen de los estudios realizados...
 [x] Nombrar la dificultad de acceso a datos basado en politicas anti web-scrapping y renderizado en lado del cliente. (en la metodología)
-[] Eliminar relción upz con precio
+[x] Eliminar relción upz con precio
 [x] Incluir todos los algoritmos en la tabla de comparación de base.
-[] REvisar texto del modelo enriquecido
+[x] REvisar texto del modelo enriquecido
 [] Revisar indices de subsecciones de metodologías
 [] Revisar graficas
 [] Agregar tablas X Y Z y W
