@@ -47,19 +47,3 @@
     \item \textbf{Aumentados}: v1 (XGB reducido + \emph{barrio\_top}) RMSE \(\approx\) 254.66M; v2 (XGB tuning) RMSE \(\approx\) 233.49M.
     \item \textbf{Hiperparámetros v2}: \(n\_\textit{estimators}=500\), \(\textit{max\_depth}=9\), \(\textit{learning\_rate}=0.05\), \(\textit{subsample}=0.8\), \(\textit{colsample\_bytree}=0.8\), \(\alpha=0\), \(\lambda=1\).
 \end{itemize}
-
-\subsection{API y operación}
-\begin{itemize}
-    \item \textbf{Endpoint}: \texttt{GET /api/estimate} (FastAPI). Entrada: lat, lon y atributos de la propiedad; salida: estadísticos del punto/region y predicción del modelo.
-    \item \textbf{Modelo por defecto}: 2.1 (recomendado 2.2 por menor RMSE).
-    \item \textbf{Ambiente}: PostGIS con SRID 4326; consultas en metros usando \texttt{ST\_Transform} a 3857.
-\end{itemize}
-
-\subsection{Reproducibilidad}
-\begin{itemize}
-    \item Notebooks en \texttt{analisis/notebooks/} para descarga, limpieza, EDA y entrenamiento.
-    \item Artefactos de modelos en \texttt{analisis/data/models/} (\texttt{randomforest\_model\_base.pkl}, \texttt{xgboost\_model\_2.1.pkl}, \texttt{xgboost\_model\_2.2.pkl}).
-    \item Enriquecimiento y persistencia en \texttt{indexador-py/} (ETL asíncrono, inserción por lotes, creación dinámica de tabla).
-    \item Semillas y configuración de validación fijadas para replicar métricas.
-\end{itemize}
-

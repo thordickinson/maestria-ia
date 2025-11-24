@@ -1,62 +1,17 @@
-El presente estudio tuvo como propósito evaluar el impacto del enriquecimiento geoespacial en la predicción de precios de vivienda en Bogotá, analizando si la incorporación de variables contextuales (proximidad a servicios, equipamientos urbanos y características del entorno) mejoraba la capacidad explicativa de un modelo de aprendizaje automático respecto a uno construido únicamente con variables estructurales. Los resultados muestran que, aunque las variables espaciales no incrementaron de forma sustancial la precisión del modelo, sí aportaron información valiosa para interpretar la lógica territorial del mercado inmobiliario y para comprender mejor los patrones socioespaciales que influyen en la formación de precios.
+El propósito central del estudio fue evaluar si el enriquecimiento geoespacial mejoraba la predicción de precios de vivienda en Bogotá frente a un modelo basado únicamente en variables estructurales. Los resultados muestran que, aunque las variables espaciales no incrementaron sustancialmente la precisión, sí aportaron valor interpretativo al permitir visualizar cómo la estructura territorial influye en la formación del precio.
 
-El modelo base, entrenado exclusivamente con variables estructurales y administrativas, presentó el mejor desempeño entre los tres modelos evaluados: un RMSE promedio de 0.1514 y un $R^2 = 0.965$. Este resultado confirma que los atributos físicos del inmueble —principalmente el área, el número de parqueaderos, la administración y la antigüedad— concentran la mayor parte de la varianza explicativa del precio. La validación cruzada de diez pliegues evidenció baja dispersión en los errores, lo cual indica robustez y ausencia de sobreajuste. Además, la transformación logarítmica aplicada al precio y al área permitió estabilizar la varianza e incrementar la linealidad de las relaciones, contribuyendo a la calidad del ajuste.
+El modelo base, entrenado con características físicas y administrativas del inmueble, obtuvo el mejor desempeño entre los tres modelos comparados. Este resultado confirma que variables como área, parqueaderos, administración y antigüedad concentran la mayor parte de la varianza explicativa. La fuerte correlación entre estructura física y ubicación en Bogotá explica este comportamiento: en la práctica, los precios se estiman a partir del \textit{precio por metro cuadrado} y comparaciones locales, por lo que buena parte de la información espacial ya se encuentra implícita en las variables tradicionales de tasación.
 
-El comportamiento del modelo base coincide con las dinámicas reales de valoración utilizadas por agentes inmobiliarios y portales especializados en Bogotá. En la práctica, los precios de publicación se estiman mediante comparaciones locales basadas en el \textit{precio por metro cuadrado}, ajustando marginalmente por atributos complementarios. Esto implica que las variables estructurales y socioeconómicas ya incluyen implícitamente información espacial relevante, lo cual explica el alto rendimiento del modelo base sin necesidad de incorporar variables de proximidad o densidad de servicios.
+Aunque el modelo enriquecido incorporó conteos de servicios, accesibilidad y agregaciones espaciales, su efecto predictivo fue limitado. La redundancia espacial entre inmuebles cercanos, la segmentación socioeconómica marcada por el estrato y la resolución espacial relativamente gruesa explican por qué muchas variables añadidas no aportaron señal adicional. Los valores SHAP mostraron que la mayor parte del aporte geográfico se concentra en latitud y longitud, mientras que la mayoría de POIs incrementa el ruido más que la precisión.
 
-\subsection*{Aporte e implicaciones de las variables geoespaciales}
+La relevancia persistente de la UPZ dentro del modelo enriquecido también es coherente con la estructura urbana de la ciudad. Estas unidades territoriales agrupan zonas con características socioeconómicas y morfológicas homogéneas, por lo que funcionan como una división espacial intermedia capaz de sintetizar gran parte del contexto urbano relevante.
 
-Si bien el modelo enriquecido —que incorpora variables derivadas de POIs y medidas de accesibilidad espacial— obtuvo un RMSE promedio mayor (0.1705), su inclusión permitió ampliar la comprensión del contexto urbano. La influencia marginal de las variables espaciales puede explicarse por varios factores:
+Los resultados deben interpretarse considerando los sesgos de los datos. Los portales inmobiliarios priorizan la publicación de inmuebles con mayor valor comercial, lo que sobrerrepresenta zonas de estrato medio y alto y subrepresenta áreas periféricas. En estratos bajos, además, las transacciones suelen realizarse por fuera de canales formales, lo que limita su presencia en bases públicas. Este patrón explica por qué el modelo presenta menor error en zonas de alta valorización y mayor variabilidad en sectores con menos información disponible.
 
-\begin{itemize}
-    \item \textbf{Redundancia espacial:} los inmuebles ubicados en una misma zona tienden a compartir atributos de accesibilidad, generando conteos de POIs muy similares para radios fijos de 100 a 2000 metros. Esto redujo la variabilidad informativa de estas características.
-    \item \textbf{Segmentación socioeconómica:} en Bogotá, los estratos socioeconómicos funcionan como un proxy espacial del acceso a servicios, equipamientos y calidad urbana. Así, muchas variables geoespaciales corresponden a información ya implícita en el estrato o el barrio.
-    \item \textbf{Resolución espacial limitada:} el uso de geohash de nivel 7 (aprox.\ 150 m) ofrece una granularidad adecuada pero insuficiente para capturar microvariaciones en precios en zonas densas o altamente heterogéneas.
-\end{itemize}
+Durante la selección de variables, características que intuitivamente podrían ser importantes —como número de habitaciones o presencia de ascensor— no fueron retenidas por su bajo aporte marginal. En Bogotá, el área total suele capturar el efecto del número de habitaciones, mientras que el impacto del ascensor depende del piso del inmueble, variable no incluida en el conjunto de datos.
 
-A pesar de estas limitaciones, los valores SHAP revelaron que la latitud y la longitud siguen siendo componentes esenciales del valor del inmueble, actuando como coordenadas que capturan gradientes espaciales de valorización. Además, el análisis de importancia mostró que ciertas variables derivadas de antigüedad o características del edificio conservan un aporte relevante aun en presencia de variables geográficas.
+El análisis del error evidencia que el modelo generaliza bien en zonas homogéneas, pero presenta desviaciones mayores en áreas con atributos cualitativos no registrados, como vista, acabados o reputación del edificio. Esto sugiere que futuros modelos podrían beneficiarse de información más granular sobre características internas y de conectividad.
 
-\subsection*{El rol de la UPZ como unidad espacial relevante}
+Aunque el enriquecimiento geoespacial no mejora la precisión, sí amplía la capacidad interpretativa del sistema. Con base en los hallazgos, se identifican varias líneas de trabajo futuro: incorporar capas más detalladas (manzana o código catastral), incluir medidas de accesibilidad basadas en tiempos reales de viaje, integrar variables económicas dinámicas, explorar modelos espaciales avanzados y entrenar modelos específicos por zonas o localidades para reducir la heterogeneidad territorial.
 
-Un hallazgo significativo del estudio es la relevancia persistente de la variable \texttt{upz}, especialmente visible en las métricas de importancia del modelo enriquecido previo a la optimización. Las Unidades de Planeamiento Zonal son divisiones administrativas diseñadas para agrupar sectores con características semejantes de estrato, morfología y dotación urbana. Su alta relevancia metodológica sugiere que la \textbf{UPZ actúa como un nivel intermedio de agregación espacial robusto}, capaz de sintetizar la información contextual que el modelo requiere para capturar diferencias territoriales significativas.
-
-En este sentido, la UPZ puede interpretarse como una \textbf{unidad de análisis óptima} dentro de la modelación inmobiliaria en Bogotá. Su poder explicativo refuerza la idea de que el mercado inmobiliario de la ciudad está estructurado espacialmente en patrones socioeconómicos relativamente estables, los cuales pueden ser capturados mediante divisiones administrativas coherentes.
-
-\subsection*{Sesgos y representatividad de los datos}
-
-Los resultados también deben interpretarse a la luz de la naturaleza de los datos utilizados. Los portales inmobiliarios emplean esquemas de pago por publicación, lo que incentiva la oferta de inmuebles con mayor valor y mayor retorno comercial para las inmobiliarias. Esto genera un \textbf{sesgo estructural} hacia estratos medios y altos y reduce la representación de zonas periféricas o de menor valor.
-
-Asimismo, en estratos bajos es frecuente que los inmuebles se transen sin intermediación inmobiliaria, lo que reduce su presencia en plataformas digitales. Por tanto, el modelo refleja no solo las dinámicas del mercado inmobiliario, sino también los patrones de visibilidad y acceso a la información condicionados por los modelos de negocio de los portales.
-
-Estos sesgos explican por qué el error predictivo es menor en zonas de alta valorización y aumenta en sectores con menor disponibilidad de datos.
-
-\subsection*{Observaciones sobre la selección de variables}
-
-Durante el proceso de optimización, varias variables que intuitivamente podrían considerarse relevantes —como el número de habitaciones o la presencia de ascensor— no fueron retenidas en el modelo enriquecido optimizado. Esto es coherente con las prácticas reales del mercado:
-
-\begin{itemize}
-    \item \textbf{Habitaciones:} su efecto está subsumido en el área total, que actúa como principal indicador de tamaño y sustituye su capacidad explicativa.
-    \item \textbf{Ascensor:} su impacto depende fuertemente del piso del inmueble, variable no disponible en el conjunto de datos, lo cual reduce su contribución efectiva en los modelos.
-\end{itemize}
-
-Asimismo, ninguna de las variables creadas durante el enriquecimiento geoespacial —como densidades de POIs o indicadores derivados de geohash— fue retenida en el modelo optimizado. Esto sugiere que la información espacial relevante ya se encuentra implícitamente codificada en las variables originales o en el contexto socioeconómico del barrio y la UPZ.
-
-\subsection*{Análisis de error y capacidad de generalización}
-
-El modelo mantiene un error relativo estable entre 3\% y 4\% en la mayoría de rangos de precio, con mayores desviaciones en zonas de alta valorización como Chicó, Santa Cecilia o Cerros de Suba. Estas áreas presentan atributos cualitativos no registrados en las bases de datos, tales como acabados de alta gama, vista panorámica o reputación del edificio, los cuales afectan significativamente el precio.
-
-En sectores intermedios y periféricos, donde las dinámicas del mercado son más homogéneas, el modelo generaliza de forma consistente, lo cual indica que las características estructurales y administrativas contienen la mayor parte de la señal explicativa.
-
-\subsection*{Implicaciones y líneas de trabajo futuro}
-
-Los resultados indican que el enriquecimiento geoespacial no mejora significativamente las métricas de precisión, pero sí aporta profundidad interpretativa, permitiendo visualizar y analizar los factores espaciales que influyen en la formación del precio. A partir de estos hallazgos, se proponen varias líneas de trabajo:
-
-\begin{itemize}
-    \item Aumentar la granularidad espacial mediante capas a nivel de manzana o código catastral.
-    \item Incorporar variables de accesibilidad real basadas en tiempos de viaje, conectividad multimodal o redes de transporte.
-    \item Integrar información económica complementaria, como tasas de valorización o dinámica de oferta y demanda.
-    \item Explorar modelos avanzados con componente espacial explícito, como GWR o \textit{graph neural networks}.
-    \item Desarrollar modelos especializados por sector o localidad, reduciendo la heterogeneidad espacial del problema.
-\end{itemize}
-
-:os resultados evidencian que la estructura del mercado inmobiliario bogotano está fuertemente determinada por características estructurales y socioeconómicas del inmueble, mientras que las variables de entorno enriquecen la comprensión del fenómeno sin alterar substancialmente la precisión numérica del modelo.
+En conjunto, los resultados muestran que la estructura del mercado inmobiliario bogotano está fuertemente determinada por variables físicas y socioeconómicas del inmueble. Las variables de entorno aportan profundidad analítica y contextual, pero no modifican de manera sustancial la precisión numérica del modelo predictivo.

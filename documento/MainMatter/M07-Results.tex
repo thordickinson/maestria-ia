@@ -1,23 +1,6 @@
-En esta sección se presentan los resultados obtenidos tras el entrenamiento y evaluación de los 
-tres modelos considerados: (i) modelo base, (ii) modelo enriquecido y 
-(iii) modelo enriquecido optimizado. Todos los modelos fueron evaluados mediante 
-validación cruzada de diez pliegues, registrando los valores individuales de RMSE, MAE y 
-R\textsuperscript{2} por pliegue, así como sus estadísticas descriptivas. Además, se 
-realizaron pruebas t pareadas para determinar la significancia estadística de las diferencias 
-entre modelos.
+Este capítulo presenta los resultados obtenidos tras el entrenamiento, validación y comparación de los tres modelos evaluados: el modelo base, el modelo enriquecido y el modelo enriquecido optimizado. Todos los modelos fueron evaluados mediante validación cruzada de diez pliegues y se registraron los valores individuales de RMSE, MAE y $R^2$ en cada iteración. Asimismo, se realizaron pruebas t pareadas para determinar si las diferencias observadas entre modelos eran estadísticamente significativas.
 
-\subsection{Desempeño del modelo base}
-
-El modelo base, construido exclusivamente con variables estructurales del inmueble, obtuvo un 
-\textbf{RMSE promedio de 0.1514} (\(\sigma = 0.0039\)), un \textbf{MAE promedio de 0.1073} 
-(\(\sigma = 0.0023\)) y un \textbf{R\textsuperscript{2} promedio de 0.9650} 
-(\(\sigma = 0.0020\)). Estos valores indican alta estabilidad y capacidad predictiva 
-a lo largo de los diez pliegues.
-
-Las variables más influyentes fueron el área construida, la latitud y la longitud, 
-la administración y el número de parqueaderos, como se observa en la 
-Figura~\ref{fig:importancia_base}. Estas variables capturan tanto la estructura física 
-del inmueble como proxies espaciales y socioeconómicos inherentes al mercado bogotano.
+El \textbf{modelo base}, construido exclusivamente con variables estructurales del inmueble, obtuvo el mejor desempeño general. Su RMSE promedio fue de 0.1514 (desviación estándar de 0.0039), con un MAE de 0.1073 y un $R^2$ promedio de 0.9650. Estos valores evidencian alta estabilidad y baja varianza del error a lo largo de los diez pliegues. El análisis de importancia (Figura~\ref{fig:importancia_base}) mostró que variables como el área, la latitud, la longitud, la administración y los parqueaderos concentran la mayor parte del aporte predictivo, reflejando la fuerte relación entre estructura física y localización en la valoración inmobiliaria en Bogotá.
 
 \begin{figure}[h]
     \centering
@@ -26,62 +9,11 @@ del inmueble como proxies espaciales y socioeconómicos inherentes al mercado bo
     \label{fig:importancia_base}
 \end{figure}
 
-\subsection{Desempeño del modelo enriquecido}
+El \textbf{modelo enriquecido} incorporó las variables geoespaciales derivadas de puntos de interés, accesibilidad urbana y agregaciones espaciales en distintos radios. Aunque estas variables aportaron información contextual relevante para interpretar la estructura territorial, su incorporación produjo un incremento en el error. El modelo alcanzó un RMSE promedio de 0.1705, un MAE de 0.1260 y un $R^2$ de 0.9560. Los conteos de POIs y medidas de cercanía mostraron un efecto predictivo limitado, lo que indica que gran parte de esa información ya se encuentra implícita en variables estructurales o en la propia ubicación del inmueble.
 
-El modelo enriquecido incorporó variables geoespaciales derivadas de OSM, tales como 
-densidad de servicios, accesibilidad comercial y puntos de interés en radios de proximidad. 
-Este modelo obtuvo un \textbf{RMSE promedio de 0.1705} y un \textbf{MAE de 0.1260}, 
-con \textbf{R\textsuperscript{2} = 0.9560}. Aunque la inclusión de variables espaciales 
-incrementó la interpretabilidad del modelo, produjo un aumento significativo en el error 
-respecto al modelo base.
+El análisis mediante valores SHAP confirmó que la mayor parte de la señal relevante permanece concentrada en variables como área, ubicación (latitud y longitud), parqueaderos, baños y administración. Los POIs añadidos presentan contribuciones marginales. A partir del ranking global de importancia SHAP, se seleccionó un subconjunto de variables para construir el \textbf{modelo enriquecido optimizado}.
 
-La Figura~\ref{fig:importancia_enriquecido} muestra la importancia relativa de las 
-variables en este modelo. Los patrones observados indican que la ubicación geográfica 
-(latitud y longitud) concentra casi todo el aporte espacial efectivo, mientras que los 
-conteos de servicios añadidos presentan valores marginales.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.80\linewidth]{Images/feature_importance_enriquecido.png}
-    \caption{Importancia de variables en el modelo enriquecido.}
-    \label{fig:importancia_enriquecido}
-\end{figure}
-
-\subsection{Interpretabilidad mediante SHAP}
-
-Para analizar el aporte global de las características del modelo enriquecido, se calcularon 
-valores SHAP sobre el conjunto transformado. La Figura~\ref{fig:shap_summary} muestra el 
-\textit{summary plot}, mientras que la Figura~\ref{fig:shap_bar} presenta el ranking global 
-de importancia media absoluta.
-
-Estos resultados permiten identificar las variables con mayor contribución y justificar la 
-selección del subconjunto utilizado en el modelo enriquecido optimizado.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.80\linewidth]{Images/shap_summary.png}
-    \caption{SHAP summary plot del modelo enriquecido.}
-    \label{fig:shap_summary}
-\end{figure}
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.80\linewidth]{Images/shap_barplot.png}
-    \caption{Importancia media absoluta de los valores SHAP.}
-    \label{fig:shap_bar}
-\end{figure}
-
-\subsection{Desempeño del modelo enriquecido optimizado}
-
-A partir del ordenamiento global de variables según SHAP, se seleccionó un subconjunto de 
-características con mayor contribución. El modelo entrenado con este subconjunto obtuvo un 
-\textbf{RMSE promedio de 0.1584} (\(\sigma = 0.0082\)), \textbf{MAE de 0.1138} 
-(\(\sigma = 0.0047\)) y \textbf{R\textsuperscript{2} = 0.9600} 
-(\(\sigma = 0.0059\)). Sus resultados se encuentran entre los del modelo base y los del modelo 
-enriquecido, confirmando que una selección explícita de variables reduce ruido sin mejorar la 
-precisión global.
-
-Las variables seleccionadas se listan en la Tabla~\ref{tab:variables_optimizadas}.
+El modelo optimizado obtuvo un RMSE promedio de 0.1584 (desviación estándar de 0.0082), un MAE de 0.1138 y un $R^2$ de 0.9600. Su desempeño se ubica entre el modelo base y el modelo enriquecido, lo que indica que la eliminación de variables geoespaciales redundantes reduce el ruido introducido por el modelo enriquecido, aunque no recupera completamente la precisión del modelo base. Las variables retenidas se muestran en la Tabla~\ref{tab:variables_optimizadas}.
 
 \begin{table}[h]
     \centering
@@ -106,36 +38,22 @@ Las variables seleccionadas se listan en la Tabla~\ref{tab:variables_optimizadas
     \end{tabular}
 \end{table}
 
-\subsection{Comparación cuantitativa y pruebas estadísticas}
-
-La Tabla~\ref{tab:comparacion_modelos_final} resume el desempeño comparado de los tres 
-modelos. El modelo base obtiene la mejor precisión, seguido por el modelo enriquecido optimizado, 
-mientras que el modelo enriquecido presenta el peor desempeño.
+La Tabla~\ref{tab:comparacion_modelos_final} resume comparativamente el desempeño de los tres modelos. El modelo base conserva el mejor rendimiento, el modelo enriquecido presenta el mayor error debido al ruido introducido por variables espaciales, y el modelo optimizado logra un equilibrio intermedio entre precisión y simplicidad.
 
 \begin{table}[h]
-    \centering
-    \caption{Comparación de desempeño entre modelos (10-Fold CV).}
-    \label{tab:comparacion_modelos_final}
-    \begin{tabular}{lccc}
-        \toprule
-        \textbf{Modelo} & \textbf{RMSE} & \textbf{MAE} & \textbf{$R^2$} \\
-        \midrule
-        Base & 0.1514 $\pm$ 0.0039 & 0.1073 $\pm$ 0.0023 & 0.9650 $\pm$ 0.0020 \\
-        Enriquecido & 0.1705 $\pm$ 0.0050 & 0.1260 $\pm$ 0.0030 & 0.9560 $\pm$ 0.0030 \\
-        Enriquecido Optimizado & 0.1584 $\pm$ 0.0082 & 0.1138 $\pm$ 0.0047 & 0.9600 $\pm$ 0.0059 \\
-        \bottomrule
-    \end{tabular}
+\centering
+\small
+\caption{Comparación de desempeño entre modelos (10-Fold CV).}
+\label{tab:comparacion_modelos_final}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Modelo} & \textbf{RMSE} & \textbf{MAE} & \textbf{$R^2$} \\
+\midrule
+Base & 0.1514 $\pm$ 0.0039 & 0.1073 $\pm$ 0.0023 & 0.9650 $\pm$ 0.0020 \\
+Enriquecido & 0.1705 $\pm$ 0.0050 & 0.1260 $\pm$ 0.0030 & 0.9560 $\pm$ 0.0030 \\
+Enriquecido optimizado & 0.1584 $\pm$ 0.0082 & 0.1138 $\pm$ 0.0047 & 0.9600 $\pm$ 0.0059 \\
+\bottomrule
+\end{tabular}
 \end{table}
 
-Las pruebas t pareadas realizadas con los diez valores de RMSE para cada modelo arrojaron:
-
-\begin{itemize}
-    \item Base vs.\ Enriquecido: \(p = 5.49 \times 10^{-6}\)
-    \item Base vs.\ Enriquecido Optimizado: \(p = 0.0112\)
-    \item Enriquecido vs.\ Enriquecido Optimizado: \(p = 0.0037\)
-\end{itemize}
-
-Estos resultados indican que todas las diferencias observadas entre modelos son 
-estadísticamente significativas. En particular, el modelo base es estadísticamente 
-superior a los otros dos, y el modelo enriquecido optimizado supera al modelo enriquecido completo.
-
+Finalmente, las pruebas t pareadas confirmaron que todas las diferencias observadas son estadísticamente significativas. Los valores obtenidos fueron: \(p = 5.49 \times 10^{-6}\) para la comparación entre el modelo base y el enriquecido, \(p = 0.0112\) para el modelo base frente al optimizado, y \(p = 0.0037\) para la comparación entre el modelo enriquecido y el optimizado. Estos resultados demuestran que, aunque la adición de variables espaciales mej
