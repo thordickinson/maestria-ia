@@ -119,8 +119,8 @@ Con el fin de evaluar el comportamiento del conjunto enriquecido, se entrenaron 
 \hline
 \textbf{Modelo} & \textbf{RMSE} & \textbf{RMSE std} & \textbf{MAE} & \textbf{$R^2$} \\
 \hline
-LightGBM          & 0.170 & 0.005 & 0.126 & 0.956 \\
-XGBoost           & 0.170 & 0.005 & 0.126 & 0.956 \\
+LightGBM          & 0.171 & 0.005 & 0.126 & 0.956 \\
+XGBoost           & 0.171 & 0.005 & 0.126 & 0.956 \\
 Random Forest     & 0.178 & 0.004 & 0.128 & 0.952 \\
 Ridge             & 0.279 & 0.008 & 0.212 & 0.881 \\
 Linear Regression & 0.280 & 0.009 & 0.212 & 0.880 \\
@@ -129,7 +129,7 @@ Lasso             & 0.337 & 0.007 & 0.263 & 0.827 \\
 \end{tabular}
 \end{table}
 
-Aunque LightGBM y XGBoost mostraron desempeños equivalentes, se seleccionó XGBoost para las siguientes etapas del análisis por dos razones metodológicas: (i) el modelo base ya había sido entrenado y optimizado con XGBoost, lo que permite comparar ambos modelos modificando exclusivamente el conjunto de variables y no el algoritmo; y (ii) XGBoost tiene una integración más estable y documentada con SHAP, lo cual es fundamental para el análisis interpretativo que guía la selección del subconjunto final de características. Esta elección garantiza consistencia, comparabilidad y estabilidad numérica en todo el proceso de modelado.
+La comparación inicial evidenció que LightGBM y XGBoost presentaron desempeños equivalentes. Sin embargo, se seleccionó XGBoost para las siguientes etapas del análisis por dos razones metodológicas: (i) el modelo base ya había sido entrenado y optimizado con XGBoost, lo que permite comparar ambos modelos modificando exclusivamente el conjunto de variables y no el algoritmo; y (ii) XGBoost tiene una integración más estable y documentada con SHAP, lo cual es fundamental para el análisis interpretativo que guía la selección del subconjunto final de características. Esta elección garantiza consistencia, comparabilidad y estabilidad numérica en todo el proceso de modelado.
 
 Con el modelo enriquecido entrenado, se aplicó SHAP (\textit{SHapley Additive exPlanations}) para analizar la contribución local y global de cada característica después del preprocesamiento. La Figura~\ref{fig:shap_summary} presenta el \textit{SHAP Summary Plot}, que muestra la distribución del impacto de cada variable a nivel individual, mientras que la Figura~\ref{fig:shap_bar} resume la importancia global de las características mediante el valor SHAP absoluto promedio.
 
@@ -147,7 +147,7 @@ Con el modelo enriquecido entrenado, se aplicó SHAP (\textit{SHapley Additive e
     \label{fig:shap_bar}
 \end{figure}
 
-El análisis permitió observar qué variables del entorno urbano ofrecían contribución real y cuáles resultaban redundantes frente a las ya presentes en el modelo base. A partir del ranking SHAP, se seleccionó un subconjunto de variables con mayor aporte promedio, lo que dio lugar al \textit{modelo enriquecido optimizado}. Este modelo se entrenó utilizando el mismo pipeline y los mismos hiperparámetros, manteniendo consistencia metodológica y permitiendo comparar directamente los efectos de la selección de variables.
+El análisis permitió observar qué variables del entorno urbano ofrecían contribución real y cuáles resultaban redundantes frente a las ya presentes en el modelo base. En general, las variables derivadas de POIs y de accesibilidad urbana mostraron una contribución marginal, lo cual coincide con su bajo aporte predictivo cuantitativo. En cambio, variables estructurales como área, baños, parqueaderos y administración, junto con coordenadas geográficas (latitud y longitud), concentraron la mayor parte de la señal relevante. A partir del ranking SHAP, se seleccionó un subconjunto de variables con mayor aporte promedio, lo que dio lugar al \textit{modelo enriquecido optimizado}. Este modelo se entrenó utilizando el mismo pipeline y los mismos hiperparámetros, manteniendo consistencia metodológica y permitiendo comparar directamente los efectos de la selección de variables.
 
 Los resultados detallados se reportan en la sección de validación cruzada, donde se contrastan los tres modelos (base, enriquecido y enriquecido optimizado) mediante métricas descriptivas y pruebas estadísticas.
 
@@ -155,29 +155,29 @@ Los resultados detallados se reportan en la sección de validación cruzada, don
 
 A partir del análisis de importancia mediante SHAP se seleccionó un subconjunto reducido de variables con mayor aporte promedio, compuesto principalmente por características estructurales (área, baños, parqueaderos, administración), algunos atributos administrativos (antigüedad) y componentes geográficos esenciales (latitud y longitud). La mayoría de variables geoespaciales derivadas —como conteos de POIs y categorías OSM— mostraron contribución marginal, por lo que fueron descartadas en esta versión optimizada.
 
-El modelo se entrenó utilizando el mismo pipeline y los mismos hiperparámetros del modelo enriquecido, de modo que cualquier cambio en el desempeño se debiera exclusivamente a la selección de variables. La validación cruzada de diez pliegues produjo un RMSE promedio de 0.158 (std 0.008), un MAE de 0.114 y un $R^2$ de 0.960, lo que ubica al modelo optimizado entre el modelo base y el modelo enriquecido en términos de precisión.
+El modelo se entrenó utilizando el mismo pipeline y los mismos hiperparámetros del modelo enriquecido, de modo que cualquier cambio en el desempeño se debiera exclusivamente a la selección de variables. La validación cruzada de diez pliegues produjo un RMSE promedio de 0.1584 (std 0.0082), un MAE de 0.1138 y un $R^2$ de 0.9600. En la escala monetaria original, esto corresponde a un RMSE promedio de aproximadamente \textbf{\$233 millones COP} y un MAE de \textbf{\$123 millones COP}. Estos valores ubican al modelo optimizado entre el modelo base y el modelo enriquecido, reduciendo el ruido introducido por variables geoespaciales redundantes, aunque sin alcanzar la precisión lograda por el modelo base.
 
-Para evaluar si las diferencias eran significativas, se aplicaron pruebas t pareadas utilizando los valores de RMSE de los diez pliegues. Se encontraron diferencias significativas entre el modelo base y el enriquecido ($p = 5.49\times10^{-6}$), así como entre el modelo base y el optimizado ($p = 0.0112$). El modelo optimizado también mostró diferencias significativas frente al enriquecido completo ($p = 0.0037$), indicando que reducir variables mejora su estabilidad sin recuperar totalmente la precisión del modelo base.
+Para evaluar si las diferencias eran significativas, se aplicaron pruebas t pareadas utilizando los valores de RMSE de los diez pliegues. Se encontraron diferencias significativas entre el modelo base y el enriquecido ($p = 5.49\times10^{-6}$), entre el modelo base y el optimizado ($p = 0.0112$), y entre el modelo enriquecido y el optimizado ($p = 0.000003$), indicando que reducir variables mejora la estabilidad del modelo enriquecido sin recuperar completamente la precisión del modelo base.
 
-La Tabla~\ref{tab:comparacion_modelos_final} resume el desempeño de los tres modelos evaluados. Aunque el modelo base conserva la mayor precisión, el modelo optimizado ofrece un balance adecuado entre simplicidad, interpretabilidad y error, y constituye una alternativa eficiente dentro del conjunto enriquecido.
+La Tabla~\ref{tab:comparacion_modelos_final} resume el desempeño de los tres modelos evaluados. Aunque el modelo base conserva la mayor precisión, el modelo optimizado ofrece un balance adecuado entre simplicidad, interpretabilidad y error, constituyéndose en una alternativa eficiente dentro del conjunto enriquecido.
 
 \begin{table}[ht]
 \centering
 \small
-\caption{Comparación de desempeño entre los modelos evaluados (valores en millones de pesos).}
+\caption{Comparación de desempeño entre los modelos evaluados (10-Fold CV, valores en millones de pesos).}
 \label{tab:comparacion_modelos_final}
-\begin{tabular}{lcccc}
+\begin{tabular}{lccccc}
 \hline
-\textbf{Modelo} & \textbf{RMSE (M\$)} & \textbf{MAE (M\$)} & \textbf{$R^2$} & \textbf{p-valor vs. Base} \\
+\textbf{Modelo} & \textbf{RMSE (M\$)} & \textbf{RMSE std} & 
+\textbf{MAE (M\$)} & \textbf{MAE std} & \textbf{$R^2$} \\
 \hline
-Base                         & 0.151 & 0.107 & 0.965 & --- \\
-Enriquecido                  & 0.170 & 0.126 & 0.956 & $5.49\times10^{-6}$ \\
-Enriquecido optimizado       & 0.158 & 0.114 & 0.960 & 0.0112 \\
+Base                    & 231 & 8   & 120 & 3  & 0.965 \\
+Enriquecido             & 257 & 12  & 138 & 5  & 0.956 \\
+Enriquecido optimizado  & 233 & 14  & 123 & 5  & 0.960 \\
 \hline
 \end{tabular}
 \end{table}
 
-===
 
 \section{Implementación del sistema web}
 
