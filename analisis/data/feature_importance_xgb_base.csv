@@ -1,30 +1,30 @@
 Variable,Importancia
-num__area,0.29499564
-num__estrato,0.14651032
-num__parqueaderos,0.108360276
-cat__antiguedad_MAS DE 20 ANOS,0.06259339
-cat__estado_NUEVO,0.05878902
-cat__antiguedad_ENTRE 0 Y 5 ANOS,0.057828818
-num__banos,0.049744558
-num__administracion,0.026475003
-cat__estado_USADO,0.02434103
-cat__antiguedad_PARA ESTRENAR,0.024191719
-cat__antiguedad_EN CONSTRUCCION,0.017582085
-cat__antiguedad_SOBRE PLANOS,0.014962177
-num__latitud,0.014670369
-num__piscina,0.011472382
-num__gimnasio,0.01129199
-cat__antiguedad_ENTRE 5 Y 10 ANOS,0.008358839
-num__ascensor,0.00833268
-num__habitaciones,0.007672426
-num__longitud,0.0074491226
-num__administracion_imputada,0.0073221056
-cat__antiguedad_ENTRE 10 Y 20 ANOS,0.0067348764
-cat__antiguedad_REMODELADO,0.0064119496
-num__zona_de_bbq,0.00474512
-num__area_terraza,0.0042764423
-num__numero_piso,0.0038064162
-num__estrato_imputado,0.0031848748
-num__numero_closets,0.0030582992
-num__alarma,0.0024284716
-num__conjunto_cerrado,0.0024095424
+num__area,0.33272102
+num__estrato,0.10580968
+num__parqueaderos,0.10037141
+cat__antiguedad_MAS DE 20 ANOS,0.06643225
+num__administracion,0.06320087
+cat__estado_NUEVO,0.04676662
+cat__antiguedad_ENTRE 0 Y 5 ANOS,0.04573061
+cat__antiguedad_SOBRE PLANOS,0.03931113
+num__banos,0.032037698
+num__gimnasio,0.022496529
+num__ascensor,0.022257525
+cat__antiguedad_PARA ESTRENAR,0.017100928
+num__habitaciones,0.015654922
+num__latitud,0.014723705
+num__piscina,0.012580546
+cat__antiguedad_ENTRE 5 Y 10 ANOS,0.009434362
+cat__antiguedad_EN CONSTRUCCION,0.009255587
+num__longitud,0.0087716
+num__zona_de_bbq,0.007831223
+num__administracion_imputada,0.005907955
+cat__antiguedad_ENTRE 10 Y 20 ANOS,0.0046704956
+num__numero_piso,0.003680057
+num__area_terraza,0.0036567412
+cat__antiguedad_REMODELADO,0.0028852574
+num__numero_closets,0.00263185
+num__conjunto_cerrado,0.0024908273
+num__alarma,0.0015886098
+num__estrato_imputado,0.0
+cat__estado_USADO,0.0
