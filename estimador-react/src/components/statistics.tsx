@@ -186,7 +186,7 @@ const EstadisticasPropiedad = ({ result }: EstadisticasPropiedadParams) => {
         );
       })}
 
-      {/* Heatmap */}
+      {/* Heatmap 
       <Card title="Resumen comparativo">
         <Plot
           data={[
@@ -217,6 +217,7 @@ const EstadisticasPropiedad = ({ result }: EstadisticasPropiedadParams) => {
           propiedad destaca o se encuentra por debajo de lo típico en cada región.
         </p>
       </Card>
+      */ }
     </div>
   );
 };
