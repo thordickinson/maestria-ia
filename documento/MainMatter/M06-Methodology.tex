@@ -56,22 +56,36 @@ El enriquecimiento geoespacial tuvo como propósito incorporar información del 
 
 A partir de las coordenadas geográficas se asignaron automáticamente el \textbf{barrio}, la \textbf{UPZ} y la \textbf{localidad}, utilizando las capas oficiales de datos abiertos del Distrito. Estas variables administrativas permiten representar jerarquías territoriales relevantes para la estructura urbana, aun cuando su contribución predictiva no se asume a priori. Su incorporación se orientó principalmente a evaluar si los límites administrativos capturan diferencias espaciales que no están explícitamente presentes en las variables estructurales.
 
-Además, se calcularon conteos de puntos de interés (POIs) dentro de radios de 100, 500, 1000 y 2000 metros, utilizando categorías de OpenStreetMap como salud, educación, comercio, recreación y servicios. La Figura~\ref{fig:pois_radio} ilustra el proceso de agregación espacial a partir de un inmueble ejemplo, mostrando cómo se cuantifican los servicios disponibles en su entorno inmediato.
+Además, se calcularon conteos de puntos de interés (POIs) dentro de radios de 100, 500, 1000 y 2000 metros, utilizando categorías de OpenStreetMap como salud, educación, comercio, recreación y servicios. La Tabla~\ref{tab:pois_radio} ilustra el proceso de agregación espacial a partir de un inmueble ejemplo, mostrando cómo se cuantifican los servicios disponibles en su entorno inmediato.
 
 Estas variables derivadas no solo permitieron explorar la influencia del entorno urbano en la valoración inmobiliaria, sino también evaluar redundancias espaciales y determinar qué información del contexto se encuentra ya implícitamente codificada en las características estructurales y administrativas del inmueble. Este enriquecimiento constituyó la base para la posterior selección de variables mediante SHAP y la construcción del modelo optimizado.
 
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.85\linewidth]{Images/metodologia/pois_radio.png}
-    \caption{Conteo de POIs en radios de proximidad alrededor de un inmueble ejemplo.}
-    \label{fig:pois_radio}
-\end{figure}
+\begin{table}[ht]
+\centering
+\caption{Conteo de sitios cercanos por categoría y radio}
+\label{tab:pois_radio}
+\begin{tabular}{lrrrrr}
+\hline
+\textbf{Tipo de lugar} & \textbf{100m} & \textbf{300m} & \textbf{500m} & \textbf{1000m} & \textbf{2000m} \\
+\hline
+Educación                & 0 & 4   & 19  & 65  & 103 \\
+Alojamiento              & 0 & 28  & 57  & 99  & 119 \\
+Acceso a comercio        & 0 & 31  & 74  & 221 & 492 \\
+Servicios culturales     & 0 & 5   & 14  & 47  & 76  \\
+Parques y recreación     & 0 & 2   & 8   & 21  & 38  \\
+Servicios de infraestructura & 0 & 10 & 28 & 72 & 156 \\
+Restaurantes y entretenimiento & 0 & 125 & 237 & 455 & 705 \\
+Salud                    & 0 & 0   & 4   & 16  & 64  \\
+Estaciones SITP          & 0 & 0   & 22  & 61  & 204 \\
+Estaciones TransMilenio  & 0 & 0   & 3   & 5   & 15  \\
+\hline
+\end{tabular}
+\end{table}
+
 
 \section{Construcción del modelo base}
 
-El modelo base se desarrolló utilizando únicamente variables estructurales. Se evaluaron siete algoritmos: regresión lineal, Ridge, Lasso, SVR, Random Forest, LightGBM y XGBoost. Las métricas se calcularon mediante validación cruzada de diez pliegues.
-
-Los resultados se resumen en la Tabla~\ref{tab:modelos_base} y la Figura~\ref{fig:rmse_modelos}.
+El modelo base se desarrolló utilizando únicamente variables estructurales. Se evaluaron siete algoritmos: regresión lineal, Ridge, Lasso, SVR, Random Forest, LightGBM y XGBoost. Las métricas se calcularon mediante validación cruzada de diez pliegues. Los resultados se resumen en la Tabla~\ref{tab:modelos_base_cop} y la Figura~\ref{fig:rmse_modelos}.
 
 \begin{table}[ht]
 \centering
