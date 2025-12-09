@@ -30,11 +30,11 @@
 * Pag 25. [] Definir coherencia estructural
 * Pag 25. [x] Eliminar el archivo pkl del diagrama
 * Pag 26. [x] Corregir la afirmación de la asímetria positiva
-* Pag 27. [] Indicar que percentil se consideran los datos eliminados
-* Pag 27. [] Definir agrupación espacial consistente
-* Pag 27. [] Aclaración de limites administrativos
+* Pag 27. [x] Indicar que percentil se consideran los datos eliminados
+* Pag 27. [x] Definir agrupación espacial consistente
+* Pag 27. [x] Aclaración de limites administrativos
 * Pag 27. [x] Por que se seleccionaron los radios de 100, 200, 500 y 1000 metros
-* Pag 28. [] Cuales son las variables derivadas
+* Pag 28. [x] Cuales son las variables derivadas
 * Pag 28. [] Como evaluar redundancias espaciales?
 * Pag 28. [x] Unir parrafos
 * Pag 28. [x] Revisar referencia a tabla
@@ -48,7 +48,7 @@
 * Pag 31. [] Revisar si hay otros aportes en otros lugares del mundo...
 * Pag 32. [x] Aclarar que se hizo el mismo fold para probar los modelos.
 * Pag 32. [x] Revisar lo de balance adecuado.
-* Pag 34. [] Revisar el diagrama de arquitectura.
+* Pag 34. [x] Revisar el diagrama de arquitectura.
 
 
 
