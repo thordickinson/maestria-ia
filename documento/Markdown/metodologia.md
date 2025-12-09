@@ -362,6 +362,41 @@ MAE en pesos por fold:
 * En todos los modelos el error absoluto incrementaba entre más grandes eran los precios de los inmuebles
 * En todos los modelos, el error relativo se mantenía por debajo de 0.1.
 
+## Comparación de modelos
+
+### Modelo Base vs enriquecido
+Comparación t-test pareado
+Métrica: RMSE
+Modelo Base: 0.142376
+Modelo Enriquecido: 0.149399
+T-statistic: -2.905261
+P-value: 0.0174452939
+→ Diferencia significativa (p < 0.05)
+(np.float64(-2.9052614300297677), np.float64(0.017445293946282723))
+
+### Modelo enriquecido vs enriquecido optimizado
+
+Comparación t-test pareado
+Métrica: RMSE
+Modelo Enriquecido: 0.149399
+Modelo Enriquecido Optimizado: 0.147970
+T-statistic: 2.866191
+P-value: 0.0185917930
+→ Diferencia significativa (p < 0.05)
+(np.float64(2.866190549110105), np.float64(0.018591793043017325))
+
+### Modelo base vs enriquecido optimizado
+
+Comparación t-test pareado
+Métrica: RMSE
+Modelo Base: 0.142376
+Modelo Enriquecido Optimizado: 0.147970
+T-statistic: -2.433442
+P-value: 0.0377687070
+→ Diferencia significativa (p < 0.05)
+(np.float64(-2.433442360142106), np.float64(0.03776870695600342))
+
+
 ## Pendientes
 [] Discusión ligthgbm vs xgboost, cual es la diferencia y porque xgboost podría funcionar mejor
 
