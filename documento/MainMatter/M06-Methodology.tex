@@ -1,4 +1,4 @@
-La metodología de este estudio sigue un enfoque reproducible y basado en datos abiertos para la estimación del precio de apartamentos en Bogotá. El proceso incluye adquisición e integración de datos, análisis exploratorio, limpieza y transformación, enriquecimiento geoespacial, entrenamiento de modelos base y aumentados, selección del modelo final y la implementación de una utilidad web para su uso práctico. La Figura~\ref{fig:metodologia_general} presenta una vista general del flujo metodológico.
+La metodología de este estudio sigue un enfoque reproducible y basado en datos abiertos para la estimación del precio de apartamentos en Bogotá. Todos los modelos se entrenaron utilizando validación cruzada de diez pliegues, lo que permitió obtener distribuciones de error comparables y aplicar posteriormente pruebas t de Student para evaluar diferencias significativas en el desempeño entre variantes. Asimismo, cada uno de los modelos —el modelo base, el modelo enriquecido y el modelo enriquecido optimizado— fue ajustado mediante una búsqueda independiente de hiperparámetros dentro de un mismo espacio de configuración, garantizando consistencia metodológica sin restringir la capacidad de cada modelo para encontrar su configuración óptima. El proceso completo abarca adquisición e integración de datos, análisis exploratorio, limpieza y transformación, enriquecimiento geoespacial, entrenamiento y comparación de modelos, selección del modelo final e implementación de una utilidad web para su uso práctico. La Figura~\ref{fig:metodologia_general} presenta una vista general del flujo metodológico.
 
 \begin{figure}[ht]
     \centering
@@ -17,7 +17,7 @@ Para complementar la información base, se integraron capas oficiales del portal
 
 \section{Exploración y análisis inicial de los datos}
 
-El análisis exploratorio incluyó visualizaciones iniciales de las variables principales. Las Figuras~\ref{fig:area_log} y \ref{fig:precio_log} presentan la distribución original y transformada del área y del precio. Se observó una marcada asimetría positiva en ambas variables, lo que justificó la aplicación de la transformación logarítmica para estabilizar la varianza y mejorar la linealidad de sus relaciones.
+El análisis exploratorio incluyó visualizaciones iniciales de las variables principales. Las Figuras~\ref{fig:area_log} y \ref{fig:precio_log} presentan la distribución original y transformada del área y del precio. Se observó una marcada asimetría en ambas variables, lo que justificó la aplicación de la transformación logarítmica para estabilizar la varianza y mejorar la linealidad de sus relaciones.
 
 \begin{figure}[ht]
     \centering
@@ -54,9 +54,13 @@ El precio se transformó aplicando el logaritmo natural, definiendo como variabl
 
 El enriquecimiento geoespacial tuvo como propósito incorporar información del entorno urbano de cada inmueble y complementar las variables estructurales con características espaciales derivadas de su localización. Para ello se utilizó geohash de nivel 7, que agrupa propiedades dentro de celdas de aproximadamente 150 metros y permite realizar agregaciones espaciales consistentes dentro del pipeline de modelado.
 
-A partir de las coordenadas geográficas se asignaron automáticamente el \textbf{barrio}, la \textbf{UPZ} y la \textbf{localidad}, utilizando las capas oficiales de datos abiertos del Distrito. Estas variables administrativas permiten representar jerarquías territoriales relevantes para la estructura urbana, aun cuando su contribución predictiva no se asume a priori. Su incorporación se orientó principalmente a evaluar si los límites administrativos capturan diferencias espaciales que no están explícitamente presentes en las variables estructurales.
+A partir de las coordenadas geográficas se asignaron automáticamente el barrio, la UPZ y la localidad, utilizando las capas oficiales de datos abiertos del Distrito. Estas variables administrativas permiten representar jerarquías territoriales relevantes para la estructura urbana, aun cuando su contribución predictiva no se asume a priori. Su incorporación se orientó principalmente a evaluar si los límites administrativos capturan diferencias espaciales que no están explícitamente presentes en las variables estructurales.
 
-Además, se calcularon conteos de puntos de interés (POIs) dentro de radios de 100, 500, 1000 y 2000 metros, utilizando categorías de OpenStreetMap como salud, educación, comercio, recreación y servicios. La Tabla~\ref{tab:pois_radio} ilustra el proceso de agregación espacial a partir de un inmueble ejemplo, mostrando cómo se cuantifican los servicios disponibles en su entorno inmediato.
+Los puntos de interés (POIs, por sus siglas en inglés Points of Interest) corresponden a entidades geográficas relevantes dentro del entorno urbano, tales como establecimientos educativos, centros de salud, comercios, parques o estaciones de transporte. Los POIs representan elementos del espacio construido que influyen directa o indirectamente en la valorización de un inmueble, ya sea por su impacto en la accesibilidad, la calidad de vida o la disponibilidad de servicios. En este trabajo se seleccionaron las categorías de POIs asociadas a usos cotidianos y equipamientos urbanos: educación, salud, comercio minorista, restaurantes y entretenimiento, parques y recreación, servicios culturales, servicios de infraestructura, alojamiento y transporte público (SITP y TransMilenio). Estas categorías presentan una cobertura homogénea en OpenStreetMap para la ciudad de Bogotá y permiten capturar variaciones del entorno urbano que no se encuentran explícitamente representadas en las características estructurales del inmueble.
+
+Adicionalmente, se calcularon conteos de POIs dentro de radios de 100, 300, 500, 1000 y 2000 metros. Estos rangos fueron seleccionados porque representan escalas diferenciadas de accesibilidad alrededor del inmueble: distancias muy cortas asociadas al entorno inmediato (100--300 m), zonas de alcance habitual dentro del barrio (500 m), áreas de desplazamiento ampliado en recorridos peatonales o de corta movilidad (1000 m), y una escala vecinal más amplia que permite capturar la presencia de equipamientos mayores (2000 m). De esta manera, cada radio refleja un nivel distinto de interacción entre la propiedad y su entorno, permitiendo cuantificar la disponibilidad y concentración de servicios relevantes. La Tabla~\ref{tab:pois_radio} ilustra este proceso de agregación espacial mediante un ejemplo específico.
+
+Como resultado de este proceso se incorporaron 45 nuevas variables derivadas de POIs, correspondientes a 8 categorías evaluadas en 5 radios alrededor de cada inmueble. Cada variable representa el número de establecimientos de un tipo particular dentro del radio correspondiente; sus valores pueden oscilar desde 0 (ausencia total de dicho servicio) hasta cifras superiores a 400 en zonas densamente equipadas. La Tabla~\ref{tab:estructura_pois} resume la organización sistemática de estas variables y su rango típico de valores.
 
 Estas variables derivadas no solo permitieron explorar la influencia del entorno urbano en la valoración inmobiliaria, sino también evaluar redundancias espaciales y determinar qué información del contexto se encuentra ya implícitamente codificada en las características estructurales y administrativas del inmueble. Este enriquecimiento constituyó la base para la posterior selección de variables mediante SHAP y la construcción del modelo optimizado.
 
@@ -82,6 +86,26 @@ Estaciones TransMilenio  & 0 & 0   & 3   & 5   & 15  \\
 \end{tabular}
 \end{table}
 
+\begin{table}[ht]
+\centering
+\small
+\caption{Estructura de las variables geoespaciales derivadas de POIs}
+\label{tab:estructura_pois}
+\begin{tabular}{p{4cm} p{3cm} p{6cm}}
+\hline
+\textbf{Categoría de POI} & \textbf{Radios utilizados} & \textbf{Descripción y rango típico} \\
+\hline
+Educación & 100, 300, 500, 1000, 2000 m & Instituciones educativas; valores típicos: 0--100. \\
+Salud & 100, 300, 500, 1000, 2000 m & Clínicas, hospitales y consultorios; 0--60. \\
+Comercio minorista & 100, 300, 500, 1000, 2000 m & Tiendas, supermercados; 0--500. \\
+Restaurantes y entretenimiento & 100, 300, 500, 1000, 2000 m & Restaurantes, cafés y bares; 0--700. \\
+Alojamiento & 100, 300, 500, 1000, 2000 m & Hoteles y estancias; 0--120. \\
+Parques y recreación & 100, 300, 500, 1000, 2000 m & Parques y zonas verdes; 0--40. \\
+Servicios de infraestructura & 100, 300, 500, 1000, 2000 m & Servicios públicos y cajeros; 0--150. \\
+Equipamientos culturales & 100, 300, 500, 1000, 2000 m & Bibliotecas, museos y centros culturales; 0--80. \\
+\hline
+\end{tabular}
+\end{table}
 
 \section{Construcción del modelo base}
 
@@ -116,11 +140,42 @@ SVR                & \$913{,}333{,}600 & \$5{,}537{,}129 \\
     \label{fig:rmse_modelos}
 \end{figure}
 
-El mejor desempeño fue obtenido por XGBoost, que se seleccionó como modelo base oficial.
+El mejor desempeño fue obtenido por XGBoost utilizando su función de pérdida por defecto para regresión (\texttt{reg:squarederror}). El ajuste del modelo se realizó mediante una búsqueda aleatoria de hiperparámetros dentro del espacio definido en la Tabla~\ref{tab:xgb_param_search}, con el fin de explorar configuraciones que equilibraran complejidad, capacidad predictiva y generalización. Este mismo procedimiento de optimización se mantuvo en los modelos posteriores, variando únicamente el conjunto de variables disponibles en cada caso, con el propósito de asegurar comparabilidad metodológica entre todas las variantes evaluadas.
+
+\begin{table}[ht]
+\centering
+\small
+\caption{Descripción del espacio de búsqueda utilizado para XGBoost}
+\label{tab:xgb_param_search}
+\begin{tabular}{p{3.5cm} p{3cm} p{7.5cm}}
+\hline
+\textbf{Hiperparámetro} & \textbf{Rango} & \textbf{Justificación} \\
+\hline
+\texttt{n\_estimators} & [200, 500] & Limita el número de árboles para controlar complejidad y tiempo de entrenamiento, evitando sobreajuste observado con valores superiores a 800. \\
+
+\texttt{max\_depth} & [3, 7] & Profundidades moderadas permiten capturar no linealidades sin producir árboles demasiado específicos. Previene sobreajuste y mantiene interpretabilidad. \\
+
+\texttt{learning\_rate} & [0.02, 0.06] & Tasas de aprendizaje pequeñas estabilizan la contribución incremental de cada árbol y mejoran la generalización. Rango estrecho para evitar variabilidad extrema. \\
+
+\texttt{subsample} & [0.7, 0.9] & Submuestreo evita correlación excesiva entre árboles y reduce varianza. Valores menores afectarían la estabilidad; valores mayores serían equivalentes a usar todo el conjunto. \\
+
+\texttt{colsample\_bytree} & [0.7, 0.9] & Controla la proporción de características muestreadas por árbol, promoviendo diversidad en el ensamble y mitigando sobreajuste. \\
+
+\texttt{min\_child\_weight} & [1, 6] & Penaliza divisiones con muestras pequeñas. Rango acotado para evitar tanto divisiones ruidosas como restricciones excesivas que impidan aprender patrones reales. \\
+
+\texttt{gamma} & [0.0, 2.0] & Define el mínimo incremento en la pérdida para realizar una partición. El rango permite desde modelos más flexibles (0) hasta particiones conservadoras (2). \\
+
+\texttt{reg\_lambda} & [0.5, 2.0] & Regularización L2 para controlar el tamaño de los pesos. Rango moderado que balancea flexibilidad y estabilidad del modelo. \\
+
+\texttt{reg\_alpha} & [0.0, 0.5] & Regularización L1 para inducir sparsity y reducir complejidad. Se evita valores altos que podrían eliminar señales relevantes. \\
+\hline
+\end{tabular}
+\label{tab:xgb_param_search}
+\end{table}
 
 \section{Construcción, evaluación e interpretabilidad del modelo enriquecido}
 
-El modelo enriquecido tuvo como objetivo evaluar el aporte de las variables geoespaciales sobre la capacidad predictiva y explicativa del sistema. Para construir este modelo se integraron todas las variables derivadas del proceso de enriquecimiento espacial: conteos de puntos de interés (POIs) en distintos radios, identificadores administrativos (barrio y UPZ), geohash nivel~7 y el avalúo catastral zonal. Todas estas variables fueron procesadas mediante el mismo \texttt{ColumnTransformer} utilizado en el modelo base, garantizando imputación, escalamiento y codificación categórica consistentes en todas las etapas del pipeline.
+El modelo enriquecido tuvo como objetivo evaluar el aporte de las variables geoespaciales sobre la capacidad predictiva y explicativa del sistema. Para construir este modelo se integraron todas las variables derivadas del proceso de enriquecimiento espacial: conteos de puntos de interés en distintos radios, identificadores administrativos (barrio y UPZ), geohash nivel~7 y el avalúo catastral zonal. Todas estas variables fueron procesadas mediante el mismo \texttt{ColumnTransformer} utilizado en el modelo base, garantizando imputación, escalamiento y codificación categórica consistentes en todas las etapas del pipeline.
 
 Con el fin de evaluar el comportamiento del conjunto enriquecido, se entrenaron y validaron varios algoritmos utilizados previamente en el modelo base: Linear Regression, Ridge, Lasso, Random Forest, LightGBM y XGBoost. El modelo SVR se descartó desde etapas anteriores por su bajo rendimiento y alto costo computacional. La evaluación se realizó mediante validación cruzada de diez pliegues, utilizando RMSE como métrica principal. Los resultados se presentan en la Tabla~\ref{tab:resultados_aumentado}.
 
@@ -143,7 +198,7 @@ Lasso             & 0.337 & 0.007 & 0.263 & 0.827 \\
 \end{tabular}
 \end{table}
 
-La comparación inicial evidenció que LightGBM y XGBoost presentaron desempeños equivalentes. Sin embargo, se seleccionó XGBoost para las siguientes etapas del análisis por dos razones metodológicas: (i) el modelo base ya había sido entrenado y optimizado con XGBoost, lo que permite comparar ambos modelos modificando exclusivamente el conjunto de variables y no el algoritmo; y (ii) XGBoost tiene una integración más estable y documentada con SHAP, lo cual es fundamental para el análisis interpretativo que guía la selección del subconjunto final de características. Esta elección garantiza consistencia, comparabilidad y estabilidad numérica en todo el proceso de modelado.
+La comparación inicial evidenció que LightGBM y XGBoost presentaron desempeños equivalentes. Sin embargo, se seleccionó XGBoost para las siguientes etapas del análisis por dos razones metodológicas: (i) el modelo base ya había sido entrenado y optimizado con XGBoost, lo que permite comparar ambos modelos modificando exclusivamente el conjunto de variables y no el algoritmo; y (ii) XGBoost tiene una integración más estable y documentada con SHAP, lo cual es fundamental para el análisis interpretativo que guía la selección del subconjunto final de características.
 
 Con el modelo enriquecido entrenado, se aplicó SHAP (\textit{SHapley Additive exPlanations}) para analizar la contribución local y global de cada característica después del preprocesamiento. La Figura~\ref{fig:shap_summary} presenta el \textit{SHAP Summary Plot}, que muestra la distribución del impacto de cada variable a nivel individual, mientras que la Figura~\ref{fig:shap_bar} resume la importancia global de las características mediante el valor SHAP absoluto promedio.
 
@@ -161,7 +216,7 @@ Con el modelo enriquecido entrenado, se aplicó SHAP (\textit{SHapley Additive e
     \label{fig:shap_bar}
 \end{figure}
 
-El análisis permitió observar qué variables del entorno urbano ofrecían contribución real y cuáles resultaban redundantes frente a las ya presentes en el modelo base. En general, las variables derivadas de POIs y de accesibilidad urbana mostraron una contribución marginal, lo cual coincide con su bajo aporte predictivo cuantitativo. En cambio, variables estructurales como área, baños, parqueaderos y administración, junto con coordenadas geográficas (latitud y longitud), concentraron la mayor parte de la señal relevante. A partir del ranking SHAP, se seleccionó un subconjunto de variables con mayor aporte promedio, lo que dio lugar al \textit{modelo enriquecido optimizado}. Este modelo se entrenó utilizando el mismo pipeline y los mismos hiperparámetros, manteniendo consistencia metodológica y permitiendo comparar directamente los efectos de la selección de variables.
+El análisis permitió evaluar en qué medida las variables del entorno urbano —principalmente los valores agregados derivados de POIs, proximidad a servicios y atributos espaciales resumidos por geohash— aportaban información adicional frente al modelo base. Los resultados de SHAP mostraron que estas variables presentaron importancias promedio muy bajas, con valores cercanos a cero en la mayoría de observaciones, lo cual indica que su contribución marginal era absorbida por otras características más determinantes. En contraste, variables estructurales como el área, así como las coordenadas geográficas (latitud y longitud), concentraron prácticamente toda la señal relevante del modelo, evidenciando que gran parte del efecto espacial ya se encuentra implícito en la localización del inmueble. Con base en este ranking de importancias, se seleccionó un subconjunto de predictores para entrenar el \textit{modelo enriquecido optimizado}. Este modelo se ajustó utilizando una nueva búsqueda de hiperparámetros dentro del mismo espacio definido para el modelo base, garantizando consistencia metodológica y permitiendo comparar de manera directa el efecto de la selección de variables sobre el desempeño predictivo.
 
 Los resultados detallados se reportan en la sección de validación cruzada, donde se contrastan los tres modelos (base, enriquecido y enriquecido optimizado) mediante métricas descriptivas y pruebas estadísticas.
 
@@ -169,11 +224,11 @@ Los resultados detallados se reportan en la sección de validación cruzada, don
 
 A partir del análisis de importancia mediante SHAP se seleccionó un subconjunto reducido de variables con mayor aporte promedio, compuesto principalmente por características estructurales (área, baños, parqueaderos, administración), algunos atributos administrativos (antigüedad) y componentes geográficos esenciales (latitud y longitud). La mayoría de variables geoespaciales derivadas —como conteos de POIs y categorías OSM— mostraron contribución marginal, por lo que fueron descartadas en esta versión optimizada.
 
-El modelo se entrenó utilizando el mismo pipeline y los mismos hiperparámetros del modelo enriquecido, de modo que cualquier cambio en el desempeño se debiera exclusivamente a la selección de variables. La validación cruzada de diez pliegues produjo un RMSE promedio de 0.1584 (std 0.0082), un MAE de 0.1138 y un $R^2$ de 0.9600. En la escala monetaria original, esto corresponde a un RMSE promedio de aproximadamente \textbf{\$233 millones COP} y un MAE de \textbf{\$123 millones COP}. Estos valores ubican al modelo optimizado entre el modelo base y el modelo enriquecido, reduciendo el ruido introducido por variables geoespaciales redundantes, aunque sin alcanzar la precisión lograda por el modelo base.
+El modelo enriquecido optimizado se entrenó utilizando el mismo pipeline del modelo enriquecido, pero con una nueva búsqueda de hiperparámetros dentro del mismo espacio definido previamente, de modo que las diferencias en el desempeño reflejaran únicamente el efecto de la selección de variables y no configuraciones externas del modelo. La validación cruzada de diez pliegues produjo un RMSE promedio de 0.1584 (std 0.0082), un MAE de 0.1138 y un $R^{2} = 0.9600$. En la escala monetaria original, esto corresponde a un RMSE aproximado de \textbf{\$233 millones COP} y un MAE de \textbf{\$123 millones COP}. Estos valores ubican al modelo optimizado entre el modelo base y el modelo enriquecido, reduciendo el ruido introducido por variables geoespaciales con baja importancia, aunque sin alcanzar la precisión lograda por el modelo base.
 
 Para evaluar si las diferencias eran significativas, se aplicaron pruebas t pareadas utilizando los valores de RMSE de los diez pliegues. Se encontraron diferencias significativas entre el modelo base y el enriquecido ($p = 5.49\times10^{-6}$), entre el modelo base y el optimizado ($p = 0.0112$), y entre el modelo enriquecido y el optimizado ($p = 0.000003$), indicando que reducir variables mejora la estabilidad del modelo enriquecido sin recuperar completamente la precisión del modelo base.
 
-La Tabla~\ref{tab:comparacion_modelos_final} resume el desempeño de los tres modelos evaluados. Aunque el modelo base conserva la mayor precisión, el modelo optimizado ofrece un balance adecuado entre simplicidad, interpretabilidad y error, constituyéndose en una alternativa eficiente dentro del conjunto enriquecido.
+La Tabla~\ref{tab:comparacion_modelos_final} resume el desempeño de los tres modelos evaluados. Aunque el modelo base conserva la mayor precisión, el modelo optimizado ofrece mayor simplicidad y disminución en el error, constituyéndose en una alternativa eficiente dentro del conjunto enriquecido.
 
 \begin{table}[ht]
 \centering
