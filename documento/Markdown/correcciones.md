@@ -1,12 +1,12 @@
 ## Resumen
-* [] Quitar negrita
+* [x] Quitar negrita
 * [x] Abstract igual en ambos idiomas
 
 ## Glosario
 * Pag 11. [x] Corregir glosario (Estrato)
 
 ## Introducción
-* Pag 15. [] Agregar fuentes en algunas afirmaciones
+* Pag 15. [x] Agregar fuentes en algunas afirmaciones
 * Pag 15. [~] Revisar las normas para las citaciones
 * Pag 15. [x] Arreglar "Contribuír a reducir esta brecha"
 * Pag 15. [x] Definir que es un punto de interés.
@@ -27,7 +27,7 @@
 
 ## Métodología
 
-* Pag 25. [] Definir coherencia estructural
+* Pag 25. [x] Definir coherencia estructural
 * Pag 25. [x] Eliminar el archivo pkl del diagrama
 * Pag 26. [x] Corregir la afirmación de la asímetria positiva
 * Pag 27. [x] Indicar que percentil se consideran los datos eliminados
@@ -35,7 +35,7 @@
 * Pag 27. [x] Aclaración de limites administrativos
 * Pag 27. [x] Por que se seleccionaron los radios de 100, 200, 500 y 1000 metros
 * Pag 28. [x] Cuales son las variables derivadas
-* Pag 28. [] Como evaluar redundancias espaciales?
+* Pag 28. [x] Como evaluar redundancias espaciales?
 * Pag 28. [x] Unir parrafos
 * Pag 28. [x] Revisar referencia a tabla
 * Pag 29. [x] Mejorar tabla de POIs
