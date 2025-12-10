@@ -1,6 +1,6 @@
 Este capítulo presenta los resultados obtenidos tras el entrenamiento, validación y comparación de los tres modelos evaluados: el modelo base, el modelo enriquecido y el modelo enriquecido optimizado. Todos los modelos fueron evaluados mediante validación cruzada de diez pliegues y se registraron los valores individuales de RMSE, MAE y $R^2$ en cada iteración. Asimismo, se realizaron pruebas t pareadas para determinar si las diferencias observadas entre modelos eran estadísticamente significativas. Además de las métricas calculadas en la escala logarítmica, se presentan sus equivalentes en pesos colombianos, permitiendo una interpretación más clara del error real en la estimación del precio de los apartamentos.
 
-El modelo base, construido exclusivamente con variables estructurales del inmueble, obtuvo el mejor desempeño general. Su RMSE promedio fue de 0.1514 (desviación estándar de 0.0039), con un MAE de 0.1073 y un $R^2$ promedio de 0.9650. En la escala monetaria original, esto equivale a un error RMSE promedio de \$231 millones COP (desviación estándar de aproximadamente \$8 millones), y un MAE promedio de \$120 millones COP. Estos valores evidencian alta estabilidad y baja varianza del error a lo largo de los diez pliegues. El análisis de importancia (Figura~\ref{fig:importancia_base}) mostró que variables como el área, la latitud, la longitud, la administración y los parqueaderos concentran la mayor parte del aporte predictivo, reflejando la fuerte relación entre estructura física y localización en la valoración inmobiliaria en Bogotá.
+El modelo base, construido exclusivamente con variables estructurales del inmueble, obtuvo el mejor desempeño general. Su RMSE promedio fue de 0.1424 (desviación estándar de 0.0029), con un MAE de 0.1064 y un $R^2$ promedio de 0.9467. En la escala monetaria original, esto equivale a un error RMSE promedio de aproximadamente \$106 millones COP (desviación estándar cercana a \$2.9 millones) y un MAE promedio de \$70 millones COP. Estos valores evidencian alta estabilidad y baja varianza del error a lo largo de los diez pliegues. El análisis de importancia (Figura~\ref{fig:importancia_base}) mostró que variables como el área, la latitud, la longitud, la administración y los parqueaderos concentran la mayor parte del aporte predictivo, reflejando la fuerte relación entre estructura física y localización en la valoración inmobiliaria en Bogotá.
 
 \begin{figure}[h]
     \centering
@@ -9,11 +9,11 @@ El modelo base, construido exclusivamente con variables estructurales del inmueb
     \label{fig:importancia_base}
 \end{figure}
 
-El modelo enriquecido incorporó las variables geoespaciales derivadas de puntos de interés, accesibilidad urbana y agregaciones espaciales en distintos radios. Aunque estas variables aportaron información contextual relevante para interpretar la estructura territorial, su incorporación produjo un incremento en el error. El modelo alcanzó un RMSE promedio de 0.1705, un MAE de 0.1260 y un $R^2$ de 0.9560. En la escala monetaria, esto corresponde a un RMSE promedio de aproximadamente \$257 millones COP y un MAE de \$138 millones COP. Los conteos de POIs y medidas de cercanía mostraron un efecto predictivo limitado, lo que indica que gran parte de esa información ya se encuentra implícita en variables estructurales o en la propia ubicación del inmueble.
+El modelo enriquecido incorporó las variables geoespaciales derivadas de puntos de interés, accesibilidad urbana y agregaciones espaciales en distintos radios. Aunque estas variables aportaron información contextual relevante para interpretar la estructura territorial, su incorporación produjo un incremento en el error. El modelo alcanzó un RMSE promedio de 0.1494, un MAE de 0.1123 y un $R^2$ de 0.9387. En la escala monetaria, esto corresponde a un RMSE promedio de aproximadamente \$113 millones COP y un MAE de \$76 millones COP. Los conteos de POIs y medidas de cercanía mostraron un efecto predictivo limitado, lo que indica que gran parte de esa información ya se encuentra implícita en variables estructurales o en la propia ubicación del inmueble.
 
 El análisis mediante valores SHAP confirmó que la mayor parte de la señal relevante permanece concentrada en variables como área, ubicación (latitud y longitud), parqueaderos, baños y administración. Los POIs añadidos presentan contribuciones marginales. A partir del ranking global de importancia SHAP, se seleccionó un subconjunto de variables para construir el modelo enriquecido optimizado.
 
-El modelo optimizado obtuvo un RMSE promedio de 0.1584 (desviación estándar de 0.0082), un MAE de 0.1138 y un $R^2$ de 0.9600. En términos monetarios, el RMSE promedio fue de \$233 millones COP y el MAE de \$123 millones COP. Su desempeño se ubica entre el modelo base y el modelo enriquecido, lo que indica que la eliminación de variables geoespaciales redundantes reduce el ruido introducido por el modelo enriquecido, aunque no recupera completamente la precisión del modelo base. Las variables retenidas se muestran en la Tabla~\ref{tab:variables_optimizadas}.
+El modelo optimizado obtuvo un RMSE promedio de 0.1480 (desviación estándar de 0.0055), un MAE de 0.1096 y un $R^2$ de 0.9400. En términos monetarios, el RMSE promedio fue de aproximadamente \$107 millones COP y el MAE de \$71 millones COP. Su desempeño se ubica entre el modelo base y el modelo enriquecido, lo que indica que la eliminación de variables geoespaciales redundantes reduce el ruido introducido por el modelo enriquecido, aunque no recupera completamente la precisión lograda por el modelo base. Las variables retenidas se muestran en la Tabla~\ref{tab:variables_optimizadas}.
 
 \begin{table}[h]
     \centering
@@ -23,22 +23,22 @@ El modelo optimizado obtuvo un RMSE promedio de 0.1584 (desviación estándar de
         \toprule
         \textbf{Variable} & \textbf{Importancia SHAP media} \\
         \midrule
-        área & 0.374 \\
-        latitud & 0.099 \\
-        parqueaderos & 0.084 \\
-        baños & 0.070 \\
-        longitud & 0.064 \\
-        administración & 0.064 \\
-        antigüedad & 0.042--0.046 \\
-        gimnasio & 0.020 \\
-        habitaciones & 0.013 \\
-        ascensor & 0.012 \\
-        piscina & 0.011 \\
+        área & 0.273 \\
+        latitud & 0.081 \\
+        parqueaderos & 0.070 \\
+        baños & 0.042 \\
+        longitud & 0.066 \\
+        administración & 0.063 \\
+        antigüedad & 0.032--0.039 \\
+        gimnasio & 0.019 \\
+        habitaciones & 0.018 \\
+        ascensor & 0.013 \\
+        piscina & 0.006 \\
         \bottomrule
     \end{tabular}
 \end{table}
 
-La Tabla~\ref{tab:comparacion_modelos_final} resume comparativamente el desempeño de los tres modelos. El modelo base conserva el mejor rendimiento, el modelo enriquecido presenta el mayor error debido al ruido introducido por variables espaciales, y el modelo optimizado logra un equilibrio intermedio entre precisión y simplicidad. En términos de error absoluto en pesos, los modelos se ubican consistentemente en el rango de \$230 a \$260 millones COP de RMSE.
+La Tabla~\ref{tab:comparacion_modelos_final} resume comparativamente el desempeño de los tres modelos. El modelo base conserva el mejor rendimiento, el modelo enriquecido presenta el mayor error debido al ruido introducido por variables espaciales, y el modelo optimizado logra un equilibrio intermedio entre precisión y simplicidad. En términos de error absoluto en pesos, los modelos se ubican consistentemente en el rango de \$106 a \$113 millones COP de RMSE.
 
 \begin{table}[h]
 \centering
@@ -49,12 +49,11 @@ La Tabla~\ref{tab:comparacion_modelos_final} resume comparativamente el desempe�
 \toprule
 \textbf{Modelo} & \textbf{RMSE} & \textbf{MAE} & \textbf{$R^2$} \\
 \midrule
-Base & 0.1514 $\pm$ 0.0039 & 0.1073 $\pm$ 0.0023 & 0.9650 $\pm$ 0.0020 \\
-Enriquecido & 0.1705 $\pm$ 0.0050 & 0.1260 $\pm$ 0.0030 & 0.9560 $\pm$ 0.0030 \\
-Enriquecido optimizado & 0.1584 $\pm$ 0.0082 & 0.1138 $\pm$ 0.0047 & 0.9600 $\pm$ 0.0059 \\
+Base & 0.1424 $\pm$ 0.0029 & 0.1064 $\pm$ 0.0020 & 0.9467 $\pm$ 0.0035 \\
+Enriquecido & 0.1494 $\pm$ 0.0063 & 0.1123 $\pm$ 0.0040 & 0.9387 $\pm$ 0.0107 \\
+Enriquecido optimizado & 0.1480 $\pm$ 0.0055 & 0.1096 $\pm$ 0.0031 & 0.9400 $\pm$ 0.0095 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Finalmente, las pruebas t pareadas confirmaron que todas las diferencias observadas son estadísticamente significativas. Los valores obtenidos fueron: \(p = 5.49 \times 10^{-6}\) para la comparación entre el modelo base y el enriquecido, \(p = 0.0112\) para el modelo base frente al optimizado, y \(p = 0.000003\) para la comparación entre el modelo enriquecido y el optimizado. Estos resultados demuestran que, aunque la adición de variables espaciales aporta información contextual para la interpretación del modelo, no mejora la precisión predictiva y, en algunos casos, introduce ruido adicional. Esto sugiere que buena parte de la información espacial relevante ya está capturada de manera implícita en variables como el barrio, la UPZ, el estrato y la localización geográfica del inmueble.
-
+Finalmente, las pruebas t pareadas confirmaron que todas las diferencias observadas son estadísticamente significativas. Los valores obtenidos fueron: \(p = 0.0174\) para la comparación entre el modelo base y el enriquecido, \(p = 0.0378\) para el modelo base frente al optimizado, y \(p = 0.0186\) para la comparación entre el modelo enriquecido y el optimizado. Estos resultados demuestran que, aunque la adición de variables espaciales aporta información contextual para la interpretación del modelo, no mejora la precisión predictiva y, en algunos casos, introduce ruido adicional. Esto sugiere que buena parte de la información espacial relevante ya está capturada de manera implícita en variables como el barrio, la UPZ, el estrato y la localización geográfica del inmueble. Por ello, y con base en el desempeño obtenido, el modelo seleccionado para la implementación final fue el \textbf{modelo base}, al ofrecer la mayor precisión, estabilidad y simplicidad entr

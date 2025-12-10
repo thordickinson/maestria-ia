@@ -1,87 +1,29 @@
-La metodología de este estudio sigue un enfoque reproducible y basado en datos abiertos para la estimación del precio de apartamentos en Bogotá. Todos los modelos se entrenaron utilizando validación cruzada de diez pliegues, lo que permitió obtener distribuciones de error comparables y aplicar posteriormente pruebas t de Student para evaluar diferencias significativas en el desempeño entre variantes. Asimismo, cada uno de los modelos —el modelo base, el modelo enriquecido y el modelo enriquecido optimizado— fue ajustado mediante una búsqueda independiente de hiperparámetros dentro de un mismo espacio de configuración, garantizando consistencia metodológica sin restringir la capacidad de cada modelo para encontrar su configuración óptima. El proceso completo abarca adquisición e integración de datos, análisis exploratorio, limpieza y transformación, enriquecimiento geoespacial, entrenamiento y comparación de modelos, selección del modelo final e implementación de una utilidad web para su uso práctico. La Figura~\ref{fig:metodologia_general} presenta una vista general del flujo metodológico.
+\section{Construcción, evaluación e interpretabilidad de los modelos}
 
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.95\linewidth]{Images/metodologia/overview.png}
-    \caption{Flujo general de la metodología desarrollada.}
-    \label{fig:metodologia_general}
-\end{figure}
+El proceso de modelado se organizó en tres configuraciones principales: un \textbf{modelo base} con variables exclusivamente estructurales, un \textbf{modelo enriquecido} que incorpora información geoespacial y administrativa, y un \textbf{modelo enriquecido optimizado} construido a partir de un subconjunto reducido de variables seleccionadas con SHAP. En los tres casos se empleó validación cruzada de diez pliegues y se realizaron búsquedas de hiperparámetros específicas para XGBoost dentro de un mismo espacio de configuración, descrito en la Tabla~\ref{tab:xgb_param_search}. 
 
-\section{Adquisición e integración de datos}
+La métrica de entrenamiento y comparación entre modelos fue el \textbf{RMSE} calculado sobre el \textit{logaritmo natural del precio de venta}. De forma complementaria, y únicamente con fines de interpretabilidad, se calculó el error en \textbf{pesos colombianos (COP)} aplicando la transformación inversa a las predicciones y a los valores reales (\texttt{np.expm1}). Estas validaciones en pesos permitieron cuantificar el error absoluto y relativo por rango de precios, pero no se utilizaron para ajustar ni seleccionar los modelos.
 
-El conjunto de datos principal se obtuvo a partir de una recopilación pública de inmuebles publicada en 2024. Este dataset incluye información estructural como área, baños, parqueaderos, estrato, antigüedad, estado, administración y coordenadas geográficas. Para reducir la variabilidad tipológica y asegurar una mayor coherencia en las características modeladas, el análisis se restringió exclusivamente a apartamentos. Esta tipología presenta condiciones físicas y funcionales más uniformes, lo que facilita la identificación de patrones de valorización y reduce la complejidad del modelado. En contraste, otras categorías de inmuebles —como casas, locales comerciales u oficinas— exhiben una heterogeneidad considerable en atributos clave, incluyendo la relación entre área construida y área de lote, el número de niveles, la distribución interna, las restricciones de uso del suelo, la presencia o ausencia de áreas comunes y las especificaciones arquitectónicas o técnicas propias de cada uso. Estas diferencias generan dinámicas de mercado no comparables entre sí y producen variaciones estructurales difíciles de modelar de manera conjunta. Por ello, limitar el estudio a apartamentos permite trabajar con un conjunto de propiedades más homogéneo y obtener estimaciones más estables y fiables.
+%--------------------------------------------------
+\subsection{Modelo base: variables estructurales}
 
-Durante las etapas iniciales se consideró la posibilidad de complementar esta información mediante técnicas de \textit{web scraping} aplicadas a portales inmobiliarios nacionales. Sin embargo, estos sitios emplean mecanismos estrictos de protección contra automatización y condiciones de uso que restringen la recolección automática de datos, lo cual limita la viabilidad técnica y legal de este enfoque. Por esta razón, y con el objetivo de garantizar transparencia y reproducibilidad, el estudio se basó exclusivamente en fuentes abiertas y en conjuntos de datos disponibles públicamente.
-
-Para complementar la información base, se integraron capas oficiales del portal de Datos Abiertos de Bogotá, incluyendo barrios, UPZ, localidades, estratos y avalúos catastrales. Asimismo, se incorporaron puntos de interés (POIs) provenientes de OpenStreetMap. Todas las capas espaciales fueron cargadas en una base de datos PostGIS, lo que permitió realizar operaciones geográficas como intersecciones, cálculos de distancias y agregaciones por geohash.
-
-\section{Exploración y análisis inicial de los datos}
-
-El análisis exploratorio incluyó visualizaciones iniciales de las variables principales. Las Figuras~\ref{fig:area_log} y \ref{fig:precio_log} presentan la distribución original y transformada del área y del precio. Se observó una marcada asimetría en ambas variables, lo que justificó la aplicación de la transformación logarítmica para estabilizar la varianza y mejorar la linealidad de sus relaciones.
-
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.85\linewidth]{Images/metodologia/area_log.png}
-    \caption{Distribución del área antes y después de la transformación logarítmica.}
-    \label{fig:area_log}
-\end{figure}
-
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.85\linewidth]{Images/metodologia/precio_log.png}
-    \caption{Distribución del precio antes y después de la transformación logarítmica.}
-    \label{fig:precio_log}
-\end{figure}
-
-Se analizó la relación entre variables estructurales mediante un mapa de calor de correlaciones (Figura~\ref{fig:correlacion}). Este análisis mostró que el área y el estrato tenían la mayor correlación con el precio, mientras que variables como habitaciones, ascensor o piscina tenían correlaciones bajas, anticipando su menor utilidad en la predicción final.
-
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.85\linewidth]{Images/metodologia/correlacion_heatmap.png}
-    \caption{Mapa de calor de correlaciones entre variables estructurales.}
-    \label{fig:correlacion}
-\end{figure}
-
-\section{Limpieza, imputación y transformación}
-
-El dataset fue sometido a un proceso riguroso de depuración. Se eliminaron registros con coordenadas fuera del área urbana de Bogotá y valores atípicos definidos mediante percentiles, utilizando el percentil 99 para ambas variables (\textit{área} $> 464\ \text{m}^2$ y \textit{precio} $> 5.4\times 10^{9}$ COP). Asimismo, se descartaron registros inconsistentes con precios inferiores a 50 millones de pesos. Estos umbrales permitieron reducir el impacto de valores extremos sin afectar la distribución principal del conjunto de datos.
-
-La imputación siguió una estrategia jerárquica: el área se imputó mediante la mediana de comparables dentro del mismo estrato, número de baños, parqueaderos y sector. El estrato y estado se imputaron con la moda del sector, mientras que la administración se imputó con la mediana del estrato. Variables con más de 70\% de ausencia fueron descartadas.
-
-El precio se transformó aplicando el logaritmo natural, definiendo como variable objetivo \texttt{precio\_venta\_log}. La variable área también fue transformada logarítmicamente debido a su asimetría. Las variables numéricas se escalaron mediante \texttt{StandardScaler} y las categóricas se codificaron mediante \texttt{OneHotEncoder}.
-
-\section{Enriquecimiento geoespacial}
-
-El enriquecimiento geoespacial tuvo como propósito incorporar información del entorno urbano de cada inmueble y complementar las variables estructurales con características espaciales derivadas de su localización. Para ello se utilizó geohash de nivel 7, que agrupa propiedades dentro de celdas de tamaño uniforme (≈150 m), correspondientes al nivel de geohash más cercano a la escala de una cuadra, lo que disminuye la necesidad de cálculos punto a punto y facilita el procesamiento geoespacial dentro del pipeline de modelado.
-
-A partir de las coordenadas geográficas se asignaron automáticamente el barrio, la UPZ y la localidad, utilizando las capas oficiales de datos abiertos del Distrito. Estas variables administrativas permiten representar jerarquías territoriales relevantes para la estructura urbana y constituyen candidatos naturales a mejorar la capacidad predictiva del modelo. Su incorporación se orientó a determinar si los límites administrativos codifican diferencias espaciales que no se encuentran explícitamente en las variables estructurales.
-
-Los puntos de interés (POIs, por sus siglas en inglés Points of Interest) corresponden a entidades geográficas relevantes dentro del entorno urbano, tales como establecimientos educativos, centros de salud, comercios, parques o estaciones de transporte. Los POIs representan elementos del espacio construido que influyen directa o indirectamente en la valorización de un inmueble, ya sea por su impacto en la accesibilidad, la calidad de vida o la disponibilidad de servicios. En este trabajo se seleccionaron las categorías de POIs asociadas a usos cotidianos y equipamientos urbanos: educación, salud, comercio minorista, restaurantes y entretenimiento, parques y recreación, servicios culturales, servicios de infraestructura, alojamiento y transporte público (SITP y TransMilenio). Estas categorías presentan una cobertura homogénea en OpenStreetMap para la ciudad de Bogotá y permiten capturar variaciones del entorno urbano que no se encuentran explícitamente representadas en las características estructurales del inmueble.
-
-Adicionalmente, se calcularon conteos de POIs dentro de radios de 100, 300, 500, 1000 y 2000 metros. Estos rangos fueron seleccionados porque representan escalas diferenciadas de accesibilidad alrededor del inmueble: distancias muy cortas asociadas al entorno inmediato (100--300 m), zonas de alcance habitual dentro del barrio (500 m), áreas de desplazamiento ampliado en recorridos peatonales o de corta movilidad (1000 m), y una escala vecinal más amplia que permite capturar la presencia de equipamientos mayores (2000 m). De esta manera, cada radio refleja un nivel distinto de interacción entre la propiedad y su entorno, permitiendo cuantificar la disponibilidad y concentración de servicios relevantes. La Tabla~\ref{tab:pois_radio} ilustra este proceso de agregación espacial mediante un ejemplo específico.
-
-Como resultado de este proceso se incorporaron 45 nuevas variables derivadas de POIs, correspondientes a 8 categorías evaluadas en 5 radios alrededor de cada inmueble. Cada variable representa el número de establecimientos de un tipo particular dentro del radio correspondiente; sus valores pueden oscilar desde 0 (ausencia total de dicho servicio) hasta cifras superiores a 400 en zonas densamente equipadas. La Tabla~\ref{tab:estructura_pois} resume la organización sistemática de estas variables y su rango típico de valores.
-
-Las variables derivadas de POIs permitieron explorar la influencia del entorno urbano en la valoración inmobiliaria y analizar si la información geoespacial aportaba variación explicativa independiente, o si su efecto era absorbido por características con mayor peso, como el área o las coordenadas. La evaluación mediante importancias SHAP mostró una contribución marginal en la mayoría de casos. El enriquecimiento geoespacial sirvió así como base para la selección posterior de variables y la construcción del modelo optimizado.
+El modelo base se entrenó utilizando únicamente variables estructurales del inmueble (área, baños, parqueaderos, estrato, antigüedad, estado, administración) y las coordenadas geográficas. Como punto de partida se compararon varios algoritmos de regresión: Linear Regression, Ridge, Lasso, Random Forest, LightGBM y XGBoost. La Tabla~\ref{tab:modelos_base_log} resume el desempeño promedio en validación cruzada de diez pliegues sobre la variable transformada \texttt{precio\_venta\_log}. No se seleccionaron modelos de caja negra como redes neuronales porque también se busca obtener interpretabilidad.
 
 \begin{table}[ht]
 \centering
-\caption{Conteo de sitios cercanos por categoría y radio}
-\label{tab:pois_radio}
-\begin{tabular}{lrrrrr}
+\small
+\caption{Comparación inicial de algoritmos de regresión para el modelo base (10-Fold CV, escala logarítmica).}
+\label{tab:modelos_base_log}
+\begin{tabular}{lrrrr}
 \hline
-\textbf{Tipo de lugar} & \textbf{100m} & \textbf{300m} & \textbf{500m} & \textbf{1000m} & \textbf{2000m} \\
+\textbf{Modelo} & \textbf{RMSE medio} & \textbf{RMSE std} & \textbf{MAE medio} & \textbf{$R^2$ medio} \\
 \hline
-Educación                & 0 & 4   & 19  & 65  & 103 \\
-Alojamiento              & 0 & 28  & 57  & 99  & 119 \\
-Acceso a comercio        & 0 & 31  & 74  & 221 & 492 \\
-Servicios culturales     & 0 & 5   & 14  & 47  & 76  \\
-Parques y recreación     & 0 & 2   & 8   & 21  & 38  \\
-Servicios de infraestructura & 0 & 10 & 28 & 72 & 156 \\
-Restaurantes y entretenimiento & 0 & 125 & 237 & 455 & 705 \\
-Salud                    & 0 & 0   & 4   & 16  & 64  \\
-Estaciones SITP          & 0 & 0   & 22  & 61  & 204 \\
-Estaciones TransMilenio  & 0 & 0   & 3   & 5   & 15  \\
+XGBoost           & 0.1359 & 0.0022 & 0.1018 & 0.9515 \\
+LightGBM          & 0.1386 & 0.0023 & 0.1040 & 0.9495 \\
+Random Forest     & 0.1400 & 0.0025 & 0.0994 & 0.9485 \\
+Ridge             & 0.2245 & 0.0073 & 0.1706 & 0.8674 \\
+Linear Regression & 0.2245 & 0.0073 & 0.1706 & 0.8674 \\
+Lasso             & 0.2821 & 0.0056 & 0.2230 & 0.7909 \\
 \hline
 \end{tabular}
 \end{table}
@@ -89,164 +31,223 @@ Estaciones TransMilenio  & 0 & 0   & 3   & 5   & 15  \\
 \begin{table}[ht]
 \centering
 \small
-\caption{Estructura de las variables geoespaciales derivadas de POIs}
-\label{tab:estructura_pois}
-\begin{tabular}{p{4cm} p{3cm} p{6cm}}
-\hline
-\textbf{Categoría de POI} & \textbf{Radios utilizados} & \textbf{Descripción y rango típico} \\
-\hline
-Educación & 100, 300, 500, 1000, 2000 m & Instituciones educativas; valores típicos: 0--100. \\
-Salud & 100, 300, 500, 1000, 2000 m & Clínicas, hospitales y consultorios; 0--60. \\
-Comercio minorista & 100, 300, 500, 1000, 2000 m & Tiendas, supermercados; 0--500. \\
-Restaurantes y entretenimiento & 100, 300, 500, 1000, 2000 m & Restaurantes, cafés y bares; 0--700. \\
-Alojamiento & 100, 300, 500, 1000, 2000 m & Hoteles y estancias; 0--120. \\
-Parques y recreación & 100, 300, 500, 1000, 2000 m & Parques y zonas verdes; 0--40. \\
-Servicios de infraestructura & 100, 300, 500, 1000, 2000 m & Servicios públicos y cajeros; 0--150. \\
-Equipamientos culturales & 100, 300, 500, 1000, 2000 m & Bibliotecas, museos y centros culturales; 0--80. \\
-\hline
-\end{tabular}
-\end{table}
-
-\section{Construcción del modelo base}
-
-El modelo base se desarrolló utilizando únicamente variables estructurales. Se evaluaron siete algoritmos: regresión lineal, Ridge, Lasso, SVR, Random Forest, LightGBM y XGBoost. Las métricas se calcularon mediante validación cruzada de diez pliegues. Los resultados se resumen en la Tabla~\ref{tab:modelos_base_cop} y la Figura~\ref{fig:rmse_modelos}.
-
-\begin{table}[ht]
-\centering
-\small
-\caption{Comparación inicial de algoritmos de regresión (RMSE en pesos colombianos).}
-\label{tab:modelos_base_cop}
-\begin{tabular}{lrr}
-\hline
-\textbf{Modelo} & \textbf{RMSE medio (COP)} & \textbf{RMSE std (COP)} \\
-\hline
-Random Forest      & \$244{,}712{,}600 & \$7{,}637{,}822 \\
-XGBoost            & \$245{,}248{,}800 & \$6{,}392{,}930 \\
-LightGBM           & \$246{,}264{,}200 & \$4{,}892{,}081 \\
-KNN                & \$341{,}664{,}900 & \$5{,}987{,}948 \\
-Decision Tree      & \$345{,}986{,}400 & \$8{,}217{,}641 \\
-Linear Regression  & \$347{,}985{,}800 & \$4{,}397{,}948 \\
-Lasso              & \$347{,}988{,}400 & \$4{,}402{,}652 \\
-Ridge              & \$347{,}989{,}900 & \$4{,}437{,}838 \\
-SVR                & \$913{,}333{,}600 & \$5{,}537{,}129 \\
-\hline
-\end{tabular}
-\end{table}
-
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.8\linewidth]{Images/metodologia/rmse_modelos_base.png}
-    \caption{Desempeño comparado de algoritmos del modelo base (RMSE).}
-    \label{fig:rmse_modelos}
-\end{figure}
-
-El mejor desempeño fue obtenido por XGBoost utilizando su función de pérdida por defecto para regresión (\texttt{reg:squarederror}). El ajuste del modelo se realizó mediante una búsqueda aleatoria de hiperparámetros dentro del espacio definido en la Tabla~\ref{tab:xgb_param_search}, con el fin de explorar configuraciones que equilibraran complejidad, capacidad predictiva y generalización. Este mismo procedimiento de optimización se mantuvo en los modelos posteriores, variando únicamente el conjunto de variables disponibles en cada caso, con el propósito de asegurar comparabilidad metodológica entre todas las variantes evaluadas.
-
-\begin{table}[ht]
-\centering
-\small
-\caption{Descripción del espacio de búsqueda utilizado para XGBoost}
+\caption{Espacio de búsqueda de hiperparámetros utilizado para XGBoost.}
 \label{tab:xgb_param_search}
-\begin{tabular}{p{3.5cm} p{3cm} p{7.5cm}}
+\begin{tabular}{p{3.8cm} p{3cm} p{7.2cm}}
 \hline
 \textbf{Hiperparámetro} & \textbf{Rango} & \textbf{Justificación} \\
 \hline
-\texttt{n\_estimators} & [200, 500] & Limita el número de árboles para controlar complejidad y tiempo de entrenamiento, evitando sobreajuste observado con valores superiores a 800. \\
+\texttt{n\_estimators} & [200, 500] & Controla el número de árboles y limita la complejidad y el tiempo de entrenamiento. \\[2pt]
 
-\texttt{max\_depth} & [3, 7] & Profundidades moderadas permiten capturar no linealidades sin producir árboles demasiado específicos. Previene sobreajuste y mantiene interpretabilidad. \\
+\texttt{max\_depth} & [3, 7] & Profundidades moderadas capturan no linealidades sin producir árboles muy sobreajustados. \\[2pt]
 
-\texttt{learning\_rate} & [0.02, 0.06] & Tasas de aprendizaje pequeñas estabilizan la contribución incremental de cada árbol y mejoran la generalización. Rango estrecho para evitar variabilidad extrema. \\
+\texttt{learning\_rate} & [0.02, 0.06] & Tasas pequeñas estabilizan el aprendizaje y favorecen la generalización del modelo. \\[2pt]
 
-\texttt{subsample} & [0.7, 0.9] & Submuestreo evita correlación excesiva entre árboles y reduce varianza. Valores menores afectarían la estabilidad; valores mayores serían equivalentes a usar todo el conjunto. \\
+\texttt{subsample} & [0.7, 0.9] & Reduce varianza y correlación entre árboles del ensamble. \\[2pt]
 
-\texttt{colsample\_bytree} & [0.7, 0.9] & Controla la proporción de características muestreadas por árbol, promoviendo diversidad en el ensamble y mitigando sobreajuste. \\
+\texttt{colsample\_bytree} & [0.7, 0.9] & Genera árboles más diversos y controla el sobreajuste. \\[2pt]
 
-\texttt{min\_child\_weight} & [1, 6] & Penaliza divisiones con muestras pequeñas. Rango acotado para evitar tanto divisiones ruidosas como restricciones excesivas que impidan aprender patrones reales. \\
+\texttt{min\_child\_weight} & [1, 6] & Evita divisiones en nodos con muy pocas observaciones y reduce particiones ruidosas. \\[2pt]
 
-\texttt{gamma} & [0.0, 2.0] & Define el mínimo incremento en la pérdida para realizar una partición. El rango permite desde modelos más flexibles (0) hasta particiones conservadoras (2). \\
-
-\texttt{reg\_lambda} & [0.5, 2.0] & Regularización L2 para controlar el tamaño de los pesos. Rango moderado que balancea flexibilidad y estabilidad del modelo. \\
-
-\texttt{reg\_alpha} & [0.0, 0.5] & Regularización L1 para inducir sparsity y reducir complejidad. Se evita valores altos que podrían eliminar señales relevantes. \\
+\texttt{gamma} & [0.0, 2.0] & Exige una reducción mínima de la pérdida para aceptar nuevas particiones en los árboles. \\[2pt]
 \hline
 \end{tabular}
-\label{tab:xgb_param_search}
 \end{table}
 
-\section{Construcción, evaluación e interpretabilidad del modelo enriquecido}
 
-El modelo enriquecido tuvo como objetivo evaluar el aporte de las variables geoespaciales sobre la capacidad predictiva y explicativa del sistema. Para construir este modelo se integraron todas las variables derivadas del proceso de enriquecimiento espacial: conteos de puntos de interés en distintos radios, identificadores administrativos (barrio y UPZ), geohash nivel~7 y el avalúo catastral zonal. Todas estas variables fueron procesadas mediante el mismo \texttt{ColumnTransformer} utilizado en el modelo base, garantizando imputación, escalamiento y codificación categórica consistentes en todas las etapas del pipeline.
-
-Con el fin de evaluar el comportamiento del conjunto enriquecido, se entrenaron y validaron varios algoritmos utilizados previamente en el modelo base: Linear Regression, Ridge, Lasso, Random Forest, LightGBM y XGBoost. El modelo SVR se descartó desde etapas anteriores por su bajo rendimiento y alto costo computacional. La evaluación se realizó mediante validación cruzada de diez pliegues, utilizando RMSE como métrica principal. Los resultados se presentan en la Tabla~\ref{tab:resultados_aumentado}.
+Dado su mejor desempeño y estabilidad, se seleccionó \textbf{XGBoost} como algoritmo base, utilizando la función de pérdida por defecto para regresión (\texttt{reg:squarederror}). Para este modelo se ejecutó una búsqueda aleatoria de hiperparámetros (\texttt{RandomizedSearchCV}) dentro del espacio descrito en la Tabla~\ref{tab:xgb_param_search}, manteniendo constante el \textit{pipeline} de preprocesamiento.
 
 \begin{table}[ht]
 \centering
 \small
-\caption{Desempeño de algoritmos en el modelo enriquecido (10-Fold CV).}
-\label{tab:resultados_aumentado}
+\caption{Mejores hiperparámetros de XGBoost por configuración de modelo.}
+\label{tab:xgb_best_params}
+\begin{tabular}{lccc}
+\hline
+\textbf{Hiperparámetro} & \textbf{Base} & \textbf{Enriquecido} & \textbf{Optimizado} \\
+\hline
+\texttt{n\_estimators}      & 488    & 488    & 397    \\
+\texttt{max\_depth}         & 6      & 6      & 5      \\
+\texttt{learning\_rate}     & 0.0319 & 0.0319 & 0.0341 \\
+\texttt{subsample}          & 0.8302 & 0.8302 & 0.6666 \\
+\texttt{colsample\_bytree}  & 0.7587 & 0.7587 & 0.7943 \\
+\texttt{min\_child\_weight} & 3      & 3      & 9      \\
+\texttt{gamma}              & 0.0282 & 0.0282 & 1.0010 \\
+\texttt{reg\_lambda}        & 2.3526 & 2.3526 & 2.2522 \\
+\texttt{reg\_alpha}         & 0.3030 & 0.3030 & 0.5086 \\
+\hline
+\end{tabular}
+\end{table}
+
+En el modelo base, la validación cruzada de diez pliegues produjo los siguientes resultados promedio (escala logarítmica):
+
+\begin{itemize}
+    \item \textbf{RMSE}: 0.1424 \ (\textit{std} = 0.0029)
+    \item \textbf{MAE}: 0.1064 \ (\textit{std} = 0.0020)
+    \item \textbf{$R^{2}$}: 0.9467 \ (\textit{std} = 0.0035)
+\end{itemize}
+
+\subsubsection{Validación cruzada en pesos para el modelo base}
+
+Para aportar interpretabilidad en términos monetarios, se repitió la validación cruzada aplicando la transformación inversa a la variable objetivo. En cada pliegue se entrenó el mismo \textit{pipeline} sobre \texttt{precio\_venta\_log}, se obtuvieron las predicciones \texttt{y\_pred\_log} y luego se transformaron a pesos con \texttt{np.expm1}, tanto para las predicciones como para los valores reales. Con estos valores se calcularon RMSE y MAE en COP por pliegue.
+
+Los resultados agregados fueron:
+
+\begin{itemize}
+    \item \textbf{RMSE promedio en COP}: \$106.35 millones \ (\textit{std} = \$2.90 millones)
+    \item \textbf{MAE promedio en COP}: \$70.43 millones \ (\textit{std} = \$1.54 millones)
+\end{itemize}
+
+La Figura~\ref{fig:error_base_absoluto} muestra la distribución del \textbf{error absoluto} en pesos por rango de precios, mientras que la Figura~\ref{fig:error_base_relativo} presenta el \textbf{error relativo}, evidenciando que, aunque el error absoluto aumenta con el precio del inmueble, el error relativo se mantiene por debajo de 0.1 en la mayoría de rangos, lo que respalda la estabilidad del modelo en términos proporcionales.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.85\linewidth]{Images/metodologia/analisis_error_base_absoluto.png}
+    \caption{Distribución del error absoluto del modelo base en pesos colombianos.}
+    \label{fig:error_base_absoluto}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.85\linewidth]{Images/metodologia/analisis_error_base_relativo.png}
+    \caption{Distribución del error relativo del modelo base por rango de precios.}
+    \label{fig:error_base_relativo}
+\end{figure}
+
+%--------------------------------------------------
+\subsection{Modelo enriquecido: incorporación de variables geoespaciales}
+
+El \textbf{modelo enriquecido} incorporó las variables geoespaciales y administrativas derivadas del proceso descrito en la sección de enriquecimiento: identificadores de barrio, UPZ y localidad, avalúos catastrales y 45 variables de conteo de POIs en cinco radios y ocho categorías. El preprocesamiento se mantuvo mediante el mismo \texttt{ColumnTransformer} del modelo base, y se reutilizó el espacio de búsqueda de hiperparámetros resumido en la Tabla~\ref{tab:xgb_param_search}. La búsqueda produjo los mismos hiperparámetros óptimos que en el modelo base (Tabla~\ref{tab:xgb_best_params}), lo cual facilita la comparación al mantener fija la configuración del algoritmo y variar únicamente el conjunto de variables.
+
+La validación cruzada de diez pliegues para el modelo enriquecido arrojó:
+
+\begin{itemize}
+    \item \textbf{RMSE promedio}: 0.1494 \ (\textit{std} = 0.00627)
+    \item \textbf{MAE promedio}: 0.1123 \ (\textit{std} = 0.00397)
+    \item \textbf{$R^{2}$ promedio}: 0.9387 \ (\textit{std} = 0.01069)
+\end{itemize}
+
+\subsubsection{Validación cruzada en pesos para el modelo enriquecido}
+
+Repitiendo la estrategia de convertir las predicciones de logaritmos a pesos, se obtuvo:
+
+\begin{itemize}
+    \item \textbf{RMSE promedio en COP}: \$112.86 millones \ (\textit{std} = \$4.22 millones)
+    \item \textbf{MAE promedio en COP}: \$76.05 millones \ (\textit{std} = \$2.46 millones)
+\end{itemize}
+
+En términos absolutos, el modelo enriquecido presenta errores ligeramente superiores a los del modelo base, tanto en la escala logarítmica como en pesos, a pesar de incorporar un número considerable de variables adicionales.
+
+%--------------------------------------------------
+\subsection{Modelo enriquecido optimizado: selección de variables con SHAP}
+
+Con el fin de analizar la contribución marginal de cada variable y reducir la complejidad del modelo enriquecido, se aplicó \textbf{SHAP} (\textit{SHapley Additive exPlanations}) sobre el modelo XGBoost entrenado con todas las variables geoespaciales y estructurales. A partir de los valores SHAP absolutos promedio, se identificó un subconjunto de características con mayor importancia global.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.65\linewidth]{Images/metodologia/shap_enriched_summary.png}
+    \caption{Resumen de importancias SHAP del modelo enriquecido.}
+    \label{fig:shap_enriched_summary}
+\end{figure}
+
+La Figura~\ref{fig:shap_enriched_summary} muestra que la señal predictiva se concentra principalmente en variables estructurales y de localización, mientras que la mayoría de variables derivadas de POIs presentan impactos cercanos a cero en la predicción individual. Sobre esta base se seleccionó el conjunto reducido de predictores utilizado en el modelo enriquecido optimizado.
+
+Las diez características con mayor \textit{mean absolute SHAP} fueron:
+
+\begin{itemize}
+    \item \textbf{Área} (\texttt{num\_\_area})
+    \item \textbf{Latitud} (\texttt{num\_\_latitud})
+    \item \textbf{Número de parqueaderos} (\texttt{num\_\_parqueaderos})
+    \item \textbf{Longitud} (\texttt{num\_\_longitud})
+    \item \textbf{Cuota de administración} (\texttt{num\_\_administracion})
+    \item \textbf{Número de baños} (\texttt{num\_\_banos})
+    \item \textbf{Antigüedad} (categorías \texttt{ENTRE 0 Y 5 ANOS}, \texttt{MAS DE 20 ANOS})
+    \item \textbf{Gimnasio} (\texttt{num\_\_gimnasio})
+    \item \textbf{Número de habitaciones} (\texttt{num\_\_habitaciones})
+    \item \textbf{Ascensor} (\texttt{num\_\_ascensor})
+\end{itemize}
+
+A partir de estas variables se definió el \textbf{modelo enriquecido optimizado}. Se mantuvo el mismo \textit{pipeline} de preprocesamiento y el mismo espacio de búsqueda de hiperparámetros, obteniendo la configuración específica mostrada en la Tabla~\ref{tab:xgb_best_params}.
+
+La validación cruzada de diez pliegues produjo:
+
+\begin{itemize}
+    \item \textbf{RMSE promedio}: 0.1480 \ (\textit{std} = 0.0058)
+    \item \textbf{MAE promedio}: 0.1096 \ (\textit{std} = 0.0031)
+    \item \textbf{$R^{2}$ promedio}: 0.9400 \ (\textit{std} = 0.0095)
+\end{itemize}
+
+\subsubsection{Validación cruzada en pesos para el modelo optimizado}
+
+Aplicando de nuevo la conversión a pesos:
+
+\begin{itemize}
+    \item \textbf{RMSE promedio en COP}: \$107.23 millones \ (\textit{std} = \$3.37 millones)
+    \item \textbf{MAE promedio en COP}: \$70.99 millones \ (\textit{std} = \$2.11 millones)
+\end{itemize}
+
+Las Figuras~\ref{fig:error_opt_absoluto} y~\ref{fig:error_opt_relativo} muestran el comportamiento del error absoluto y relativo del modelo optimizado en función del precio del inmueble. Se observa un patrón similar al del modelo base: el error absoluto crece con el valor del inmueble, pero el error relativo se mantiene acotado y en rangos comparables.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.85\linewidth]{Images/metodologia/analisis_error_enriquecido_optimizado_absoluto.png}
+    \caption{Distribución del error absoluto del modelo enriquecido optimizado en pesos colombianos.}
+    \label{fig:error_opt_absoluto}
+\end{figure}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.85\linewidth]{Images/metodologia/analisis_error_enriquecido_optimizado_relativo.png}
+    \caption{Distribución del error relativo del modelo enriquecido optimizado por rango de precios.}
+    \label{fig:error_opt_relativo}
+\end{figure}
+
+%--------------------------------------------------
+\subsection{Comparación estadística y selección del modelo final}
+
+Para evaluar si las diferencias de desempeño entre modelos eran estadísticamente significativas, se aplicaron pruebas t de Student pareadas sobre los valores de RMSE obtenidos en cada uno de los diez pliegues:
+
+\begin{itemize}
+    \item \textbf{Modelo base vs. modelo enriquecido}:\\
+    RMSE medio base = 0.1424, RMSE medio enriquecido = 0.1494,\\
+    $t = -2.91$, $p = 0.0174$ $\Rightarrow$ diferencia significativa (\(p < 0.05\)).
+    
+    \item \textbf{Modelo enriquecido vs. modelo optimizado}:\\
+    RMSE medio enriquecido = 0.1494, RMSE medio optimizado = 0.1480,\\
+    $t = 2.87$, $p = 0.0186$ $\Rightarrow$ diferencia significativa (\(p < 0.05\)).
+    
+    \item \textbf{Modelo base vs. modelo optimizado}:\\
+    RMSE medio base = 0.1424, RMSE medio optimizado = 0.1480,\\
+    $t = -2.43$, $p = 0.0378$ $\Rightarrow$ diferencia significativa (\(p < 0.05\)).
+\end{itemize}
+
+La Tabla~\ref{tab:comparacion_modelos_millones} resume el desempeño de los tres modelos en términos de error medio en pesos colombianos.
+
+\begin{table}[ht]
+\centering
+\small
+\caption{Comparación de desempeño entre configuraciones de modelo (10-Fold CV, valores medios en millones de pesos).}
+\label{tab:comparacion_modelos_millones}
 \begin{tabular}{lcccc}
 \hline
-\textbf{Modelo} & \textbf{RMSE} & \textbf{RMSE std} & \textbf{MAE} & \textbf{$R^2$} \\
+\textbf{Modelo} & \textbf{RMSE (M\$)} & \textbf{RMSE std (M\$)} & \textbf{MAE (M\$)} & \textbf{MAE std (M\$)} \\
 \hline
-LightGBM          & 0.171 & 0.005 & 0.126 & 0.956 \\
-XGBoost           & 0.171 & 0.005 & 0.126 & 0.956 \\
-Random Forest     & 0.178 & 0.004 & 0.128 & 0.952 \\
-Ridge             & 0.279 & 0.008 & 0.212 & 0.881 \\
-Linear Regression & 0.280 & 0.009 & 0.212 & 0.880 \\
-Lasso             & 0.337 & 0.007 & 0.263 & 0.827 \\
+Base                    & 106.35 & 2.90 & 70.43 & 1.54 \\
+Enriquecido             & 112.86 & 4.22 & 76.05 & 2.46 \\
+Enriquecido optimizado  & 107.23 & 3.37 & 70.99 & 2.11 \\
 \hline
 \end{tabular}
 \end{table}
 
-La comparación inicial evidenció que LightGBM y XGBoost presentaron desempeños equivalentes. Sin embargo, se seleccionó XGBoost para las siguientes etapas del análisis por dos razones metodológicas: (i) el modelo base ya había sido entrenado y optimizado con XGBoost, lo que permite comparar ambos modelos modificando exclusivamente el conjunto de variables y no el algoritmo; y (ii) XGBoost tiene una integración más estable y documentada con SHAP, lo cual es fundamental para el análisis interpretativo que guía la selección del subconjunto final de características.
+En conjunto, los resultados muestran que:
 
-Con el modelo enriquecido entrenado, se aplicó SHAP (\textit{SHapley Additive exPlanations}) para analizar la contribución local y global de cada característica después del preprocesamiento. La Figura~\ref{fig:shap_summary} presenta el \textit{SHAP Summary Plot}, que muestra la distribución del impacto de cada variable a nivel individual, mientras que la Figura~\ref{fig:shap_bar} resume la importancia global de las características mediante el valor SHAP absoluto promedio.
+\begin{itemize}
+    \item El \textbf{modelo base} alcanza el menor RMSE tanto en la escala logarítmica como en pesos y presenta la mayor estabilidad entre pliegues.
+    \item El \textbf{modelo enriquecido} introduce más variables, pero empeora el error medio y la varianza del desempeño.
+    \item El \textbf{modelo enriquecido optimizado} reduce el ruido del modelo enriquecido eliminando variables de baja importancia, pero no logra superar la precisión del modelo base.
+\end{itemize}
 
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.5\linewidth]{Images/metodologia/shap_enriched_summary.png}
-    \caption{SHAP Summary Plot del modelo enriquecido.}
-    \label{fig:shap_summary}
-\end{figure}
-
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.5\linewidth]{Images/metodologia/shap_enriched_barplot.png}
-    \caption{Importancia global de las variables según valores SHAP.}
-    \label{fig:shap_bar}
-\end{figure}
-
-El análisis permitió evaluar en qué medida las variables del entorno urbano —principalmente los valores agregados derivados de POIs, proximidad a servicios y atributos espaciales resumidos por geohash— aportaban información adicional frente al modelo base. Los resultados de SHAP mostraron que estas variables presentaron importancias promedio muy bajas, con valores cercanos a cero en la mayoría de observaciones, lo cual indica que su contribución marginal era absorbida por otras características más determinantes. En contraste, variables estructurales como el área, así como las coordenadas geográficas (latitud y longitud), concentraron prácticamente toda la señal relevante del modelo, evidenciando que gran parte del efecto espacial ya se encuentra implícito en la localización del inmueble. Con base en este ranking de importancias, se seleccionó un subconjunto de predictores para entrenar el \textit{modelo enriquecido optimizado}. Este modelo se ajustó utilizando una nueva búsqueda de hiperparámetros dentro del mismo espacio definido para el modelo base, garantizando consistencia metodológica y permitiendo comparar de manera directa el efecto de la selección de variables sobre el desempeño predictivo.
-
-Los resultados detallados se reportan en la sección de validación cruzada, donde se contrastan los tres modelos (base, enriquecido y enriquecido optimizado) mediante métricas descriptivas y pruebas estadísticas.
-
-\section{Modelo enriquecido optimizado}
-
-A partir del análisis de importancia mediante SHAP se seleccionó un subconjunto reducido de variables con mayor aporte promedio, compuesto principalmente por características estructurales (área, baños, parqueaderos, administración), algunos atributos administrativos (antigüedad) y componentes geográficos esenciales (latitud y longitud). La mayoría de variables geoespaciales derivadas —como conteos de POIs y categorías OSM— mostraron contribución marginal, por lo que fueron descartadas en esta versión optimizada.
-
-El modelo enriquecido optimizado se entrenó utilizando el mismo pipeline del modelo enriquecido, pero con una nueva búsqueda de hiperparámetros dentro del mismo espacio definido previamente, de modo que las diferencias en el desempeño reflejaran únicamente el efecto de la selección de variables y no configuraciones externas del modelo. La validación cruzada de diez pliegues produjo un RMSE promedio de 0.1584 (std 0.0082), un MAE de 0.1138 y un $R^{2} = 0.9600$. En la escala monetaria original, esto corresponde a un RMSE aproximado de \textbf{\$233 millones COP} y un MAE de \textbf{\$123 millones COP}. Estos valores ubican al modelo optimizado entre el modelo base y el modelo enriquecido, reduciendo el ruido introducido por variables geoespaciales con baja importancia, aunque sin alcanzar la precisión lograda por el modelo base.
-
-Para evaluar si las diferencias eran significativas, se aplicaron pruebas t pareadas utilizando los valores de RMSE de los diez pliegues. Se encontraron diferencias significativas entre el modelo base y el enriquecido ($p = 5.49\times10^{-6}$), entre el modelo base y el optimizado ($p = 0.0112$), y entre el modelo enriquecido y el optimizado ($p = 0.000003$), indicando que reducir variables mejora la estabilidad del modelo enriquecido sin recuperar completamente la precisión del modelo base.
-
-La Tabla~\ref{tab:comparacion_modelos_final} resume el desempeño de los tres modelos evaluados. Aunque el modelo base conserva la mayor precisión, el modelo optimizado ofrece mayor simplicidad y disminución en el error, constituyéndose en una alternativa eficiente dentro del conjunto enriquecido.
-
-\begin{table}[ht]
-\centering
-\small
-\caption{Comparación de desempeño entre los modelos evaluados (10-Fold CV, valores en millones de pesos).}
-\label{tab:comparacion_modelos_final}
-\begin{tabular}{lccccc}
-\hline
-\textbf{Modelo} & \textbf{RMSE (M\$)} & \textbf{RMSE std} & 
-\textbf{MAE (M\$)} & \textbf{MAE std} & \textbf{$R^2$} \\
-\hline
-Base                    & 231 & 8   & 120 & 3  & 0.965 \\
-Enriquecido             & 257 & 12  & 138 & 5  & 0.956 \\
-Enriquecido optimizado  & 233 & 14  & 123 & 5  & 0.960 \\
-\hline
-\end{tabular}
-\end{table}
-
+Por estas razones, y dado que el objetivo principal es obtener un modelo preciso y estable para la estimación de precios, se seleccionó el \textbf{modelo base con XGBoost} como modelo final para su despliegue en la aplicación web descrita en la siguiente sección. Las configuraciones enriquecidas se utilizaron principalmente como soporte para el análisis de la influencia del contexto geoespacial y para la discusión sobre la redundancia de información espacial en relación con variables estructurales y de localización.
 
 \section{Implementación del sistema web}
 
